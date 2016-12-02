@@ -1,0 +1,214 @@
+
+func pDog01_3()
+local i,j,k,OCol:=SetColor("w+/b"), ej:=.f.,atemp:={},atemp1:={}
+private stroki:={},fstr:={}
+
+para DOG_NO, DOG_DATE, USLUGI, DT_START, DT_END, O_CENA, Z_REKV
+
+for i=1 to 9
+ aadd(z_rekv,'')
+endfor
+
+#DEFINE PMaxWidth 70
+#DEFINE MaxLines  82 //74
+
+stroki={}
+aadd(stroki,{' '  ,LeftMarg(4)+SetPrnCPI(10)+SetPrnLPI(5)})
+aadd(stroki,{'cB' ,'ДОГОВОР №'+alltrim(DOG_NO)})
+aadd(stroki,{'cB' ,'на оказание услуг'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'c'  ,'г. В.Салда                                   '+dtoec(dog_date)})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'Муниципальное унитарное предприятие "Городское управление жилищно- коммунального хозяйства" в лице директора КАЛМЫКОВА А.И., действующего на основании Устава, именуемого в дальнейшем ИСПОЛНИТЕЛЬ, с одной стороны и '+Z_rekv[1,1]+'в лице '+Z_rekv[1,2]+', именуемый (ое/ая) в дальнейшем ЗАКАЗЧИК, с другой стороны, а так же '+Z_rekv[2,1]+' в лице '+Z_rekv[2,2]+' именуемый в дальнейшем ПЛАТЕЛЬЩИК, с третьей стороны, заключили настоящий договор о нижеследующем:'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'1. ПРЕДМЕТ ДОГОВОРА'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'1.1. По договору возмездного оказания услуг ИСПОЛНИТЕЛЬ обязуется по заданию ЗАКАЗЧИКА оказать услуги, указанные в п. 1.2. настоящего договора, ЗАКАЗЧИК обязуется их принять, а ПЛАТЕЛЬЩИК оплатить эти услуги.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'1.2. ИСПОЛНИТЕЛЬ обязуется оказать следующие услуги:'})
+
+
+if SHOW_SUMM
+ for i=1 to len(USLUGI)
+ aadd(stroki,{'U'  ,'  *) '+;
+      left(USLUGI[i],at(':',USLUGI[i])-1)})
+ endfor
+else
+ aadd(stroki,{' '  ,''})
+ for i=1 to len(USLUGI)
+ aadd(stroki,{'U'  ,'  *) '+USLUGI[i]})
+ endfor
+ aadd(stroki,{' '  ,''})
+endif
+
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'Получатель услуг: '+z_rekv[1,1]+" в лице "+z_rekv[1,2]})
+aadd(stroki,{' '  ,'Адрес получателя: '+z_rekv[1,3]})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'     именуемые в дальнейшем "Услуги"'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'1.3. Срок оказания услуг с '+dtoec(dt_start)+' до '+dtoec(dt_end)})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'2. ПРАВА И ОБЯЗАННОСТИ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'2.1. ИСПОЛНИТЕЛЬ обязан:'})
+aadd(stroki,{' '  ,'- оказать "Услуги" с надлежащим качеством;'})
+aadd(stroki,{' '  ,'- оказать "Услуги" в полном объёме и в срок, указанный в п. 1.3. настоящего договора.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'2.2. ПЛАТЕЛЬЩИК обязан:'})
+aadd(stroki,{' '  ,'- оплатить работу по цене, указанной в п.3.2 настоящего договора.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'2.3. ЗАКАЗЧИК обязан: принять выполненные работы.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'2.4. Результат выполненных работ оформляется актом.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'3. ЦЕНА ДОГОВОРА И ПОРЯДОК РАСЧЁТОВ'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'3.1. Расчёт за оказанные "Услуги" производятся путём внесения денежных средств в кассу'})
+aadd(stroki,{' '  ,'Исполнителя до момента начала выполнения работ.'})
+aadd(stroki,{' '  ,''})
+
+if len(stroki)>MaxLines
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+if SHOW_SUMM
+ aadd(stroki,{'+'  ,'3.2. Ориентировочная цена настоящего договора на момент его заключения, составляет'})
+ aadd(stroki,{'+U' ,astr(int(O_CENA))+' руб. '+astr(round((o_CENA-int(O_CENA))*100,0))+' коп.'})
+ aadd(stroki,{'+CU','('+n2str(O_CENA)+').'})
+else
+ aadd(stroki,{' '  ,'3.2. Ориентировочная цена настоящего договора на момент его заключения, составляет'})
+ aadd(stroki,{' '  ,''})
+ aadd(stroki,{' '  ,'______________________________________________________________________'})
+ aadd(stroki,{' '  ,''})
+ aadd(stroki,{' '  ,'______________________________________________________________________'})
+ aadd(stroki,{' '  ,''})
+endif
+aadd(stroki,{'+'  ,'В последующем цена договора корректируется в соответствии со сметой фактических затрат,'})
+aadd(stroki,{' '  ,'на основании чего производится перерасчёт уплаченных денежных средств.'})
+
+if !ej .and. len(stroki)>MaxLines
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+aadd(stroki,{'CB' ,'4. ОТВЕТСТВЕННОСТЬ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'4.1. Меры ответственности сторон, не предусмотренные в настоящем договоре применяются в'})
+aadd(stroki,{' '  ,'соответствии с нормами гражданского законодательства, действующего на территории России.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+
+if !ej .and. len(stroki)>MaxLines
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+aadd(stroki,{'CB' ,'5. ПОРЯДОК РАЗРЕШЕНИЯ СПОРОВ'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'5.1. Споры и разногласия, которые могут возникнуть при исполнении настоящего договора, будут'})
+aadd(stroki,{' '  ,'по возможности решаться путём переговоров между сторонами, а при недостижении согласия - в судебном порядке.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+
+if !ej
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+aadd(stroki,{'CB' ,'6. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'6.1. Любые изменения и дополнения к настоящему договору действительны лишь при условии,'})
+aadd(stroki,{'+'  ,'что они совершены в письменной форме и подписаны уполномоченными на то представителями'})
+aadd(stroki,{' '  ,'сторон. Приложения к настоящему договору составляют его неотъемлему часть.'})
+aadd(stroki,{' '  ,''})
+
+aadd(stroki,{'+'  ,'6.2. Настоящий договор составлен в трех экземплярах на русском языке. Все экземпляры'})
+aadd(stroki,{'+'  ,'идентичны и имеют одинаковую юридическую силу. У каждой из сторон находится один'})
+aadd(stroki,{' '  ,'экземпляр настоящего договора.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'7. РЕКВИЗИТЫ И ПОДПИСИ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'B'  ,'ИСПОЛНИТЕЛЬ                   ПЛАТЕЛЬЩИК                    '})
+aadd(stroki,{' '  ,''})
+
+atempp=str2strs(z_rekv[2,1],30) 
+atemp1:={left('МУП "ГУЖКХ"'+replicate(" ",30),30),replicate(" ",30),;
+         replicate(" ",30),replicate(" ",30),replicate(" ",30)}
+for i=1 to len(atempp)
+ aadd(stroki,{' '  ,atemp1[i]+atempp[i]})
+endfor
+
+aadd(stroki,{' '  ,'г. В.Салда, ул. Парковая, 1А  '+;
+                   iif(len(z_rekv[1])>=3,z_rekv[2,3],replicate(' ',30))})
+aadd(stroki,{' '  ,'Р/сч: 40702810816150100054    Р/сч: '+;
+                   iif(len(z_rekv[1])>=4,z_rekv[2,4],replicate(' ',20))})
+aadd(stroki,{' '  ,'К/сч: 30101810500000000674    К/сч: '+;
+                   iif(len(z_rekv[1])>=5,z_rekv[2,5],replicate(' ',20))})
+aadd(stroki,{' '  ,'Уральский банк СБ РФ          '+;
+                   iif(len(z_rekv[1])>=6,z_rekv[2,6],replicate(' ',30))})
+aadd(stroki,{' '  ,'ИНН: 6607001454               ИНН: '+;
+                   iif(len(z_rekv[1])>=7,z_rekv[2,7],replicate(' ',10))})
+aadd(stroki,{' '  ,'КПП: 660701001                КПП: '+;
+                   iif(len(z_rekv[1])>=8,z_rekv[2,8],replicate(' ',9))})
+aadd(stroki,{' '  ,'БИК: 046577674                БИК: '+;
+                   iif(len(z_rekv[1])>=9,z_rekv[2,9],replicate(' ',9))})
+aadd(stroki,{' '  ,'ОКОНХ: 90110                  ОКОНХ: '+;
+                   iif(len(z_rekv[1])>=10,z_rekv[2,10],replicate(' ',5))})
+aadd(stroki,{' '  ,'ОКПО: 44122916                ОКПО: '+;
+                   iif(len(z_rekv[1])>=11,z_rekv[2,11],replicate(' ',8))})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'8. ПОДПИСИ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'B'  ,'ИСПОЛНИТЕЛЬ                   ПЛАТЕЛЬЩИК                    '})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'_________________             _________________             '})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'_________________             _________________             '})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+
+aadd(stroki,{'B'  ,'ЗАКАЗЧИК                      '})
+aadd(stroki,{' '  ,''})
+
+atempz=str2strs(z_rekv[1,1],30) 
+for i=1 to len(atempz)
+ aadd(stroki,{' '  ,atempz[i]})
+endfor
+
+aadd(stroki,{' '  ,iif(len(z_rekv[1])>=3,z_rekv[1,3],replicate(' ',30))})
+aadd(stroki,{' '  ,'Р/сч: '+iif(len(z_rekv[1])>=4,z_rekv[1,4],replicate(' ',20))})
+aadd(stroki,{' '  ,'К/сч: '+iif(len(z_rekv[1])>=5,z_rekv[1,5],replicate(' ',20))})
+aadd(stroki,{' '  ,iif(len(z_rekv[1])>=6,z_rekv[1,6],replicate(' ',30))})
+aadd(stroki,{' '  ,'ИНН: '+iif(len(z_rekv[1])>=7,z_rekv[1,7],replicate(' ',10))})
+aadd(stroki,{' '  ,'КПП:  '+iif(len(z_rekv[1])>=8,z_rekv[1,8],replicate(' ',9))})
+aadd(stroki,{' '  ,'БИК:  '+iif(len(z_rekv[1])>=9,z_rekv[1,9],replicate(' ',9))})
+aadd(stroki,{' '  ,'ОКОНХ: '+iif(len(z_rekv[1])>=10,z_rekv[1,10],replicate(' ',5))})
+aadd(stroki,{' '  ,'ОКПО:  '+iif(len(z_rekv[1])>=11,z_rekv[1,11],replicate(' ',8))})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'B'  ,'ЗАКАЗЧИК'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'_________________             '})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'_________________             '})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'Приложение: -акт выполненных работ'})
+aadd(stroki,{' '  ,'            -смета фактических затрат'})
+
+cFormat(.f.,-1)
+
+SetColor(OCol)
+
+retu
+

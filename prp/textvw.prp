@@ -1,0 +1,223 @@
+
+//======================================================================
+//     Просмотрщик текстового массива, с возможностью распечатки
+//======================================================================
+func TextView(x1,y1,x2,y2,clr,strs)
+local x:=1,y:=1,xx:=0,yy:=0,ocol:=setcolor("w+/b"),n:=0
+local CanExit:=.f.,pk,longest:=0,pl:={{"&l0O","&l1O"},{7.874,11.22}},pln
+local spaces:="  ",nspc:=2,i,strings:={}
+
+aadd(strs,LeftMarg(0)+SetPrnCPI(10)+SetPrnLPI(6)+PageOrient(0))
+
+strings=aclone(strs)
+
+scrsave()
+
+showprogress(60,0,len(strings),.t.)
+
+for i=1 to len(strings)
+ showprogress(60,i,len(strings),.f.)
+ strings[i]=ExtrLJCommands(strings[i])
+endfor
+
+scrrest()
+scrsave()
+
+for x=1 to len(strings)
+ if len(strings[x])>longest
+  longest:=len(strings[x])
+ endif
+endfor
+
+nort_(4,' ',' ',3*16+14,3*16,3*16+3,{;
+      {'Стрелки/PgUp/PgDn/Home/End/Tab','Перемещение'},{'F7','Поиск'},{'ПРОБЕЛ','Распечатать'},{'Esc','Закрыть'}})
+
+x1:=iif(x1<0,0,iif(x1>79,79,x1))
+x2:=iif(x2<0,0,iif(x2>79,79,x2))
+y1:=iif(y1<0,0,iif(y1>22,22,y1))
+y2:=iif(y2<0,0,iif(y2>22,22,y2))
+
+if x1>x2
+ x:=x1; x1:=x2; x2:=x 
+endif
+
+if y1>y2
+ y:=y1; y1:=y2; y2:=y 
+endif
+
+xx:=x2-x1; xx:=iif(xx<10,10,xx)
+yy:=y2-y1; yy:=iif(yy<7,7,yy)
+
+x1:=iif(x1+xx>79,79-xx,x1)
+y1:=iif(y1+yy>22,22-yy,y1)
+xx:=xx-1
+yy:=yy-1
+
+ramka(y1,x1,y1+yy+1,x1+xx+1,"g+/b")
+
+x:=1;y:=1
+
+drawstrs(x1,y1,xx,yy,x,y,strings)
+
+do while !CanExit
+ pk:=inkey(0)
+ do case
+  case pk=27
+   CanExit=.t.
+
+  case pK=-6			//F7
+   nn=ext_a_s(strings,y+1)
+   if nn>0
+    y=nn
+    drawstrs(x1,y1,xx,yy,x,y,strings)
+   endif
+
+  case pk=32
+   if isprinter()
+    pln=alert("Выберите положение листа:",{"Стоя","Лёжа"})
+    if pln!=2 
+     pln=1
+    endif
+    if lastkey()!=27
+     nspc=VarEdit("Отступ слева",nspc)
+     nspc=iif(nspc<0,0,iif(nspc>15,15,nspc))
+     spaces=replicate(" ",nspc)
+     if LastKey()!=27
+      set printer to
+      set device to printer
+      set printer on
+      set console off
+   
+      ?? pl[1,pln]+"(s"+astr(int((longest+nspc+4)/pl[2,pln]))+"H"+"&l8D"
+   
+      for i=1 to len(strings)
+       if isprinter()
+        ? spaces+strs[i]
+       else
+        n=0
+        set console on
+        do while !isprinter()
+         inkey(5)
+         n=n+1
+         if n>10
+          n=alert('Принтер не готов!',{"Повторить","Отмена"})
+          if n=2
+           scrrest()
+           setcolor(ocol)
+           retu
+          endif      
+          n=0
+         endif
+        enddo      
+        set console off
+        ? spaces+strs[i]
+       endif
+      endfor
+   
+      set device to screen
+      set console on
+      set printer off
+     endif
+    endif
+   else
+    alert("Принтер не готов!")
+   endif
+
+  case pk=289			//ALT + F
+    pln=alert("Выберите положение листа:",{"Стоя","Лёжа"})
+    if pln!=2 
+     pln=1
+    endif
+    if lastkey()!=27
+     nspc=VarEdit("Отступ слева",nspc)
+     nspc=iif(nspc<0,0,iif(nspc>15,15,nspc))
+     spaces=replicate(" ",nspc)
+     if LastKey()!=27
+      set printer to "out.txt"
+      set device to printer
+      set printer on
+      set console off
+   
+      ?? pl[1,pln]+"(s"+astr(int((longest+nspc)/pl[2,pln])+1)+"H"+"&l8D"
+   
+      for i=1 to len(strings)
+        ? spaces+strs[i]
+      endfor
+   
+      set device to screen
+      set console on
+      set printer off
+     endif
+    endif
+
+  case pk=24 .or. pk=3		//down or PgUp
+   for i:=1 to 1+(yy-1)*iif(pk=3,1,0)
+    if y+yy<=len(strings)
+     y=y+1
+     drawstrs(x1,y1,xx,yy,x,y,strings)
+    endif
+   endfor
+
+  case pk=5 .or. pk=18		//up or PgDn
+   for i:=1 to 1+(yy-1)*iif(pk=18,1,0)
+    if y>1
+     y=y-1
+     drawstrs(x1,y1,xx,yy,x,y,strings)
+    endif
+   endfor
+
+  case pk=19 .or. pk=271	//left or shift+tab
+   for i:=1 to 1+10*iif(pk=271,1,0)
+    if x>1
+     x=x-1
+     drawstrs(x1,y1,xx,yy,x,y,strings)
+    endif
+   endfor
+
+  case pk=4 .or. pk=9		//right or tab
+   for i:=1 to 1+10*iif(pk=9,1,0)
+    if x+xx<=longest
+     x=x+1
+     drawstrs(x1,y1,xx,yy,x,y,strings)
+    endif
+   endfor
+
+  case pk=1			//home
+   x=1
+   drawstrs(x1,y1,xx,yy,x,y,strings)
+
+  case pk=6			//end
+   x=longest-xx+1
+   drawstrs(x1,y1,xx,yy,x,y,strings)
+
+
+ endcase
+
+enddo
+
+
+scrrest()
+setcolor(ocol)
+retu
+
+
+
+
+
+
+
+//======================================================================
+// Отобразим строки STRS. лев.верх.уг.окна x1,y1. Ширина/длина - xx,yy
+// Начало отображения с позиции xx,yy строк STRS
+//======================================================================
+func drawstrs(x1,y1,xx,yy,sx,sy,strs)
+local i,sss:=replicate(' ',xx+sx),ls:=len(strs)
+
+for i:=1 to yy
+ @y1+i,x1+1 say iif(sy+i-1>ls,left(sss,xx),substr(strs[sy+i-1]+sss,sx,xx))
+endfor
+
+vScroller(x1+xx+1,y1+1,y1+yy,sy,iif(len(strs)-yy>0,len(strs)-yy,yy),"g+/b*")
+
+retu
+

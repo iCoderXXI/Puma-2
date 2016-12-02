@@ -1,0 +1,418 @@
+public RDF_to_ALIAS:={}
+
+aadd(RDF_to_ALIAS,{"zakazch","RDF_Zakazch"})
+public RDF_Zakazch:=;
+        {;
+         {"Заказчик"    ,.f.,"zakazch","zakazch",""       ,""       ,""  ,.t.,.t.},;
+         {"Сокращ.назв.",.f.,"zakazch","shrtname",""      ,""       ,""  ,.f.,.t.},;
+         {"Бюджет"      ,.t.,"zakazch","budget" ,"bud_id" ,"budget" ,"id",.f.,.t.},;
+         {"ИНН"         ,.f.,"zakazch","inn"    ,""       ,""       ,""  ,.t.,.t.},;
+         {"Плательщик"  ,.t.,"zakazch","zakazch","pl_id"  ,"zakazch","id",.f.,.t.},;
+         {"Руководитель",.f.,"zakazch","nach"   ,""       ,""       ,""  ,.f.,.t.},;
+         {"Индекс"      ,.f.,"zakazch","index"  ,""       ,""       ,""  ,.f.,.t.},;
+         {"Город"       ,.t.,"zakazch","city"   ,"city_id","city"   ,"id",.t.,.t.},;
+         {"Улица"       ,.t.,"zakazch","street" ,"str_id" ,"street" ,"id",.f.,.t.},;
+         {"Дом/корп./кв",.f.,"zakazch","appart" ,""       ,""       ,""  ,.f.,.t.},;
+         {"Телефон"     ,.f.,"zakazch","tel"    ,""       ,""       ,""  ,.f.,.t.},;
+         {"Расч./счет"  ,.f.,"zakazch","r_s"    ,""       ,""       ,""  ,.f.,.t.},;
+         {"Корр./счет"  ,.f.,"zakazch","k_s"    ,""       ,""       ,""  ,.f.,.t.},;
+         {"БАНК"        ,.t.,"zakazch","bank"   ,"bank_id","bank"   ,"id",.f.,.t.},;
+         {"КПП"         ,.f.,"zakazch","kpp"    ,""       ,""       ,""  ,.f.,.t.},;
+         {"БИК"         ,.f.,"zakazch","bik"    ,""       ,""       ,""  ,.f.,.t.},;
+         {"ОКПО"        ,.f.,"zakazch","okpo"   ,""       ,""       ,""  ,.f.,.t.},;
+         {"ОКОНХ"       ,.f.,"zakazch","okonh"  ,""       ,""       ,""  ,.f.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"bank","RDF_bank"})
+public RDF_BANK:=;
+        {;
+         {"БАНК"        ,.f.,"bank"   ,"bank"   ,""       ,""       ,""  ,.t.,.t.},;
+         {"КОД БАНКА"   ,.f.,"bank"   ,"b_code" ,""       ,""       ,""  ,.t.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"work","RDF_work"})
+public RDF_WORK:=;
+        {;
+         {"ВИД РАБОТ"   ,.f.,"WORK"   ,"WORK"   ,""        ,""       ,""  ,.t.,.t.},;
+         {"СЛУЖБА"      ,.t.,"WORK"   ,"SLUJBA"  ,"SLUJ_ID","SLUJBA" ,"ID",.f.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"trans","RDF_trans"})
+public RDF_TRANS:=;
+        {;
+         {"ТРАНСПОРТ"   ,.f.,"TRANS"  ,"TRANS"  ,""       ,""       ,""  ,.t.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"city","RDF_city"})
+public RDF_CITY:=;
+        {;
+         {"ГОРОД"       ,.f.,"CITY"   ,"CITY"   ,""       ,""       ,""  ,.t.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"edizm","RDF_edizm"})
+public RDF_EDIZM:=;
+        {;
+         {"Ед.Изм."     ,.f.,"EDIZM"  ,"EDIZM"  ,""       ,""       ,""  ,.t.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"profes","RDF_profes"})
+public RDF_PROFES:=;
+        {;
+         {"ПРОФЕССИЯ"   ,.f.,"PROFES" ,"PROFES" ,""       ,""       ,""  ,.t.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"slujba","RDF_slujba"})
+public RDF_SLUJBA:=;
+        {;
+         {"СЛУЖБА"      ,.f.,"SLUJBA" ,"SLUJBA" ,""       ,""       ,""  ,.t.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"street","RDF_street"})
+public RDF_STREET:=;
+        {;
+         {"УЛИЦА"       ,.f.,"STREET" ,"STREET" ,""       ,""       ,""  ,.t.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"ulist","RDF_ulist"})
+public RDF_ULIST:=;
+        {;
+         {"Услуга"      ,.f.,"ULIST"  ,"USLUGA"  ,""       ,""       ,""  ,.t.,.t.},;
+         {"Ед.Изм."     ,.t.,"ULIST"  ,"EDIZM"   ,"EI_ID"  ,"EDIZM"  ,"ID",.t.,.t.},;
+         {"Смета"       ,.t.,"ULIST"  ,"comment1","sm_ID"  ,"smeta"  ,"ID",.f.,.f.},;
+         {"СЛУЖБА"      ,.t.,"ULIST"  ,"SLUJBA"  ,"SLUJ_ID","SLUJBA" ,"ID",.f.,.t.},;
+         {"ГРУППА?"     ,.f.,"ULIST"  ,"ALONE"   ,""       ,""       ,""  ,.f.,.t.},;
+         {"БАЗА"        ,.t.,"ULIST"  ,"USLUGA"  ,"GROUPTO","ULIST"  ,"ID",.f.,.t.},;
+         {"СТОРОННИЕ?"  ,.f.,"ULIST"  ,"OTHER"   ,""       ,""       ,""  ,.f.,.t.};
+        }
+
+aadd(RDF_to_ALIAS,{"mlist","RDF_mlist"})
+public RDF_MLIST:=;
+        {;
+         {"Материал"    ,.f.,"MLIST"  ,"MATERIAL",""       ,""       ,""  ,.t.,.t.},;
+         {"Ед.Изм."     ,.t.,"MLIST"  ,"EDIZM"   ,"EI_ID"  ,"EDIZM"  ,"ID",.t.,.t.},;
+         {"ГРУППА?"     ,.f.,"MLIST"  ,"ALONE"   ,""       ,""       ,""  ,.f.,.t.},;
+         {"БАЗА"        ,.t.,"MLIST"  ,"MATERIAL","GROUPTO","MLIST"  ,"ID",.f.,.t.};        
+        }
+
+
+//==========================================================================================
+
+
+public RDF_PUDOG:=;
+        {;
+         {"№ Дог."      ,.f.,"PUDOG"  ,"DOG_NO"  ,""       ,""       ,""  ,.t.,.t.},;
+         {"Дата"        ,.f.,"PUDOG"  ,"DOG_DT"  ,""       ,""       ,""  ,.t.,.t.},;        
+         {"Заказчик"    ,.t.,"PUDOG"  ,"ZAKAZCH" ,"ZAK_ID" ,"ZAKAZCH","ID",.t.,.t.},;
+         {"Факт.цена"   ,.f.,"PUDOG"  ,"F_CENA"  ,""       ,""       ,""  ,.f.,.f.},;        
+         {"Ав.цена"     ,.f.,"PUDOG"  ,"P_CENA"  ,""       ,""       ,""  ,.f.,.f.},;
+         {"Дата начала" ,.f.,"PUDOG"  ,"U_NACH"  ,""       ,""       ,""  ,.t.,.t.},;
+         {"Дата оконч." ,.f.,"PUDOG"  ,"U_KON"   ,""       ,""       ,""  ,.t.,.t.};        
+        }
+
+public RDF_ISPOLN:=;
+        {;
+         {"Дата"         ,.f.,"ISPOLN" ,"DATE"    ,""       ,""       ,""  ,.t.,.t.},;
+         {"Профессия"    ,.t.,"ISPOLN" ,"PROFES"  ,"PROF_ID","PROFES" ,"ID",.t.,.t.},;
+         {"Разряд"       ,.f.,"ISPOLN" ,"RAZR"    ,""       ,""       ,""  ,.t.,.t.},;
+         {"Человек"      ,.f.,"ISPOLN" ,"CHEL_N"  ,""       ,""       ,""  ,.t.,.t.},;        
+         {"Часов"        ,.f.,"ISPOLN" ,"CHAS"    ,""       ,""       ,""  ,.t.,.t.},;        
+         {"Сумма без НДС",.f.,"ISPOLN" ,"SUMM"    ,""       ,""       ,""  ,.f.,.t.};        
+        }
+
+public RDF_IWORK:=;
+        {;
+         {"Дата"        ,.f.,"IWORK"  ,"DATE"    ,""       ,""       ,""  ,.t.,.t.},;
+         {"Работа"      ,.t.,"IWORK"  ,"USLUGA"  ,"WORK_ID","ULIST"  ,"ID",.t.,.t.},;
+         {"К-во"        ,.f.,"IWORK"  ,"KOLVO"   ,""       ,""       ,""  ,.f.,.t.},;
+         {"ПРИМЕЧАНИЯ"  ,.f.,"IWORK"  ,"COMMENT" ,""       ,""       ,""  ,.f.,.t.};        
+        }
+
+public RDF_DOPL:=;
+        {;
+         {"Дата"        ,.f.,"DOPL"   ,"ODATE"   ,""       ,""       ,""  ,.t.,.t.},;
+         {"№ док-та."   ,.f.,"DOPL"   ,"OPL_NO"  ,""       ,""       ,""  ,.f.,.t.},;
+         {"№ счета"     ,.t.,"DOPL"   ,"SCH_NO"  ,"SCH_ID" ,"DSCHET" ,"ID",.f.,.f.},;
+         {"Проводка"    ,.f.,"DOPL"   ,"TPROV"   ,""       ,""       ,""  ,.t.,.t.},;
+         {"СУММА"       ,.f.,"DOPL"   ,"SUMMA"   ,""       ,""       ,""  ,.t.,.t.};        
+        }
+
+
+public RDF_SCHT:=;
+        {;
+         {"Дата"        ,.f.,"DSCHET" ,"SDATE"   ,""       ,""       ,""  ,.t.,.t.},;
+         {"№ док-та."   ,.f.,"DSCHET" ,"SCH_NO"  ,""       ,""       ,""  ,.t.,.t.},;
+         {"% НДС"       ,.f.,"DSCHET" ,"PRNDS"   ,""       ,""       ,""  ,.f.,.t.},;
+         {"СУММА"       ,.f.,"DSCHET" ,"SUMMA"   ,""       ,""       ,""  ,.f.,.f.},;        
+         {"Ф.СУММА"     ,.f.,"DSCHET" ,"FSUMMA"  ,""       ,""       ,""  ,.f.,.f.},;        
+         {"ОПЛАТА"      ,.f.,"DSCHET" ,"FOPL"    ,""       ,""       ,""  ,.f.,.f.},;        
+         {"САЛЬДО"      ,.f.,"DSCHET" ,"FSALD"   ,""       ,""       ,""  ,.f.,.f.};        
+        }
+
+
+public RDF_fSCHT:=;
+        {;
+         {"Дата"        ,.f.,"DSCHET" ,"SDATE"   ,""       ,""       ,""   ,.t.,.t.},;
+         {"№ док-та."   ,.f.,"DSCHET" ,"SCH_NO"  ,""       ,""       ,""   ,.t.,.t.},;
+         {"% НДС"       ,.f.,"DSCHET" ,"PRNDS"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"Ф.СУММА"     ,.f.,"DSCHET" ,"FSUMMA"  ,""       ,""       ,""   ,.t.,.t.},;        
+         {"ОПЛАТА"      ,.f.,"DSCHET" ,"FOPL"    ,""       ,""       ,""   ,.f.,.f.},;        
+         {"САЛЬДО"      ,.f.,"DSCHET" ,"FSALD"   ,""       ,""       ,""   ,.f.,.f.},;        
+         {"?"           ,.f.,"DSCHET" ,"sost"    ,""       ,""       ,""   ,.f.,.f.},;        
+         {"№ Док."      ,.t.,"DSCHET" ,"DOG_NO"  ,"DOG_ID" ,"PUDOG"  ,"ID" ,.f.,.f.},;        
+         {"Тип"         ,.t.,"DSCHET" ,"DT_CMNT" ,"SCH_TIP","DT"     ,"ID" ,.t.,.t.},;        
+         {"Услуга"      ,.t.,"DSCHET" ,"USLUGA"  ,"USL_ID" ,"ULIST"  ,"ID" ,.f.,.t.},;        
+         {"Материал"    ,.t.,"DSCHET" ,"MATERIAL","USL_ID" ,"MLIST"  ,"ID" ,.f.,.t.},;        
+         {"Примеч."     ,.f.,"DSCHET" ,"primech" ,""       ,""       ,""   ,.f.,.t.};        
+        }
+
+public RDF_ItrMark:=;
+        {;
+         {"?"           ,.f.,"ITRANS" ,"SCH_TMP1",""        ,""       ,""  ,.t.,.t.},;
+         {"Дата"        ,.f.,"ITRANS" ,"DATE"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"Транспорт"   ,.t.,"ITRANS" ,"TRANS"   ,"TRANs_ID","TRANS"  ,"ID",.f.,.f.},;
+         {"Цена"        ,.f.,"ITRANS" ,"CENA"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"Пр.час"      ,.f.,"ITRANS" ,"PCHAS"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"Пр.Сумма"    ,.f.,"ITRANS" ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.час"     ,.f.,"ITRANS" ,"CHAS"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма"   ,.f.,"ITRANS" ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-1",.f.,"ITRANS" ,"COMMENT1",""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-2",.f.,"ITRANS" ,"COMMENT2",""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-3",.f.,"ITRANS" ,"COMMENT3",""        ,""       ,""  ,.f.,.f.};
+        }
+
+
+public RDF_Itrans:=;
+        {;
+         {"Дата"        ,.f.,"ITRANS" ,"DATE"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Транспорт"   ,.t.,"ITRANS" ,"TRANS"   ,"TRANs_ID","TRANS"  ,"ID",.t.,.t.},;
+         {"ГРУЗОПЕР."   ,.f.,"ITRANS" ,"gp"      ,""        ,""       ,""  ,.f.,.t.},;
+         {"Цена"        ,.f.,"ITRANS" ,"CENA"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.час"      ,.f.,"ITRANS" ,"PCHAS"   ,""        ,""       ,""  ,.f.,.t.},;
+         {"Пр.Сумма"    ,.f.,"ITRANS" ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.час"     ,.f.,"ITRANS" ,"CHAS"    ,""        ,""       ,""  ,.f.,.t.},;
+         {"Фкт.Сумма"   ,.f.,"ITRANS" ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"Счет"        ,.t.,"ITRANS" ,"SCH_NO"  ,"SCH_ID"  ,"DSCHET" ,"ID",.f.,.f.},;        
+         {"Примечания-1",.f.,"ITRANS" ,"COMMENT1",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-2",.f.,"ITRANS" ,"COMMENT2",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-3",.f.,"ITRANS" ,"COMMENT3",""        ,""       ,""  ,.f.,.t.};
+        }
+
+
+public sRDF_Itrans:=;
+        {;
+         {"Дата"        ,.f.,"ITRANS" ,"DATE"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Транспорт"   ,.t.,"ITRANS" ,"TRANS"   ,"TRANs_ID","TRANS"  ,"ID",.t.,.t.},;
+         {"Цена без НДС",.f.,"ITRANS" ,"CENA"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.час"      ,.f.,"ITRANS" ,"PCHAS"   ,""        ,""       ,""  ,.f.,.t.},;
+         {"Пр.Сумма"    ,.f.,"ITRANS" ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.час"     ,.f.,"ITRANS" ,"CHAS"    ,""        ,""       ,""  ,.f.,.t.},;
+         {"Фкт.Сумма"   ,.f.,"ITRANS" ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"Счет"        ,.t.,"ITRANS" ,"SCH_NO"  ,"SCH_ID"  ,"DSCHET" ,"ID",.f.,.f.},;        
+         {"Примечания-1",.f.,"ITRANS" ,"COMMENT1",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-2",.f.,"ITRANS" ,"COMMENT2",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-3",.f.,"ITRANS" ,"COMMENT3",""        ,""       ,""  ,.f.,.t.};
+        }
+
+public RDF_Uslugi:=;
+        {;
+         {"Дата"        ,.f.,"MATS"   ,"DATE"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Услуга"      ,.t.,"MATS"   ,"USLUGA"  ,"MAT_ID"  ,"ULIST"  ,"ID",.t.,.t.},;
+         {"Цена"        ,.f.,"MATS"   ,"CENA"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.Кол-во"   ,.f.,"MATS"   ,"PKOLVO"  ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.Сумма"    ,.f.,"MATS"   ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Кол-во"  ,.f.,"MATS"   ,"KOLVO"   ,""        ,""       ,""  ,.f.,.t.},;
+         {"Фкт.Сумма"   ,.f.,"MATS"   ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"%НДС"        ,.f.,"MATS"   ,"PNDS"    ,""        ,""       ,""  ,.f.,.t.},;
+         {"ВИД НДС"     ,.t.,"MATS"   ,"VNDST"   ,"VNDS"    ,"VNDS"   ,"ID",.f.,.t.},;
+         {"Пр.Сумма+%"  ,.f.,"MATS"   ,"PSUMMAD" ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма+%" ,.f.,"MATS"   ,"SUMMAD"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Счет"        ,.t.,"MATS"   ,"SCH_NO"  ,"SCH_ID"  ,"DSCHET" ,"ID",.f.,.f.},;        
+         {"Примечания-1",.f.,"MATS"   ,"COMMENT1",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-2",.f.,"MATS"   ,"COMMENT2",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-3",.f.,"MATS"   ,"COMMENT3",""        ,""       ,""  ,.f.,.t.};
+        }
+
+
+public RDF_UslMark:=;
+        {;
+         {"?"           ,.f.,"MATS"   ,"SCH_TMP1",""        ,""       ,""  ,.t.,.t.},;
+         {"Дата"        ,.f.,"MATS"   ,"DATE"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"Услуга"      ,.t.,"MATS"   ,"USLUGA"  ,"MAT_ID"  ,"ULIST"  ,"ID",.f.,.f.},;
+         {"Цена"        ,.f.,"MATS"   ,"CENA"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"Пр.Кол-во"   ,.f.,"MATS"   ,"PKOLVO"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Пр.Сумма"    ,.f.,"MATS"   ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Кол-во"  ,.f.,"MATS"   ,"KOLVO"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма"   ,.f.,"MATS"   ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"%НДС"        ,.f.,"MATS"   ,"PNDS"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"ВИД НДС"     ,.t.,"MATS"   ,"VNDST"   ,"VNDS"    ,"VNDS"   ,"ID",.f.,.f.},;
+         {"Пр.Сумма+%"  ,.f.,"MATS"   ,"PSUMMAD" ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма+%" ,.f.,"MATS"   ,"SUMMAD"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-1",.f.,"MATS"   ,"COMMENT1",""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-2",.f.,"MATS"   ,"COMMENT2",""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-3",.f.,"MATS"   ,"COMMENT3",""        ,""       ,""  ,.f.,.f.};
+        }
+
+
+
+
+
+
+public RDF_MATER:=;
+        {;
+         {"Дата"        ,.f.,"MATS"   ,"DATE"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Материал"    ,.t.,"MATS"   ,"MATERIAL","MAT_ID"  ,"MLIST"  ,"ID",.t.,.t.},;
+         {"Цена"        ,.f.,"MATS"   ,"CENA"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.Кол-во"   ,.f.,"MATS"   ,"PKOLVO"  ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.Сумма"    ,.f.,"MATS"   ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Кол-во"  ,.f.,"MATS"   ,"KOLVO"   ,""        ,""       ,""  ,.f.,.t.},;
+         {"Фкт.Сумма"   ,.f.,"MATS"   ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"%НДС"        ,.f.,"MATS"   ,"PNDS"    ,""        ,""       ,""  ,.f.,.t.},;
+         {"ВИД НДС"     ,.t.,"MATS"   ,"VNDST"   ,"VNDS"    ,"VNDS"   ,"ID",.f.,.t.},;
+         {"Пр.Сумма+%"  ,.f.,"MATS"   ,"PSUMMAD" ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма+%" ,.f.,"MATS"   ,"SUMMAD"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Счет"        ,.t.,"MATS"   ,"SCH_NO"  ,"SCH_ID"  ,"DSCHET" ,"ID",.f.,.f.},;        
+         {"Примечания-1",.f.,"MATS"   ,"COMMENT1",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-2",.f.,"MATS"   ,"COMMENT2",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-3",.f.,"MATS"   ,"COMMENT3",""        ,""       ,""  ,.f.,.t.};
+        }
+
+
+public sRDF_MATER:=;
+        {;
+         {"Дата"        ,.f.,"MATS"   ,"DATE"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Материал"    ,.t.,"MATS"   ,"MATERIAL","MAT_ID"  ,"MLIST"  ,"ID",.t.,.t.},;
+         {"Цена"        ,.f.,"MATS"   ,"CENA"    ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.Кол-во"   ,.f.,"MATS"   ,"PKOLVO"  ,""        ,""       ,""  ,.t.,.t.},;
+         {"Пр.Сумма"    ,.f.,"MATS"   ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Кол-во"  ,.f.,"MATS"   ,"KOLVO"   ,""        ,""       ,""  ,.f.,.t.},;
+         {"Фкт.Сумма"   ,.f.,"MATS"   ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"%НДС"        ,.f.,"MATS"   ,"PNDS"    ,""        ,""       ,""  ,.f.,.t.},;
+         {"ВИД НДС"     ,.t.,"MATS"   ,"VNDST"   ,"VNDS"    ,"VNDS"   ,"ID",.f.,.f.},;
+         {"Пр.Сумма+%"  ,.f.,"MATS"   ,"PSUMMAD" ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма+%" ,.f.,"MATS"   ,"SUMMAD"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Счет"        ,.t.,"MATS"   ,"SCH_NO"  ,"SCH_ID"  ,"DSCHET" ,"ID",.f.,.f.},;        
+         {"Примечания-1",.f.,"MATS"   ,"COMMENT1",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-2",.f.,"MATS"   ,"COMMENT2",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-3",.f.,"MATS"   ,"COMMENT3",""        ,""       ,""  ,.f.,.t.};
+        }
+
+
+
+
+public RDF_MATERMark:=;
+        {;
+         {"?"           ,.f.,"MATS"   ,"SCH_TMP1",""        ,""       ,""  ,.t.,.t.},;
+         {"Дата"        ,.f.,"MATS"   ,"DATE"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"Маьериал"    ,.t.,"MATS"   ,"MATERIAL","MAT_ID"  ,"MLIST"  ,"ID",.f.,.f.},;
+         {"Цена"        ,.f.,"MATS"   ,"CENA"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"Пр.Кол-во"   ,.f.,"MATS"   ,"PKOLVO"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Пр.Сумма"    ,.f.,"MATS"   ,"PSUMMA"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Кол-во"  ,.f.,"MATS"   ,"KOLVO"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма"   ,.f.,"MATS"   ,"SUMMA"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"%НДС"        ,.f.,"MATS"   ,"PNDS"    ,""        ,""       ,""  ,.f.,.f.},;
+         {"ВИД НДС"     ,.t.,"MATS"   ,"VNDST"   ,"VNDS"    ,"VNDS"   ,"ID",.f.,.f.},;
+         {"Пр.Сумма+%"  ,.f.,"MATS"   ,"PSUMMAD" ,""        ,""       ,""  ,.f.,.f.},;
+         {"Фкт.Сумма+%" ,.f.,"MATS"   ,"SUMMAD"  ,""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-1",.f.,"MATS"   ,"COMMENT1",""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-2",.f.,"MATS"   ,"COMMENT2",""        ,""       ,""  ,.f.,.f.},;
+         {"Примечания-3",.f.,"MATS"   ,"COMMENT3",""        ,""       ,""  ,.f.,.f.};
+        }
+
+
+public RDF_SMETA:=;
+        {;
+         {"№ Дог."       ,.t.,"SMETA"  ,"DOG_NO"  ,"DOG_ID"  ,"PUDOG"  ,"ID",.f.,.f.},;
+         {"№ Счета"      ,.t.,"SMETA"  ,"SCH_NO"  ,"SCH_ID"  ,"DSCHET" ,"ID",.f.,.f.},;
+         {"Дата"         ,.f.,"SMETA"  ,"CDATE"   ,""        ,""       ,""  ,.f.,.t.},;
+         {"Заказчик"     ,.t.,"SMETA"  ,"ZAKAZCH" ,"ZAK_ID"  ,"ZAKAZCH","ID",.f.,.f.},;
+         {"Служба"       ,.t.,"SMETA"  ,"SLUJBA"  ,"SLUJ_ID" ,"SLUJBA" ,"ID",.f.,.t.},;
+         {"ЖЭУ"          ,.f.,"SMETA"  ,"JEU"     ,""        ,""       ,""  ,.f.,.t.},;
+         {"% отчисл."    ,.f.,"SMETA"  ,"OTCH_PR" ,""        ,""       ,""  ,.f.,.t.},;
+         {"% цехов.р."   ,.f.,"SMETA"  ,"CEH_PR"  ,""        ,""       ,""  ,.f.,.t.},;
+         {"Усл.стор.орг.",.f.,"SMETA"  ,"USO_SUM" ,""        ,""       ,""  ,.f.,.t.},;
+         {"% общ.э.р."   ,.f.,"SMETA"  ,"OBER_PR" ,""        ,""       ,""  ,.f.,.t.},;
+         {"% рентаб."    ,.f.,"SMETA"  ,"RENT_PR" ,""        ,""       ,""  ,.f.,.t.},;
+         {"% НДС"        ,.f.,"SMETA"  ,"NDS_PR"  ,""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-1" ,.f.,"SMETA"  ,"COMMENT1",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-2" ,.f.,"SMETA"  ,"COMMENT2",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-3" ,.f.,"SMETA"  ,"COMMENT3",""        ,""       ,""  ,.f.,.t.};
+        }
+
+
+
+
+public RDF_cSMETA:=;
+        {;
+         {"Наименование",.f.,"SMETA"  ,"COMMENT1",""        ,""       ,""  ,.f.,.t.},;
+         {"Дата"        ,.f.,"SMETA"  ,"CDATE"   ,""        ,""       ,""  ,.f.,.t.},;
+         {"Сумма"       ,.f.,"SMETA"  ,"VSEGO"   ,""        ,""       ,""  ,.f.,.f.},;
+         {"% отчисл."   ,.f.,"SMETA"  ,"OTCH_PR" ,""        ,""       ,""  ,.f.,.t.},;
+         {"% цехов.р."  ,.f.,"SMETA"  ,"CEH_PR"  ,""        ,""       ,""  ,.f.,.t.},;
+         {"Усл.стор.орг.",.f.,"SMETA"  ,"USO_SUM",""        ,""       ,""  ,.f.,.t.},;
+         {"% общ.э.р."  ,.f.,"SMETA"  ,"OBER_PR" ,""        ,""       ,""  ,.f.,.t.},;
+         {"% рентаб."   ,.f.,"SMETA"  ,"RENT_PR" ,""        ,""       ,""  ,.f.,.t.},;
+         {"% НДС"       ,.f.,"SMETA"  ,"NDS_PR"  ,""        ,""       ,""  ,.f.,.t.},;
+         {"Служба"      ,.t.,"SMETA"  ,"SLUJBA"  ,"SLUJ_ID" ,"SLUJBA" ,"ID",.f.,.t.},;
+         {"ЖЭУ"         ,.f.,"SMETA"  ,"JEU"     ,""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-2",.f.,"SMETA"  ,"COMMENT2",""        ,""       ,""  ,.f.,.t.},;
+         {"Примечания-3",.f.,"SMETA"  ,"COMMENT3",""        ,""       ,""  ,.f.,.t.};
+        }
+
+
+public RDF_SCHSTR:=;
+        {;
+         {"Наименов. 1 ",.f.,"SCHSTR" ,"NAME0"   ,""       ,""       ,""   ,.t.,.t.},;
+         {"Наименов. 2 ",.f.,"SCHSTR" ,"NAME1"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"Наименов. 3 ",.f.,"SCHSTR" ,"NAME2"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"Наименов. 4 ",.f.,"SCHSTR" ,"NAME3"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"Ед.Изм."     ,.t.,"SCHSTR" ,"EDIZM"   ,"EI_ID"  ,"EDIZM"  ,"ID" ,.f.,.t.},;
+         {"П.Кол-во"    ,.f.,"SCHSTR" ,"PKOLVO"  ,""       ,""       ,""   ,.f.,.t.},;
+         {"П.Цена"      ,.f.,"SCHSTR" ,"PCENA"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"Ф.Кол-во"    ,.f.,"SCHSTR" ,"KOLVO"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"Ф.Цена"      ,.f.,"SCHSTR" ,"CENA"    ,""       ,""       ,""   ,.f.,.t.},;
+         {"ВИД НДС"     ,.t.,"SCHSTR" ,"VNDST"   ,"VNDS"   ,"VNDS"   ,"ID" ,.f.,.t.},;
+         {"П.Стоим.б/н" ,.f.,"SCHSTR" ,"PSUMMA"  ,""       ,""       ,""   ,.f.,.t.},;
+         {"Стоим.б/н"   ,.f.,"SCHSTR" ,"SUMMA"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"В т.ч. акц." ,.f.,"SCHSTR" ,"VTCAKC"  ,""       ,""       ,""   ,.f.,.t.},;
+         {"П.В т.ч.акц.",.f.,"SCHSTR" ,"PVTCAKC" ,""       ,""       ,""   ,.f.,.t.},;
+         {"% НДС"       ,.f.,"SCHSTR" ,"PNDS"    ,""       ,""       ,""   ,.f.,.t.},;
+         {"П.СУММА НДС" ,.f.,"SCHSTR" ,"PSNDS"   ,""       ,""       ,""   ,.f.,.f.},;
+         {"СУММА НДС"   ,.f.,"SCHSTR" ,"SNDS"    ,""       ,""       ,""   ,.f.,.f.},;
+         {"П.СУММА+НДС" ,.f.,"SCHSTR" ,"PNSUMMA" ,""       ,""       ,""   ,.f.,.t.},;
+         {"СУММА+НДС"   ,.f.,"SCHSTR" ,"NSUMMA"  ,""       ,""       ,""   ,.f.,.t.};
+        }
+
+
+
+public RDF_RSCHT:=;
+        {;
+         {"Дата"        ,.f.,"DSCHET" ,"SDATE"   ,""       ,""       ,""   ,.t.,.t.},;
+         {"№ док-та."   ,.f.,"DSCHET" ,"SCH_NO"  ,""       ,""       ,""   ,.t.,.t.},;
+         {"% НДС"       ,.f.,"DSCHET" ,"PRNDS"   ,""       ,""       ,""   ,.f.,.t.},;
+         {"П.СУММА"     ,.f.,"DSCHET" ,"SUMMA"   ,""       ,""       ,""   ,.f.,.f.},;        
+         {"Ф.СУММА"     ,.f.,"DSCHET" ,"FSUMMA"  ,""       ,""       ,""   ,.f.,.f.},;        
+         {"ОПЛАТА"      ,.f.,"DSCHET" ,"FOPL"    ,""       ,""       ,""   ,.f.,.f.},;        
+         {"Ф.САЛЬДО"    ,.f.,"DSCHET" ,"FSALD"   ,""       ,""       ,""   ,.f.,.f.},;        
+         {"Тип"         ,.t.,"DSCHET" ,"DT_CMNT" ,"SCH_TIP","DT"     ,"ID" ,.t.,.t.},;        
+         {"Услуга"      ,.t.,"DSCHET" ,"USLUGA"  ,"USL_ID" ,"ULIST"  ,"ID" ,.f.,.t.},;        
+         {"Материал"    ,.t.,"DSCHET" ,"MATERIAL","USL_ID" ,"MLIST"  ,"ID" ,.f.,.t.},;        
+         {"Примеч."     ,.f.,"DSCHET" ,"primech" ,""       ,""       ,""   ,.f.,.t.};        
+        }
+
+public RDF_fSCHTr:=;
+        {;
+         {"Организация" ,.t.,"DSCHET" ,"ZAKAZCH" ,"ZAK_ID" ,"ZAKAZCH","ID" ,.f.,.f.},;
+         {"Дата"        ,.f.,"DSCHET" ,"SDATE"   ,""       ,""       ,""   ,.f.,.f.},;
+         {"№ док-та."   ,.f.,"DSCHET" ,"SCH_NO"  ,""       ,""       ,""   ,.f.,.f.},;
+         {"% НДС"       ,.f.,"DSCHET" ,"PRNDS"   ,""       ,""       ,""   ,.f.,.f.},;
+         {"Ф.СУММА"     ,.f.,"DSCHET" ,"FSUMMA"  ,""       ,""       ,""   ,.f.,.f.},;        
+         {"ОПЛАТА"      ,.f.,"DSCHET" ,"FOPL"    ,""       ,""       ,""   ,.f.,.f.},;        
+         {"САЛЬДО"      ,.f.,"DSCHET" ,"FSALD"   ,""       ,""       ,""   ,.f.,.f.},;        
+         {"?"           ,.f.,"DSCHET" ,"sost"    ,""       ,""       ,""   ,.f.,.f.},;        
+         {"№ Док."      ,.t.,"DSCHET" ,"DOG_NO"  ,"DOG_ID" ,"PUDOG"  ,"ID" ,.f.,.f.},;        
+         {"Тип"         ,.t.,"DSCHET" ,"DT_CMNT" ,"SCH_TIP","DT"     ,"ID" ,.f.,.f.},;        
+         {"Услуга"      ,.t.,"DSCHET" ,"USLUGA"  ,"USL_ID" ,"ULIST"  ,"ID" ,.f.,.f.},;        
+         {"Материал"    ,.t.,"DSCHET" ,"MATERIAL","USL_ID" ,"MLIST"  ,"ID" ,.f.,.f.},;        
+         {"Примеч."     ,.f.,"DSCHET" ,"primech" ,""       ,""       ,""   ,.f.,.f.};        
+        }
+

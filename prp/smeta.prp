@@ -1,0 +1,1173 @@
+
+retu
+
+
+
+func smet_calc()
+local orn:=pudog->(recno())
+local ofltr:=pudog->(dbfilter())
+sele pudog
+set filter to
+set order to 2
+go top
+seek id_zl9(-1)
+if !found()
+ mflockF(100,5)
+ append blank
+ repl dog_tip with 9, id with -1
+ unlock
+endif
+
+ed_smeta(-1,.t.)
+
+sele pudog
+set filter to &ofltr
+set order to 2
+go top
+goto orn
+retu
+
+
+func ed_smeta(d_id,calc_)
+local ocol:=setcolor("gr+/n*,w+/n,,,gr+/r")
+priv dg_id:=0,calc
+
+calc:=calc_
+dg_id:=d_id
+
+scrsave()
+if !my1show_scr(dbf_path+'\scr\','smeta.scr')
+ alert('Испорчен файл графического фона SMETA.SCR...')
+endif
+
+sele smeta
+set filter to smeta->dog_ID=DG_ID .and. smeta->id>0
+go top
+
+mShow(.t.)
+
+KErase("!")
+
+if !calc
+ nort({{"F2","СПР-НИКИ"},{"F3","ДАННЫЕ"},{"F5","СЧЕТ-Ф."},{"F6","ОПЛАТЫ"},{"F9","ПРИНТ."},{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+ set order to 2
+ rDBEdit(3,2,14,76,RDF_SMETA,"eds_func","│","▄",.t.)
+else
+ nort({{"F3","ДАННЫЕ"},{"F9","ПРИНТ."},{"INS","+"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+ set order to 2
+ rDBEdit(3,2,14,76,RDF_CSMETA,"ceds_func","│","▄",.t.)
+endif
+
+scrrest()
+KErase("!")
+Finish=.f.
+
+sele smeta
+set filter to
+set order to 2
+go top
+
+retu
+
+
+
+
+
+
+
+func EDS_FUNC()
+local lk:=lastkey(),ofltr:=smeta->(dbfilter())
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+   sele smeta
+   set filter to   
+   _id:=mNetAppBl(100,5)
+   mrlockF(100,5)
+   repl dog_id with dg_id, ddate with GetByID("PUDOG",DG_ID,"dog_dt"),;
+        zak_id with GetByID("PUDOG",DG_ID,"zak_id"),;
+        otch_pr with 35.9, ceh_pr with 70, ober_pr with 15,;
+        rent_pr with 15, nds_pr with 18
+   unlock
+   set filter to &ofltr
+   set order to 1
+   go top
+   seek ID_ZL9(_id)
+   set order to 2
+   rDBE_refresh:=.t.
+   KErase(chr(32))
+  endif
+
+
+ case lk=7 	//DEL
+  if alert("Удалить выделенную строку?;Смета от "+dtoc(CDATE)+;
+           ";;ВНИМАНИЕ! Будут так же удалены все записи;о транспорте, материалах и работах!",{"Н Е Т"," Д А "})=2
+   if alert("Удалить выделенную строку?;Смета от "+dtoc(CDATE)+;
+            ";;ВНИМАНИЕ! Будут так же удалены все записи;о транспорте, материалах и работах!;;"+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!"+;
+            ";;ВНИМАНИЕ! Будут так же удалены все записи;о транспорте, счетах и оплатах!",{"Н Е Т"," Д А "})=2
+    sele itrans
+    mflockF(100,5)
+    dele all for itrans->dog_id=smeta->dog_id .and. itrans->sm_id=smeta->id
+    unlock 
+    sele mats
+    mflockF(100,5)
+    dele all for mats->dog_id=smeta->dog_id .and. mats->sm_id=smeta->id
+    unlock 
+    sele iwork
+    mflockF(100,5)
+    dele all for iwork->sm_id=smeta->id
+    unlock 
+    sele ispoln
+    mflockF(100,5)
+    dele all for ispoln->sm_id=smeta->id
+    unlock 
+    if smeta->sch_id>0
+     sele dschet
+     mflockF(100,5)
+     dele all for dschet->id=smeta->sch_id
+     unlock 
+    endif
+    sele smeta
+    mflockF(100,5)
+    dele
+    unlock
+    rDBE_refresh:=.t.
+    KErase(chr(32))
+   endif
+  endif
+ 
+ case lk=-1	//F2
+  sprav()
+  KErase("!")
+  Finish=.f.
+
+ case lk=-2	//F3
+  smt_data()
+  mShow(.t.)
+  rDBE_refresh:=.t.
+  Finish=.f.
+  KErase("!")
+ 
+ case lk=13	//ENTER
+  rDBE_refresh:=.t.
+  Finish=.f.
+
+ case lk=-8	//F9
+  smt_prnt()
+  Finish=.f.
+  KErase("!")
+
+ case lk=-4	//F5
+  if alert('Выберите форму',{"СЧЕТ","СЧЕТ-ФАКТУРА"})=2
+   if lastkey()!=27 
+    smt_fschet()
+   endif
+  else
+   if lastkey()!=27 
+    smt_schet()
+   endif
+  endif
+  Finish=.f.
+  KErase("!")
+
+ case lk=-5	//F6
+  smt_opl()
+  Finish=.f.
+  KErase("!")
+
+ case lk=255
+  mShow(.t.)
+  Finish=.f.
+  KErase("!")
+
+ case lk=254	//cursor row changed
+  mShow(.f.)
+  Finish=.f.
+  KErase("!")
+
+endcase
+retu 
+
+
+
+
+
+
+
+
+
+
+
+
+func cEDS_FUNC()
+local lk:=lastkey(),ofltr:=smeta->(dbfilter())
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+   sele smeta
+   set filter to   
+   _id:=mNetAppBl(100,5)
+   mrlockF(100,5)
+   repl dog_id with dg_id, ddate with GetByID("PUDOG",DG_ID,"dog_dt"),;
+        zak_id with -1,;
+        otch_pr with 35.9, ceh_pr with 70, ober_pr with 15,;
+        rent_pr with 15, nds_pr with 18
+   unlock
+   set filter to &ofltr
+   set order to 1
+   go top
+   seek ID_ZL9(_id)
+   set order to 2
+   rDBE_refresh:=.t.
+   KErase(chr(32))
+  endif
+
+
+/*
+ case lk=7 	//DEL
+  if alert("Удалить выделенную строку?;Смета от "+dtoc(CDATE)+;
+           ";;ВНИМАНИЕ! Будут так же удалены все записи;о транспорте, материалах и работах!",{"Н Е Т"," Д А "})=2
+   if alert("Удалить выделенную строку?;Смета от "+dtoc(CDATE)+;
+            ";;ВНИМАНИЕ! Будут так же удалены все записи;о транспорте, материалах и работах!;;"+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!"+;
+            ";;ВНИМАНИЕ! Будут так же удалены все записи;о транспорте, счетах и оплатах!",{"Н Е Т"," Д А "})=2
+    sele itrans
+    mflockF(100,5)
+    dele all for itrans->dog_id=smeta->dog_id .and. itrans->sm_id=smeta->id
+    unlock 
+    sele mats
+    mflockF(100,5)
+    dele all for mats->dog_id=smeta->dog_id .and. mats->sm_id=smeta->id
+    unlock 
+    sele iwork
+    mflockF(100,5)
+    dele all for iwork->sm_id=smeta->id
+    unlock 
+    sele ispoln
+    mflockF(100,5)
+    dele all for ispoln->sm_id=smeta->id
+    unlock 
+    sele smeta
+    mflockF(100,5)
+    dele
+    unlock
+    rDBE_refresh:=.t.
+    KErase(chr(32))
+   endif
+  endif
+*/
+
+
+ case lk=-2	//F3
+  if smeta->id>0
+   smt_data()
+   mShow(.t.)
+   rDBE_refresh:=.t.
+  endif
+  Finish=.f.
+  KErase("!")
+ 
+ case lk=13	//ENTER
+  rDBE_refresh:=.t.
+  Finish=.f.
+
+ case lk=-8
+  smt_prnt()
+
+ case lk=255
+  mShow(.t.)
+  Finish=.f.
+  KErase("!")
+
+ case lk=254	//cursor row changed
+  mShow(.f.)
+  Finish=.f.
+  KErase("!")
+
+endcase
+retu 
+
+
+
+
+
+func mShow(Recount)
+local OC:=setcolor("bg+/n*,w+/n,,,rb+/n*")
+
+sele smeta
+if recount
+ mrlockf(100,5)
+ 
+ sele ISPOLN
+ sum chas, summ to smeta->RAB_CHAS,smeta->OSN_ZP for (ISPOLN->sm_ID=smeta->ID)
+
+ sele smeta
+ repl smeta->otch_sum with smeta->OSN_ZP/100*smeta->otch_pr
+ repl smeta->ceh_sum with smeta->OSN_ZP/100*smeta->ceh_pr
+ repl smeta->itog1 with smeta->OSN_ZP+smeta->otch_sum+smeta->ceh_sum
+
+ sele ITrans
+ sum chas, summa to smeta->trNS_CH, smeta->trNS_SUM;
+  for (ITRans->sm_ID=smeta->ID .and. itrans->dog_id=smeta->dog_id)
+ sele smeta
+
+ sele Mats    
+ set filter to 
+ sum summa to smeta->MATs_SUM for (mats->sm_ID=smeta->ID .and. mats->dog_id=smeta->dog_id)
+
+ sele smeta
+ repl smeta->itog1t with smeta->itog1+smeta->TRNS_SUM+smeta->MATs_SUM+smeta->USO_SUM,;
+      smeta->ober_sum with smeta->itog1t/100*smeta->ober_pr,;
+      smeta->itog2 with smeta->itog1t+smeta->ober_sum,;
+      smeta->rent_sum with smeta->itog2/100*smeta->rent_pr,;
+      smeta->itog3 with smeta->itog2+smeta->rent_sum,;
+      smeta->nds_sum with smeta->itog3/100*smeta->nds_pr,;
+      smeta->VSEGO with smeta->itog3+smeta->nds_sum
+ unlock
+endif
+
+@15,63 say smeta->RAB_CHAS 
+@15,26 say smeta->OSN_ZP 
+
+@16,18 say smeta->otch_pr
+@16,26 say smeta->otch_sum
+@16,46 say smeta->Mats_Sum
+@16,66 say smeta->USO_Sum
+
+@17,18 say smeta->ceh_pr
+@17,26 say smeta->ceh_sum
+@17,52 say smeta->trns_ch
+@17,63 say smeta->trns_sum
+
+@18,26 say smeta->itog1
+@18,48 say smeta->itog1t
+
+@19,18 say smeta->ober_pr
+@19,26 say smeta->ober_sum
+@19,48 say smeta->itog2
+
+@20,18 say smeta->rent_pr
+@20,26 say smeta->rent_sum
+@20,48 say smeta->itog3
+
+@21,18 say smeta->nds_pr
+@21,26 say smeta->nds_sum
+@21,57 say smeta->vsego
+setcolor(OC)
+retu
+
+
+
+
+
+
+func smt_data()
+local smt_dt:={;
+                  'Транспорт      ',;
+                  'Материалы      ',;
+                  'Исполнители    ',;
+                  'Описание работ '}
+
+local smt_funcs:={;
+                  'itr_smt()',;
+                  'mats_smt()',;
+                  'isp_smt()',;
+                  'iwrk_smt()'}
+local n,ocol:=setcolor("w+/n,n/w,,,r+/n")
+priv smt_id:=smeta->id
+
+scrsave()
+setcolor("w+/n,n/w,,,r+/n")
+ramka(9,30,14,50,"gr+/n")
+do while .t.
+ n=achoice(10,31,13,49,smt_dt,{.t.,.t.,.t.,.t.},,n)
+ finish:=.f.
+ if lastkey()=27
+  finish:=.t.
+  exit
+ endif
+ if n>0
+  eval(&("{ || "+smt_funcs[n]+"}"))
+  setcolor("w+/n,n/w,,,r+/n")
+ endif
+enddo
+scrrest()
+setcolor(ocol)
+
+retu
+
+
+
+
+
+
+
+
+///===============================================================
+
+
+func iwrk_smt()
+local ocol:=setcolor("gr+/b*,w+/b,,,gr+/n")
+local pdrn:=smeta->(recno())
+
+scrsave()
+
+ramka(2,1,22,77,"gr+/b*")
+nort({{"F2","СПРАВ-КИ"},{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+set order to 2
+
+sele iwork
+set filter to iwork->sm_id=smt_id
+go top
+rDBEdit(3,2,21,76,RDF_IWORK,"frde_iwrk","│","▄",.t.)
+set filter to
+
+sele smeta
+goto pdrn
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func frde_iwrk()
+local lk:=lastkey(),ofltr:=dbfilter(),_id
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+   sele iwork
+   set filter to   
+   _id:=mNetAppBl(100,5)
+   mrlockF(100,5)
+   repl sm_id with smt_id
+   unlock
+   set filter to &ofltr
+   set order to 1
+   go top
+   seek ID_ZL9(_id)
+   set order to 2
+   KErase(chr(32))
+  endif
+
+ case iwork->id>0 .and. lk=7	//DEL
+  if alert("Удалить выделенную строку?;"+;
+           alltrim(GetRelValue("iwork","work_id","ulist","id","usluga")),{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить выделенную строку?;"+;
+            alltrim(GetRelValue("iwork","work_id","ulist","id","usluga"))+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele iwork
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+ case lk=-1	//F2
+  sprav()
+
+ //Сообщение из родительской функции о том. что произошли изменения...
+ //Произвести перерасчёт "чего-то там", при необходимости...
+ //Что собственно тут и делается (ниже)...
+ case lk=255
+
+endcase
+retu
+
+
+
+
+
+
+
+
+
+
+///===============================================================
+
+
+func isp_smt()
+local ocol:=setcolor("gr+/b*,w+/b,,,gr+/n")
+local pdrn:=smeta->(recno())
+
+scrsave()
+
+ramka(2,1,22,77,"gr+/b*")
+nort({{"F2","СПРАВ-КИ"},{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+set order to 2
+
+sele ispoln
+set filter to ispoln->sm_id=smt_id
+go top
+rDBEdit(3,2,21,76,RDF_ISPOLN,"frde_ispln","│","▄",.t.)
+set filter to
+
+sele smeta
+goto pdrn
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func frde_ispln()
+local lk:=lastkey(),ofltr:=dbfilter(),_id
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+   sele ispoln
+   set filter to   
+   _id:=mNetAppBl(100,5)
+   mrlockF(100,5)
+   repl sm_id with smt_id
+   unlock
+   set filter to &ofltr
+   set order to 1
+   go top
+   seek ID_ZL9(_id)
+   set order to 2
+   KErase(chr(32))
+  endif
+
+ case ispoln->id>0 .and. lk=7	//DEL
+  if alert("Удалить выделенную строку?;"+;
+           alltrim(GetRelValue("ispoln","prof_id","profes","id","profes")),{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить выделенную строку?;"+;
+            alltrim(GetRelValue("ispoln","prof_id","profes","id","profes"))+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele ispoln
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+ case lk=-1	//F2
+  sprav()
+
+ //Сообщение из родительской функции о том. что произошли изменения...
+ //Произвести перерасчёт "чего-то там", при необходимости...
+ //Что собственно тут и делается (ниже)...
+ case lk=255
+  
+
+endcase
+retu
+
+
+
+
+
+
+
+
+
+func itr_smt()
+local ocol:=setcolor("w+/gr,w+/b,,,r+/r")
+local pdrn:=pudog->(recno())
+
+priv pd_id:=pudog->id
+
+scrsave()
+
+ramka(2,2,22,77,"gr+/gr")
+nort({{"F2","СПРАВ-КИ"},{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+set order to 2
+
+sele itrans
+set filter to &("dog_id="+astr(pd_id)+" .and. sm_id="+astr(smt_id))
+go top
+smt_show_itr_summs()
+rDBEdit(3,3,21,76,sRDF_Itrans,"sfrde_itr","│","▄",.t.)
+set filter to
+
+sele pudog
+goto pdrn
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func sfrde_itr()
+local lk:=lastkey(),ofltr:=dbfilter(),_id
+local _summa:=0,_psumma:=0
+local _summ:=0,_psumm:=0,orn,orn1,nrows, s_id
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+   sele itrans
+   set filter to   
+   _id:=mNetAppBl(100,5)
+   mrlockF(100,5)
+   repl dog_id with pd_id,sm_id with smt_id
+   unlock
+   set filter to &ofltr
+   set order to 1
+   go top
+   seek ID_ZL9(_id)
+   set order to 2
+   KErase(chr(32))
+  endif
+
+ case itrans->id>0 .and. lk=7	//DEL
+  if alert("Удалить выделенную строку?;"+;
+           alltrim(GetRelValue("itrans","trans_id","trans","id","trans")),{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить выделенную строку?;"+;
+            alltrim(GetRelValue("itrans","trans_id","trans","id","trans"))+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele itrans
+    s_id:=itrans->sch_id
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+ case lk=-1	//F2
+  sprav()
+
+ //Сообщение из родительской функции о том. что произошли изменения...
+ //Произвести перерасчёт "чего-то там", при необходимости...
+ //Что собственно тут и делается (ниже)...
+ case lk=255
+  _summa=itrans->cena*itrans->chas
+  _psumma=itrans->cena*itrans->pchas
+  if _summa!=itrans->summa .or. _psumma!=itrans->psumma
+   sele itrans
+   mrlockf(100,5)
+   repl itrans->summa with _summa, itrans->psumma with _psumma
+   unlock
+   smt_show_itr_summs()
+   rDBE_refresh:=.t. 
+  endif  
+
+endcase
+retu
+
+
+
+func smt_show_itr_summs()
+local ocol:=setcolor("gr+/gr"),ofltr
+local _summ:=0,_psumm:=0,orn,orn1,nrows, _sch_id, _summa, _psumma
+
+sele itrans
+orn:=recno()
+_sch_id=itrans->sch_id
+go top
+sum itrans->summa*0+1, itrans->summa, itrans->psumma to nrows, _summ, _psumm
+goto orn
+
+@22,49 say "["+transform(nrows,"9999")+":"+transform(_summ,"9999999.99")+"|"+transform(_psumm,"9999999.99")+"]"
+
+setcolor(ocol)
+retu
+
+
+
+
+
+
+
+
+
+
+
+func mats_smt()
+local ocol:=setcolor("w+/gr,w+/b,,,r+2/r")
+local pdrn:=pudog->(recno())
+
+priv pd_id:=pudog->id
+
+scrsave()
+
+ramka(2,2,22,77,"gr+/gr")
+nort({{"F2","СПРАВ-КИ"},{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+set order to 2
+
+sele mats
+set filter to &("dog_id="+astr(pd_id)+" .and. sm_id="+astr(smt_id))
+go top
+smt_show_mats_summs()
+rDBEdit(3,3,21,76,sRDF_mater,"sfrde_mats","│","▄",.t.)
+set filter to
+
+sele pudog
+goto pdrn
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func sfrde_mats()
+local lk:=lastkey(),ofltr:=dbfilter(),_id,orn:=recno()
+local _summa:=0,_psumma:=0
+local _summ:=0,_psumm:=0,orn1,nrows, s_id
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+   sele mats
+   set filter to   
+   _id:=mNetAppBl(100,5)
+   mrlockF(100,5)
+   repl dog_id with pd_id, pNDS with 18, vnds with 0, sm_id with smt_id
+   unlock
+   set filter to &ofltr
+   set order to 1
+   go top
+   seek ID_ZL9(_id)
+   set order to 2
+   KErase(chr(32))
+  endif
+
+ case mats->id>0 .and. lk=7	//DEL
+  if alert("Удалить выделенную строку?;"+;
+           alltrim(GetRelValue("mats","mat_id","mlist","id","material")),{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить выделенную строку?;"+;
+            alltrim(GetRelValue("mats","mat_id","mlist","id","material"))+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele mats
+    s_id:=mats->sch_id
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+ case lk=-1	//F2
+  sprav()
+
+ //Сообщение из родительской функции о том. что произошли изменения...
+ //Произвести перерасчёт "чего-то там", при необходимости...
+ //Что собственно тут и делается (ниже)...
+ case lk=255
+   _summa=mats->cena*mats->kolvo
+   _psumma=mats->cena*mats->pkolvo
+   _nds=mats->pnds
+  if _summa!=mats->summa .or. _psumma!=mats->psumma
+   sele mats
+   mrlockf(100,5)
+   repl mats->summa with _summa, mats->psumma with _psumma,;
+        mats->nds with _summa/(100+iif(mats->vnds=0,_nds,0))*_nds,;
+        mats->nds_p with _psumma/(100+iif(mats->vnds=0,_nds,0))*_nds,;
+        mats->summad with _summa+iif(mats->vnds=0,mats->nds,0),;
+        mats->psummad with _psumma+iif(mats->vnds=0,mats->nds_p,0)
+   unlock
+   smt_show_mats_summs()
+   rDBE_refresh:=.t. 
+  endif  
+
+endcase
+retu
+
+
+
+func smt_show_mats_summs()
+local ocol:=setcolor("gr+/gr"),ofltr
+local _summ:=0,_psumm:=0,orn,orn1,nrows, _sch_id, _summa, _psumma
+
+sele mats
+orn:=recno()
+_sch_id=mats->sch_id
+go top
+sum mats->summa*0+1, mats->summad, mats->psummad to nrows, _summ, _psumm
+goto orn
+
+@22,49 say "["+transform(nrows,"9999")+":"+transform(_summ,"9999999.99")+"|"+transform(_psumm,"9999999.99")+"]"
+
+setcolor(ocol)
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+//******************************************************************************
+
+
+
+
+func smt_schet()
+local ofltr:=dschet->(dbfilter()), opos:=dschet->(recno())
+local n,_sch_no:=-1,_sdate:=date(),crt_new_schet:=.f.,atemp:={}
+priv stroki:={}
+
+if smeta->sch_id>=1
+ sele dschet
+ set filter to
+ set order to 1
+ go top
+ seek ID_ZL9(smeta->sch_id)
+ set order to 2
+ if !found()
+  crt_new_schet:=.t.
+ else
+  sele dschet
+  mrlockF(100,5)
+  repl cdate with date(), fsumma with smeta->vsego,;
+       summa with smeta->vsego, fsald with smeta->vsego-dschet->fopl
+  unlock
+ endif
+else
+ crt_new_schet:=.t.
+endif
+
+if crt_new_schet
+ _sdate:=VarEdit("Дата счета",_sdate,.t.)
+ sele dschet
+ _sch_no:=findmschnum()+1
+ set filter to
+ _id:=mNetAppBl(100,5)
+ sele smeta
+ mrlockF(100,5)
+ repl smeta->sch_id with _id 
+ unlock
+ sele dschet
+ mrlockF(100,5)
+ repl dog_id with pudog->id, PRNDS with smeta->NDS_PR,;
+      sm_id with smeta->id, sch_tip with 1,;
+      zak_id with pudog->zak_id, sch_no with _sch_no,;
+      cdate with date(), sdate with _sdate, fsumma with smeta->vsego,;
+      summa with smeta->vsego, fsald with smeta->vsego
+ unlock
+ set order to 2
+endif
+
+aadd(atemp,'Услуги с-но дог. №'+alltrim(pudog->dog_no)+' от '+dtoc(pudog->dog_dt)+' г. и сметы от '+dtoc(smeta->ddate))
+aadd(atemp,replicate(" ",30))
+aadd(stroki,a2a(VarEdit("Предмет счёта",atemp),30))
+
+aadd(stroki,{"Основная зарплата"    ," руб ",0             ,0,smeta->osn_zp  *1.000})
+aadd(stroki,{"Социальные отчисления","  %  ",smeta->otch_pr,0,smeta->otch_sum*1.000})
+aadd(stroki,{"Цеховые расходы"      ,"  %  ",smeta->ceh_pr ,0,smeta->ceh_sum *1.000})
+aadd(stroki,{"Транспортные расходы" ," м/ч ",smeta->trns_ch,0,smeta->trns_sum*1.000})
+aadd(stroki,{"Материалы"            ," руб ",0             ,0,smeta->mats_sum*1.000})
+aadd(stroki,{"Общеэкспл.расходы"    ,"  %  ",smeta->ober_pr,0,smeta->ober_sum*1.000})
+aadd(stroki,{"Рентабельность"       ,"  %  ",smeta->rent_pr,0,smeta->rent_sum*1.000})
+
+schetprint(.f.) 
+
+KErase(chr(32))
+
+retu
+
+
+
+
+
+
+
+func smt_fschet()
+local ofltr:=dschet->(dbfilter()), opos:=dschet->(recno())
+local n,_sch_no:=-1,_sdate:=date(),crt_new_schet:=.f.,atemp:={}
+priv stroki:={}
+
+if smeta->sch_id>=1
+ sele dschet
+ set filter to
+ set order to 1
+ go top
+ seek ID_ZL9(smeta->sch_id)
+ set order to 2
+ if !found()
+  crt_new_schet:=.t.
+ else
+  sele dschet
+  mrlockF(100,5)
+  repl cdate with date(), fsumma with smeta->vsego, summa with smeta->vsego,;
+       fsald with smeta->vsego-dschet->fopl
+  unlock
+ endif
+else
+ crt_new_schet:=.t.
+endif
+
+if crt_new_schet
+ _sdate:=VarEdit("Дата счета-фактуры",_sdate,.t.)
+ sele dschet
+ _sch_no:=findmschnum()+1
+ set filter to
+ _id:=mNetAppBl(100,5)
+ sele smeta
+ mrlockF(100,5)
+ repl smeta->sch_id with _id 
+ unlock
+ sele dschet
+ mrlockF(100,5)
+ repl dog_id with pudog->id, PRNDS with smeta->NDS_PR,;
+      sm_id with smeta->id, sch_tip with 1,;
+      zak_id with pudog->zak_id, sch_no with _sch_no,;
+      cdate with date(), sdate with _sdate, fsumma with smeta->vsego,;
+      summa with smeta->vsego, fsald with smeta->vsego
+ unlock
+ set order to 2
+endif
+
+aadd(atemp,'Услуги с-но дог. №'+alltrim(pudog->dog_no)+' от '+dtoc(pudog->dog_dt)+' г. и сметы от '+dtoc(smeta->ddate))
+aadd(atemp,replicate(" ",30))
+aadd(stroki,a2a(VarEdit("Предмет счёта",atemp),30))
+
+aadd(stroki,{"Основная зарплата"    ," руб ",0             ,0,smeta->osn_zp  *1.000,smeta->NDS_PR})
+aadd(stroki,{"Социальные отчисления","  %  ",smeta->otch_pr,0,smeta->otch_sum*1.000,smeta->NDS_PR})
+aadd(stroki,{"Цеховые расходы"      ,"  %  ",smeta->ceh_pr ,0,smeta->ceh_sum *1.000,smeta->NDS_PR})
+aadd(stroki,{"Транспортные расходы" ," м/ч ",smeta->trns_ch,0,smeta->trns_sum*1.000,smeta->NDS_PR})
+aadd(stroki,{"Материалы"            ," руб ",0             ,0,smeta->mats_sum*1.000,smeta->NDS_PR})
+aadd(stroki,{"Общеэкспл.расходы"    ,"  %  ",smeta->ober_pr,0,smeta->ober_sum*1.000,smeta->NDS_PR})
+aadd(stroki,{"Рентабельность"       ,"  %  ",smeta->rent_pr,0,smeta->rent_sum*1.000,smeta->NDS_PR})
+
+fschetprint(.f.) 
+
+KErase(chr(32))
+
+retu
+
+
+
+
+
+
+func smt_opl()
+local ocol:=setcolor("w+/g,w+/b,,,gr+/g")
+priv dschet_id:=smeta->sch_id
+
+sele dschet
+set filter to
+set order to 1
+go top
+seek ID_ZL9(smeta->sch_id)
+set order to 2
+if !found()
+ alert('Сначала нужно создать счет!')
+ retu
+endif
+
+scrsave()
+
+ramka(2,2,22,77,"g+/g")
+nort({{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+
+sele dopl
+set filter to &("sch_id="+astr(dschet_id)+" .and. !deleted()")
+set order to 2
+go top
+
+dopl_show()
+
+KErase(chr(255))
+rDBEdit(3,3,21,76,RDF_DOPL,"fsmt_opl","│","▄",.t.)
+set filter to
+
+sele dschet
+set order to 2
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func fsmt_opl()
+local lk:=lastkey(),ofltr:=dbfilter(),_id,orn
+local n_smt,nrows,_summa,_psumma,_sch_no:=-1
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+    sele dopl
+    ofltr=dbfilter()
+    set filter to
+    _id=mNetAppBl(100,5)
+    mrlockf(100,5)
+    repl dopl->sch_id with dschet_id,dopl->cdate with date(),dopl->odate with date()
+    unlock
+    set filter to &ofltr
+    set order to 1
+    go top
+    seek ID_ZL9(_id)
+    set order to 2
+    rDBE_refresh:=.t.
+    KErase(chr(32))
+
+ case dopl->id>0 .and. lk=7	//DEL
+  if alert("Удалить проводку №"+astr(dopl->opl_no)+;
+           " от "+dtoc(dopl->odate)+"г. сумма "+;
+           transform(dopl->summa,"9999999.99")+"руб.",{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить проводку №"+astr(dopl->opl_no)+;
+           " от "+dtoc(dopl->odate)+"г. сумма "+;
+           transform(dopl->summa,"9999999.99")+"руб."+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele dopl
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+ //Сообщение из родительской функции о том. что произошли изменения...
+ //Произвести перерасчёт "чего-то там", при необходимости...
+ //Что собственно тут и делается (ниже)...
+ case lk=255
+  dopl_show()  
+
+endcase
+retu
+
+
+
+
+func smt_prnt()
+local strs:={},s,s1,i
+
+s:="Калькуляция от "+dtoc(smeta->cdate)+" на услуги"
+s1:="согласно дог. №"+astr(GetByID("pudog",smeta->dog_id,"dog_no"))+" от "+;
+   dtoc(GetByID("pudog",smeta->dog_id,"dog_dt"))
+aadd(strs,LeftMarg(4)+SetPrnCPI(10)+SetPrnLPI(4))
+aadd(strs," ")
+aadd(strs," ")
+aadd(strs,strcent(s,60))
+aadd(strs,strcent(s1,60))
+aadd(strs," ")
+aadd(strs," ")
+aadd(strs," ")
+aadd(strs,"     Основная зарплата :                    "+transform(smeta->osn_zp,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     Социальные отчисления "+transform(smeta->otch_pr,"99.99")+"% :         "+transform(smeta->otch_sum,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     Цеховые расходы "+transform(smeta->ceh_pr,"99.99")+"% :               "+transform(smeta->ceh_sum,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     Транспортные расходы "+transform(smeta->trns_ch,"999.99")+" м/ч :      "+transform(smeta->trns_sum,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     Материалы :                            "+transform(smeta->mats_sum,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     Общеэксплуатационные расходы "+transform(smeta->ober_pr,"99.99")+"% :  "+transform(smeta->ober_sum,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     Рентабельность "+transform(smeta->rent_pr,"99.99")+"% :                "+transform(smeta->rent_sum,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     Сумма всего (без НДС) :                "+transform(smeta->itog3,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     НДС "+transform(smeta->nds_pr,"99.99")+"% :                           "+transform(smeta->nds_sum,"999999999.99"))
+aadd(strs," ")
+aadd(strs,"     ВСЕГО :                                "+transform(smeta->VSEGO,"999999999.99"))
+aadd(strs," ")
+aadd(strs," ")
+aadd(strs," ")
+aadd(strs,strcent("Бухгалтер: __________________",60)+chr(12))
+
+TextView(0,0,79,24,"gr+/b",strs)
+
+retu

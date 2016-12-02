@@ -1,0 +1,1990 @@
+
+retu
+
+
+func trns_svod()
+local ofltr:=dschet->(dbfilter()),opos:=dschet->(recno())
+local j,ocol
+
+priv header1:='                                        |&dD     Входящее сальдо     |              Начисление              |         Оплата          |    Исходящее сальдо     &d@'
+priv header2:='Потребитель                             │    Дебит   |   Кредит   |   Сумма    |    +НДС    |    ВСЕГО   |    Сумма   |в т.ч. НДС  |    Дебит   |   Кредит   ',;
+     divisor:='────────────────────────────────────────+────────────+────────────+────────────+────────────+────────────+────────────+────────────+────────────+────────────'
+priv etdays,edate
+priv opl:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},nfltr:=0
+priv oplnds20:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv oplnds18:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv data:={}
+priv sums:={}
+priv tsums:={0,0,0,0,0,0,0,0,0}
+priv sayedstrs:=0,allstrs:={}
+
+edate=date()
+edate=VarEdit("Введите дату",edate)
+if lastkey()=27
+ retu
+endif
+etdays=tot_days(edate)
+
+//1 число следующего месяца
+
+
+ocol:=setcolor("gr+/n,w+/n,,,gr+/b")
+scrsave()
+cls
+if B_TMP_CRT("svod")
+ scrrest()
+ scrsave()
+ sele svod
+
+ sele dschet
+ set order to 2
+ set filter to &("fsumma!=0 .and. tot_days(sdate)<"+astr(etdays)+" .and. sch_tip=2 .and. !VRUCHN")
+ go top
+ count to nn
+ go top
+  
+ if nn>0
+  sele dopl
+  set order to 2
+
+  svod_trns(nn)
+
+  aadd(allstrs,strcent("Накопительная ведомость транспортных услуг",157))
+  aadd(allstrs,strcent("оказанных юридическим лицам по состоянию на "+dtoc(edate),157))
+  aadd(allstrs," ")
+
+  aadd(allstrs,divisor)
+  aadd(allstrs,header1)
+  aadd(allstrs,header2)
+  aadd(allstrs,divisor)
+  for j:=1 to len(data)
+   aadd(allstrs,data[j])
+  endfor
+  aadd(allstrs,divisor)
+  aadd(allstrs,svod_str_t("Всего по транспортным услугам",sums[1],sums[2],sums[3],sums[4],sums[5],sums[6],sums[7],sums[8],sums[9]))
+  aadd(allstrs,divisor)
+  aadd(allstrs," ")
+ 
+ endif
+
+ sele dschet
+ set filter to &ofltr
+ go top
+ goto opos
+
+ sele svod
+ use
+ TextView(0,0,79,24,"gr+/b",allstrs)
+endif
+scrrest()
+setcolor(ocol)
+
+retu
+
+
+
+
+
+
+
+func svod_trns(nn)
+local summ:=0,opl:=0,usl_:='',nn1:=0,i,n1,n2
+local azkz:={},dta:={},f,nnn
+
+priv provodki:=""
+
+sele svod
+zap
+
+data:={}
+sums:={0,0,0,0,0,0,0,0,0}
+
+sele dschet
+go top
+//count to nn
+
+showprogress(60,0,nn,.t.)
+
+//go top
+do while !eof()
+ nn1:=nn1+1
+
+ showprogress(60,nn1,nn,.f.)
+
+  sele zakazch
+  set order to 1
+  go top
+  seek id_zl9(dschet->zak_id)
+  set order to 2
+  usl:="Транспортные"
+
+if tot_days(dschet->sdate)>=tot_days(pm_dmy(edate))		//Начисление
+ opl:=sumopl(dschet->id,pm_dmy(edate),edate,.f.)
+ summ:=dschet->fsumma
+ summ1:=summ-opl
+ if summ!=0
+  sumopl(dschet->id,pm_dmy(edate),edate,.t.)
+  sele svod
+  append blank
+  repl svod->sch_no with dschet->sch_no,;
+       svod->sch_dt with dschet->sdate,;
+       svod->zakazch with zakazch->zakazch,;
+       svod->usluga with usl,;
+       svod->vhs_deb with 0,;
+       svod->vhs_kr with 0,;
+       svod->nsumma with summ/(100+dschet->prnds)*100,;
+       svod->nsnds with summ/(100+dschet->prnds)*dschet->prnds,;
+       svod->nsvsego with summ,;
+       svod->oplvsego with opl,;
+       svod->ovtcnds with opl/(100+dschet->prnds)*dschet->prnds,;
+       svod->iss_deb with iif(summ1>0,summ1,0),;
+       svod->iss_kred with iif(summ1<0,summ1,0),;
+       svod->zak_id with zakazch->id
+  sele dschet
+ endif
+else								//Вх. сальдо
+ opl:=sumopl(dschet->id,pm_dmy(edate),edate,.f.)
+ summ:=dschet->fsumma-sumopl(dschet->id,ctod('01/01/95'),pm_dmy(edate),.f.)
+ summ1:=summ-opl
+ if summ!=0
+  sumopl(dschet->id,pm_dmy(edate),edate,.t.)
+  sele svod
+  append blank
+  repl svod->sch_no with dschet->sch_no,;
+       svod->sch_dt with dschet->sdate,;
+       svod->zakazch with zakazch->zakazch,;
+       svod->usluga with usl,;
+       svod->vhs_deb with iif(summ>0,summ,0),;
+       svod->vhs_kr with iif(summ<0,summ,0),;
+       svod->nsumma with 0,;
+       svod->nsnds with 0,;
+       svod->nsvsego with 0,;
+       svod->oplvsego with opl,;
+       svod->ovtcnds with opl/(100+dschet->prnds)*dschet->prnds,;
+       svod->iss_deb with iif(summ1>0,summ1,0),;
+       svod->iss_kred with iif(summ1<0,summ1,0),;
+       svod->zak_id with zakazch->id
+  sele dschet
+ endif
+endif
+sele dschet
+skip
+enddo
+
+sele svod
+set order to 1
+go top
+do while !eof()
+ if ascan(azkz,zak_id)<1
+  aadd(azkz,zak_id)
+ endif
+ skip
+enddo
+
+set filter to
+
+showprogress(60,0,len(azkz),.t.)
+for i:=1 to len(azkz)
+ f:="svod->zak_id="+astr(azkz[i])
+ set filter to &f
+ dta:={0,0,0,0,0,0,0,0,0}
+ showprogress(60,i,len(azkz),.f.)
+
+ sum svod->vhs_deb,svod->vhs_kr,svod->nsumma,;
+     svod->nsnds,svod->nsvsego,svod->oplvsego,svod->ovtcnds,;
+     svod->iss_deb,svod->iss_kred to ;
+     dta[1],dta[2],dta[3],dta[4],dta[5],dta[6],dta[7],dta[8],dta[9]
+
+ if abs(dta[1])>abs(dta[2])
+  dta[1]:=abs(dta[1])-abs(dta[2])
+  dta[2]:=0
+ else
+  dta[1]:=0
+  dta[2]:=abs(dta[2])-abs(dta[1])
+ endif
+
+ nnn:=dta[1]-dta[2]+dta[5]-dta[6]
+
+ if nnn>0
+  dta[8]:=nnn
+  dta[9]:=0
+ else
+  dta[8]:=0
+  dta[9]:=nnn
+ endif
+
+
+ aadd(data,svod_str_t(getbyid("zakazch",azkz[i],"zakazch"),dta[1],dta[2],dta[3],dta[4],dta[5],dta[6],dta[7],dta[8],dta[9]))
+endfor
+
+sele dschet
+
+retu
+
+
+
+
+
+
+
+
+
+func svod_str_t(potr,vh_deb,vh_kred,nach,nach_nds,nach_vsego,opl,opl_vtcnds,ish_deb,ish_kred)
+local sss:=''
+sss:=left(alltrim(potr)+replicate(" ",40),40)+"│"+;
+     spacezero(abs(vh_deb),"999999999.99")+"│"+;     
+     spacezero(abs(vh_kred),"999999999.99")+"│"+;     
+     spacezero(nach,"999999999.99")+"│"+;     
+     spacezero(nach_nds,"999999999.99")+"│"+;     
+     spacezero(nach_Vsego,"999999999.99")+"│"+;     
+     spacezero(opl,"999999999.99")+"│"+;     
+     spacezero(opl_vtcnds,"999999999.99")+"│"+;     
+     spacezero(abs(ish_deb),"999999999.99")+"│"+;     
+     spacezero(abs(ish_kred),"999999999.99")
+
+     sums[1]:=sums[1]+vh_deb
+     sums[2]:=sums[2]+vh_kred
+     sums[3]:=sums[3]+nach
+     sums[4]:=sums[4]+nach_nds
+     sums[5]:=sums[5]+nach_vsego
+     sums[6]:=sums[6]+opl
+     sums[7]:=sums[7]+opl_vtcnds
+     sums[8]:=sums[8]+ish_deb
+     sums[9]:=sums[9]+ish_kred
+retu sss
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//********************
+
+
+
+func SJ_SVOD()
+priv smtsums:={}
+priv smstrs:={}
+priv sjsdate:=date()
+priv smhd1:='                    |&dD     Входящее сальдо     |              Начисление              |         Оплата          |    Исходящее сальдо     &d@'
+priv smhdr:='Вид услуг           |    Дебит   |   Кредит   |   Сумма    |    +НДС    |    ВСЕГО   |    Сумма   |в т.ч. НДС  |    Дебит   |   Кредит   ',;
+     smdiv:='────────────────────+────────────+────────────+────────────+────────────+────────────+────────────+────────────+────────────+────────────',;
+     smemp:='                    |            |            |            |            |            |            |            |            |            '  
+
+
+crt_svod(.t.)
+
+if lastkey()!=27
+ crt_svodm(.t.)
+ TextView(0,0,79,24,"gr+/b",smstrs)
+endif
+
+retu
+
+
+
+func crt_svod(small)
+local ocol:=setcolor("w+/n")
+//local svdate:=date()
+priv sml:=.f.
+
+if small!=NIL .and. small
+ sml:=.t.
+endif
+
+scrsave()
+cls
+if B_TMP_CRT("svod")
+ scrrest()
+ scrsave()
+ sele svod
+
+ svod_otch()
+
+ sele svod
+ use
+endif
+scrrest()
+setcolor(ocol)
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+func svod_otch()
+local fltrs1:={},fltrs2:={},fltrs3:={},aaa:={}
+priv opl:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},nfltr:=0
+priv oplnds20:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv oplnds18:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv data:={}
+priv sums:={}
+priv tsums:={0,0,0,0,0,0,0,0,0}
+priv sayedstrs:=0,allstrs:={}
+priv ;
+divisor:='──────+──────────+────────────────────────────────────────+──────────────────────────────+─────────────────────────+──────────────────────────────────────+─────────────────────────+────────────+────────────',;
+header1:='      |          |                                        |                              |&dD     Входящее сальдо     |              Начисление              |          Оплата         |     Исходящее сальдо    &d@',;
+header2:='№ счт.│Дата счета│Потребитель                             │Вид услуги                    │Дебит       │Кредит      │Сумма       │НДС         │Всего       │Всего       │В т.ч. НДС  │Дебит       │Кредит      '
+
+fltrs1:={}
+fltrs2:={}
+fltrs3:={}
+for n=1 to 25
+ aadd(fltrs1,0)
+ aadd(fltrs2,{})
+ aadd(fltrs3,'')
+endfor
+sele ulist
+set filter to alone
+go top
+do while !eof()
+ if groupto=0
+  if ascan(fltrs1,ulist->id)=0
+   nfltr=nfltr+1
+   fltrs1[nfltr]:=ulist->id
+   aadd(fltrs2[nfltr],ulist->id)
+  endif
+ else
+  n=ascan(fltrs1,ulist->groupto)
+  if n<=0
+   nfltr=nfltr+1
+   fltrs1[nfltr]:=ulist->groupto
+   aadd(fltrs2[nfltr],ulist->id)
+   aadd(fltrs2[nfltr],ulist->groupto)
+  else
+   aadd(fltrs2[n],ulist->id)
+  endif
+ endif  
+ skip
+enddo
+
+sele ulist
+for i=1 to nfltr
+ set filter to &("ulist->id="+astr(fltrs1[i]))
+ go top
+ fltrs3[i]:=alltrim(ulist->usluga)
+endfor
+set filter to
+go top
+
+fltrs1:={}
+aaa:={}
+for n=1 to nfltr
+ for i=1 to len(fltrs2[n])
+  aadd(fltrs1,fltrs2[n,i])
+ endfor
+ aadd(aaa,fltrs2[n])
+endfor
+nfltr:=nfltr+1
+fltrs3[nfltr]:="Прочие"
+aadd(aaa,fltrs1)
+
+fltrs:={}
+aadd(fltrs,aaa)
+aadd(fltrs,fltrs3)
+
+sums={}
+for i=1 to nfltr+1
+ aadd(sums,{0,0,0,0,0,0,0,0,0})
+ aadd(data,{})
+endfor
+
+
+sele dschet
+
+edate=date()
+edate=VarEdit("Введите дату",edate)
+
+if lastkey()=27
+ retu
+endif
+
+sjsdate:=edate
+
+sele dopl
+set order to 2
+
+sele dschet
+set order to 2
+
+svod_max(edate)
+
+if !sml
+ aadd(allstrs,strcent("Накопительная ведомость платных услуг",204))
+ aadd(allstrs,strcent("оказанных юридическим лицам по состоянию на "+dtoc(edate),204))
+ aadd(allstrs," ")
+else
+ aadd(smstrs,strcent("Сводный отчет по реализации услуг организациям ",137))
+ aadd(smstrs,strcent("по щифрам затрат по состоянию на "+dtoc(edate),137))
+// aadd(smstrs," ")
+ aadd(smstrs,strcent("(622100) Прочие услуги",137))
+ aadd(smstrs,smdiv)
+ aadd(smstrs,smhd1)
+ aadd(smstrs,smhdr)
+ aadd(smstrs,smdiv)
+endif
+for i:=1 to nfltr+1
+ if !sml
+  aadd(allstrs,strcent(iif(i<=nfltr,fltrs[2,i],'Грузоперевозки'),204))
+  aadd(allstrs,divisor)
+  aadd(allstrs,header1)
+  aadd(allstrs,header2)
+  aadd(allstrs,divisor)
+  for j:=1 to len(data[i])
+   aadd(allstrs,data[i,j])
+  endfor
+  aadd(allstrs,divisor)
+  aadd(allstrs,svod_str(0,"","Итого","",sums[i,1],sums[i,2],sums[i,3],sums[i,4],sums[i,5],sums[i,6],sums[i,7],sums[i,8],sums[i,9]))
+  aadd(allstrs,divisor)
+//  aadd(allstrs," ")
+ else
+  aadd(smstrs,left(iif(i<=nfltr,fltrs[2,i],'Грузоперевозки')+replicate(" ",20),20)+"|"+;
+               transform(sums[i,1],"999999999.99")+"|"+;
+               transform(abs(sums[i,2]),"999999999.99")+"|"+;
+               transform(sums[i,3],"999999999.99")+"|"+;
+               transform(sums[i,4],"999999999.99")+"|"+;
+               transform(sums[i,5],"999999999.99")+"|"+;
+               transform(sums[i,6],"999999999.99")+"|"+;
+               transform(sums[i,7],"999999999.99")+"|"+;
+               transform(sums[i,8],"999999999.99")+"|"+;
+               transform(abs(sums[i,9]),"999999999.99"))
+ endif
+endfor
+
+//if sml
+// aadd(smstrs,"В том числе:        |            |            |            |            |            |            |            |            |            |")
+//endif
+
+
+// aadd(allstrs,divisor)
+ for j:=1 to 9
+  tsums[j]=0
+ endfor
+
+ for i:=1 to nfltr+1
+//  aadd(allstrs,svod_str(0,"",astr(i),"",sums[i,1],sums[i,2],sums[i,3],sums[i,4],sums[i,5],sums[i,6],sums[i,7],sums[i,8],sums[i,9]))
+  for j:=1 to 9
+   tsums[j]=tsums[j]+sums[i,j]
+  endfor
+ endfor
+// aadd(allstrs,divisor)
+
+if !sml
+ aadd(allstrs,divisor)
+ aadd(allstrs,svod_str(0,"","Всего","",tsums[1],tsums[2],tsums[3],tsums[4],tsums[5],tsums[6],tsums[7],tsums[8],tsums[9]))
+ aadd(allstrs,divisor)
+else
+ aadd(smstrs,smdiv)
+ aadd(smstrs,"Итого               |"+;
+              transform(tsums[1],"999999999.99")+"|"+;
+              transform(abs(tsums[2]),"999999999.99")+"|"+;
+              transform(tsums[3],"999999999.99")+"|"+;
+              transform(tsums[4],"999999999.99")+"|"+;
+              transform(tsums[5],"999999999.99")+"|"+;
+              transform(tsums[6],"999999999.99")+"|"+;
+              transform(tsums[7],"999999999.99")+"|"+;
+              transform(tsums[8],"999999999.99")+"|"+;
+              transform(abs(tsums[9]),"999999999.99"))
+ aadd(smstrs,smdiv)
+ for i=1 to 20
+  if opl[i]!=0
+    aadd(smstrs,"Оплата по пров. №"+mytransform(i,"99")+" "+;
+                "|            |            |            |            |            |"+;
+                +transform(opl[i],"999999999.99")+"|            |            |            ")
+  endif
+ endfor
+ aadd(smstrs,smdiv)
+ smtsums:=aclone(tsums)
+endif
+if !sml
+ aadd(allstrs," ")
+ sopl:=0
+ sopl18:=0
+ sopl20:=0
+ for i:=1 to 20
+  if opl[i]!=0
+   aadd(allstrs," Итого оплата по проводке N"+mytransform(i,"99")+" : "+transform(opl[i],"999999999.99")+" в т.ч. НДС 20%: "+transform(oplnds20[i],"999999999.99")+", НДС 18%: "+transform(oplnds18[i],"999999999.99"))
+   sopl:=sopl+opl[i]
+   sopl18:=sopl18+oplnds18[i]
+   sopl20:=sopl20+oplnds20[i]
+  endif
+ endfor
+ aadd(allstrs,"-----------------------------------------------------------------------------------------------------")
+   aadd(allstrs,"                  Оплата всего: "+transform(sopl,"999999999.99")+" в т.ч. НДС 20%: "+transform(sopl20,"999999999.99")+", НДС 18%: "+transform(sopl18,"999999999.99"))
+
+ aadd(allstrs," ")
+ aadd(allstrs," ")
+ aadd(allstrs,strcent("Бухгалтер: __________________",204))
+ TextView(0,0,79,24,"gr+/b",allstrs)
+endif
+ 
+sele dopl
+set filter to
+sele dschet
+set filter to
+sele zakazch
+set filter to
+sele ulist
+set filter to
+
+//IndRestore()
+
+retu
+
+
+
+
+
+func spacezero(n,pict)
+retu iif(n=0,replicate(' ',len(pict)),mytransform(n,pict))
+
+
+
+func svod_str(sch_no,sdate,potr,usl,vh_deb,vh_kred,nach,nach_nds,nach_vsego,opl,opl_vtcnds,ish_deb,ish_kred,n)
+local sss:=''
+sss:=spacezero(sch_no,"999999")+"│"+;
+     iif(valtype(sdate)="D",dtoc(sdate),left(alltrim(sdate)+'           ',10))+"│"+;
+     left(alltrim(potr)+replicate(" ",40),40)+"│"+;
+     left(alltrim(usl)+replicate(" ",30),30)+"│"+;
+     spacezero(abs(vh_deb),"999999999.99")+"│"+;     
+     spacezero(abs(vh_kred),"999999999.99")+"│"+;     
+     spacezero(nach,"999999999.99")+"│"+;     
+     spacezero(nach_nds,"999999999.99")+"│"+;     
+     spacezero(nach_Vsego,"999999999.99")+"│"+;     
+     spacezero(opl,"999999999.99")+"│"+;     
+     spacezero(opl_vtcnds,"999999999.99")+"│"+;     
+     spacezero(abs(ish_deb),"999999999.99")+"│"+;     
+     spacezero(abs(ish_kred),"999999999.99")
+    
+     if n!=NIL .and. valtype(n)="N"
+      sums[n,1]:=sums[n,1]+vh_deb
+      sums[n,2]:=sums[n,2]+vh_kred
+      sums[n,3]:=sums[n,3]+nach
+      sums[n,4]:=sums[n,4]+nach_nds
+      sums[n,5]:=sums[n,5]+nach_vsego
+      sums[n,6]:=sums[n,6]+opl
+      sums[n,7]:=sums[n,7]+opl_vtcnds
+      sums[n,8]:=sums[n,8]+ish_deb
+      sums[n,9]:=sums[n,9]+ish_kred
+     endif
+
+retu sss
+
+
+
+
+
+
+
+
+func svod_(n,nn,rule,proch)
+local summ:=0,opl:=0,usl_:='',nn1:=0,itrgpn:=0
+
+priv provodki:=""
+
+sele svod
+zap
+
+data[n]:={}
+sums[n]:={0,0,0,0,0,0,0,0,0}
+
+sele dschet
+go top
+//count to nn
+
+showprogress(60,0,nn,.t.)
+
+//go top
+do while !eof()
+ nn1:=nn1+1
+
+ showprogress(60,nn1,nn,.f.)
+
+sele dschet
+if &rule
+
+ _gp:=.f. 
+ if sch_tip=2   //Грузоперевозки?
+  sele itrans
+  set filter to itrans->sch_id=dschet->id .and. itrans->gp
+  go top
+  itrgpn:=0
+  count to itrgpn
+  _gp:=itrgpn>0
+  set filter to
+  set order to 1
+ endif
+
+ sele zakazch
+ set order to 1
+ go top
+ seek id_zl9(dschet->zak_id)
+ set order to 2
+ sele ulist
+ set order to 1
+ go top
+ seek id_zl9(dschet->usl_id)
+ set order to 2
+ sele dschet
+ usl:=iif(sch_tip=1,"Сметные",iif(sch_tip=2,"Транспортные",ulist->usluga))
+
+ if tot_days(dschet->sdate)>=tot_days(pm_dmy(edate))		//Начисление
+  opl:=sumopl(dschet->id,pm_dmy(edate),edate,.f.)
+  summ:=dschet->fsumma
+  summ1:=summ-opl
+  if summ!=0 //.or. opl!=0 .or. summ1!=0
+   sumopl(dschet->id,pm_dmy(edate),edate,.t.)
+   sele svod
+   append blank
+   repl svod->sch_no with dschet->sch_no,;
+        svod->sch_dt with dschet->sdate,;
+        svod->zakazch with zakazch->zakazch,;
+        svod->usluga with usl,;
+        svod->vhs_deb with 0,;
+        svod->vhs_kr with 0,;
+        svod->nsumma with summ/(100+dschet->prnds)*100,;
+        svod->nsnds with summ/(100+dschet->prnds)*dschet->prnds,;
+        svod->nsvsego with summ,;
+        svod->oplvsego with opl,;
+        svod->ovtcnds with opl/(100+dschet->prnds)*dschet->prnds,;
+        svod->iss_deb with iif(summ1>0,summ1,0),;
+        svod->iss_kred with iif(summ1<0,summ1,0),;
+        svod->gp with _gp
+   sele dschet
+  endif
+ else								//Вх. сальдо
+  opl:=sumopl(dschet->id,pm_dmy(edate),edate,.f.)
+  summ:=dschet->fsumma-sumopl(dschet->id,ctod('01/01/95'),pm_dmy(edate),.f.)
+  summ1:=summ-opl
+  if summ!=0 .or. opl!=0 //.or. opl!=0 .or. summ1!=0
+   sumopl(dschet->id,pm_dmy(edate),edate,.t.)
+   sele svod
+   append blank
+   repl svod->sch_no with dschet->sch_no,;
+        svod->sch_dt with dschet->sdate,;
+        svod->zakazch with zakazch->zakazch,;
+        svod->usluga with usl,;
+        svod->vhs_deb with iif(summ>0,summ,0),;
+        svod->vhs_kr with iif(summ<0,summ,0),;
+        svod->nsumma with 0,;
+        svod->nsnds with 0,;
+        svod->nsvsego with 0,;
+        svod->oplvsego with opl,;
+        svod->ovtcnds with opl/(100+dschet->prnds)*dschet->prnds,;
+        svod->iss_deb with iif(summ1>0,summ1,0),;
+        svod->iss_kred with iif(summ1<0,summ1,0),;
+        svod->gp with _gp
+   sele dschet
+  endif
+ endif
+endif
+sele dschet
+skip
+enddo
+
+if !proch
+ sele svod
+ set order to 1
+ go top
+ do while !eof()
+  aadd(data[n],svod_str(svod->sch_no,svod->sch_dt,svod->zakazch,;
+        svod->usluga,svod->vhs_deb,svod->vhs_kr,svod->nsumma,;
+        svod->nsnds,svod->nsvsego,svod->oplvsego,svod->ovtcnds,;
+        svod->iss_deb,svod->iss_kred,n))
+ skip
+ enddo
+else
+ sele svod
+ set filter to !svod->gp
+ set order to 1
+ go top
+ do while !eof()
+  aadd(data[n],svod_str(svod->sch_no,svod->sch_dt,svod->zakazch,;
+        svod->usluga,svod->vhs_deb,svod->vhs_kr,svod->nsumma,;
+        svod->nsnds,svod->nsvsego,svod->oplvsego,svod->ovtcnds,;
+        svod->iss_deb,svod->iss_kred,n))
+ skip
+ enddo
+
+ sele svod
+ set filter to svod->gp
+ set order to 1
+ go top
+ do while !eof()
+  aadd(data[n+1],svod_str(svod->sch_no,svod->sch_dt,svod->zakazch,;
+        svod->usluga,svod->vhs_deb,svod->vhs_kr,svod->nsumma,;
+        svod->nsnds,svod->nsvsego,svod->oplvsego,svod->ovtcnds,;
+        svod->iss_deb,svod->iss_kred,n+1))
+ skip
+ enddo
+
+endif
+
+sele dschet
+
+retu
+
+
+
+
+
+
+func svod_max(edate)
+local nn:=0
+
+etdays=tot_days(edate)
+
+  sele dschet
+  set order to 2
+  set filter to 
+  go top
+  count to nn
+  go top
+
+ for i=1 to len(fltrs[1])-1
+  sele dschet
+  set order to 2
+  set filter to 
+  go top
+//  count to nn
+//  go top
+ 
+  if nn>0
+   svod_(i,nn,"fsumma!=0 .and. ascan(fltrs[1,"+astr(i)+"],usl_id)!=0 .and. tot_days(sdate)<etdays .and. (dschet->CloseDate>=pm_dmy(edate) .or. len(alltrim(dtos(dschet->CloseDate)))<1) .and. sch_tip!=4 .and. sch_tip!=5",.f.)
+  endif
+ 
+ endfor
+ 
+  sele dschet
+  set filter to 
+  go top
+//  count to nn
+//  go top
+ 
+  if nn>0
+  svod_(len(fltrs[1]),nn,"fsumma!=0 .and. ascan(fltrs[1,len(fltrs[1])],usl_id)=0 .and. tot_days(sdate)<etdays .and. (dschet->CloseDate>=pm_dmy(edate) .or. len(alltrim(dtos(dschet->CloseDate)))<1) .and. sch_tip!=4 .and. sch_tip!=5",.t.)
+  endif
+
+retu
+
+
+
+
+
+
+func sumopl(sid,sdate,fdate,isopl)
+local thesumm:=0
+local fstr
+
+sele dopl
+provodki:=''
+fstr:= "dopl->sch_id="+astr(sid)+" .and. "+;
+              "tot_days(dopl->odate)>="+astr(tot_days(sdate))+" .and. "+;
+              "tot_days(dopl->odate)<"+astr(tot_days(fdate))+" .and. !deleted()"
+set filter to &fstr
+go top
+
+if isopl
+ do while !eof()
+  if dopl->tprov>0
+   opl[dopl->tprov]=opl[dopl->tprov]+dopl->summa
+   if dschet->prnds=20
+    oplnds20[dopl->tprov]=oplnds20[dopl->tprov]+dopl->summa/120*20
+   else
+    oplnds18[dopl->tprov]=oplnds18[dopl->tprov]+dopl->summa/118*18
+   endif
+  thesumm:=thesumm+dopl->summa
+ endif
+ skip 
+ enddo
+else
+ if dopl->tprov>0
+  sum dopl->summa to thesumm
+ endif
+endif
+set filter to
+sele dschet
+
+retu thesumm
+
+
+
+
+
+
+
+
+
+
+
+
+func svod_min()
+priv fltrs:={{{1},{23,24},{17}},{'Баня','Гостиница','Жил.Отдел'}}
+priv fltr1:={}
+
+set deleted on
+set century Off
+set date format to "dd/mm/yy"
+set epoch to 1995
+set scoreboard off
+set talk off
+set cursor off
+
+//? pm_dmy(ctod("1/10/1999"))
+//? pm_dmy(ctod("15/1/1999"))
+
+for i=1 to len(fltrs[1])
+ if valtype(fltrs[1,i])="A"
+  for j=1 to len(fltrs[1,i])
+   aadd(fltr1,fltrs[1,i,j])
+  endfor
+ else
+  aadd(fltr1,fltrs[1,i])
+ endif
+endfor
+
+edate=date()
+
+@24,0 say ""
+?
+?
+?
+@24,0 say "Введите дату, на которую нужно сгенерировать отчёт (дд/мм/гг):" get edate
+set cursor on
+read
+set cursor off
+
+if lastkey()=27
+ retu
+endif
+
+//set procedure to dp.prg
+
+etdays=tot_days(edate)
+
+use zakazch new
+
+use dschet new
+index on sdate to sdate 
+index on sch_no to sch_no
+set index to sdate,sch_no
+
+total=0
+
+set device to printer
+set printer to "reestr.txt"
+set printer on
+set console off
+
+?? "(s14H&l8D"
+
+for i=1 to len(fltrs[1])
+ set filter to fsald!=0 .and. ascan(fltrs[1,i],usl_id)!=0 .and. tot_days(sdate)<etdays
+// reindex
+ go top
+
+ make_reestr(fltrs[2,i],.t.) 
+ total=total+summit('fsald')
+ ? "-------------------------"
+ ? "ИТОГО - ",summit('fsald')
+ ? 
+endfor
+
+tot1=0
+
+ set filter to fsald!=0 .and. ascan(fltr1,usl_id)=0 .and. tot_days(sdate)<etdays
+// reindex
+ go top
+ make_reestr('Остальные',.t.) 
+ summ_=summit('fsald')
+ total=total+summ_
+ tot1=tot1+summ_
+
+? "-------------------------"
+? "ИТОГО - ",tot1
+?
+? "================="
+? "ВСЕГО - ",total
+
+set device to screen
+set console on
+set printer off
+
+set filter to
+use
+
+
+retu
+
+
+
+
+
+
+
+func  make_reestr(who,shdr) 
+
+if shdr
+ ? who
+ ? '-----------------------'
+endif
+
+do while !eof()
+
+ sele zakazch
+ set filter to zakazch->id=dschet->zak_id
+ go top
+ sele dschet
+ ? sch_no,'|',sdate,'|',zakazch->zakazch,'|',fsald,'|',iif(sch_tip="t","Транспорт",iif(sch_tip="c","Сметные","Прочие"))
+
+ skip
+enddo
+
+retu
+
+
+
+
+
+
+
+
+
+
+func itr_otch()
+local divisor,header1,ss,sum:=0,psum:=0,fltr,ofltr,opos,n,i
+local sdate:=date(),edate:=nm_dmy(date()),etdays:=0,stdays:=0,allstrs:={}
+
+sdate=VarEdit("Введите начальную дату",sdate)
+edate=nm_dmy(sdate)
+edate=VarEdit("Введите конечную дату",edate)
+
+stdays:=tot_days(sdate)
+etdays:=tot_days(edate)
+
+aadd(allstrs,strcent("Отчет по транспортным услугам в период с "+dtoc(sdate)+" по "+dtoc(edate),140))
+
+divisor:='──────────+──────────+────────────────────────────────────────+──────────────────────────────+──────+──────+──────────+──────────+──────────'
+header :='№ дог.    │Дата      │Потребитель                             │Вид транспортного средства    │Чс.пр.│Чс.фк.│Цена      │Сумма пр. │Сумма фк. '
+
+aadd(allstrs,divisor)
+aadd(allstrs,header)
+aadd(allstrs,divisor)
+
+//push_fp()
+sele itrans
+ofltr:=dbfilter()
+opos:=recno()
+
+//1 число следующего месяца
+
+fltr:="tot_days(itrans->date)>="+astr(stdays)+;
+      " .and. tot_days(itrans->date)<"+astr(etdays)+" .and. dog_id>0"
+set filter to &fltr
+go top
+count to n
+go top
+showprogress(60,0,n,.t.)
+i:=0
+do while !eof() .and. i<n
+ i:=i+1
+ showprogress(60,i,n,.f.)
+ ss:=lstr(GetByID("pudog",dog_id,"dog_no"),10)+"|"+dtoc(date)+"|"+;
+     lstr(GetByID("zakazch",GetByID("pudog",dog_id,"zak_id"),"zakazch"),40)+"|"+;
+     lstr(GetByID("trans",trans_id,"trans"),30)+"|"+;
+     mytransform(pchas,"999.99")+"|"+mytransform(chas,"999.99")+"|"+;
+     mytransform(cena,"999999.999")+"|"+;
+     mytransform(psumma,"9999999.99")+"|"+mytransform(summa,"9999999.99")
+ sum:=sum+summa
+ psum:=psum+psumma
+ aadd(allstrs,ss)
+     
+ sele itrans
+ skip
+enddo
+
+sele itrans
+set filter to &ofltr
+go top
+goto opos
+
+aadd(allstrs,divisor)
+aadd(allstrs,"Итого сумма по предоплате :"+transform(psum,"99999999.99"))
+aadd(allstrs,"Итого сумма по факту      :"+transform(sum,"99999999.99")+chr(12))
+
+//pop_fp()
+
+TextView(0,0,79,24,"gr+/b",allstrs)
+
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//====================================
+
+
+
+
+func crt_svpr()
+local ocol:=setcolor("w+/n")
+local svdate:=date()
+
+scrsave()
+cls
+if B_TMP_CRT("svod")
+ scrrest()
+ scrsave()
+ sele svod
+
+ svod_predopl()
+
+ sele svod
+ use
+endif
+scrrest()
+setcolor(ocol)
+retu
+
+
+func svod_predopl()
+local fltrs1:={},fltrs2:={},fltrs3:={},aaa:={}
+priv opl:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},nfltr:=0
+priv oplnds20:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv oplnds18:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv data:={}
+priv sums:={}
+priv tsums:={0,0,0,0,0,0,0,0,0}
+priv sayedstrs:=0,allstrs:={}
+priv ;
+divisor:='──────+──────────+────────────────────────────────────────+──────────────────────────────+─────────────────────────+──────────────────────────────────────+─────────────────────────+────────────+────────────',;
+header1:='      |          |                                        |                              |&dD     Входящее сальдо     |              Начисление              |          Оплата         |     Исходящее сальдо    &d@'
+header2:='№ счт.│Дата счета│Потребитель                             │Вид услуги                    │Дебит       │Кредит      │Сумма       │НДС         │Всего       │Всего       │В т.ч. НДС  │Дебит       │Кредит      '
+
+sele dschet
+
+edate=date()
+edate=VarEdit("Введите дату",edate)
+
+if lastkey()=27
+ retu
+endif
+
+sele dopl
+set order to 2
+
+sele dschet
+set order to 2
+
+svod_maxp(edate)
+
+aadd(allstrs,strcent("Накопительная ведомость счетов на предоплату платных услуг",204))
+aadd(allstrs,strcent("оказанных юридическим лицам по состоянию на "+dtoc(edate),204))
+aadd(allstrs," ")
+aadd(allstrs,divisor)
+aadd(allstrs,header1)
+aadd(allstrs,header2)
+aadd(allstrs,divisor)
+for j:=1 to len(data)
+ aadd(allstrs,data[j])
+endfor
+aadd(allstrs,divisor)
+aadd(allstrs,svod_str(0,"","Всего","",sums[1],sums[2],sums[3],sums[4],sums[5],sums[6],sums[7],sums[8],sums[9]))
+aadd(allstrs,divisor)
+aadd(allstrs," ")
+
+sopl:=0
+sopl18:=0
+sopl20:=0
+for i:=1 to 20
+ if opl[i]!=0
+  aadd(allstrs," Итого оплата по проводке N"+mytransform(i,"99")+" : "+transform(opl[i],"999999999.99")+" в т.ч. НДС 20%: "+transform(oplnds20[i],"999999999.99")+", НДС 18%: "+transform(oplnds18[i],"999999999.99"))
+  sopl:=sopl+opl[i]
+  sopl18:=sopl18+oplnds18[i]
+  sopl20:=sopl20+oplnds20[i]
+ endif
+endfor
+aadd(allstrs,"-----------------------------------------------------------------------------------------------------")
+  aadd(allstrs,"                  Оплата всего: "+transform(sopl,"999999999.99")+" в т.ч. НДС 20%: "+transform(sopl20,"999999999.99")+", НДС 18%: "+transform(sopl18,"999999999.99"))
+
+aadd(allstrs," ")
+aadd(allstrs," ")
+aadd(allstrs,strcent("Бухгалтер: __________________",204))
+
+TextView(0,0,79,24,"gr+/b",allstrs)
+ 
+sele dopl
+set filter to
+sele dschet
+set filter to
+sele zakazch
+set filter to
+sele ulist
+set filter to
+
+//IndRestore()
+
+retu
+
+
+
+
+func svod_maxp(edate)
+local nn:=0
+
+etdays=tot_days(edate)
+
+sele dschet
+set filter to fsumma=0 .and. summa!=0 .and. tot_days(sdate)<etdays .and. sch_tip!=5
+go top
+count to nn
+go top
+
+if nn>0
+ svod_p(nn)
+endif
+
+retu
+
+
+
+func sumoplp(sid,sdate,fdate,isopl)
+local thesumm:=0
+local fstr
+
+sele dopl
+provodki:=''
+fstr:= "dopl->sch_id="+astr(sid)+" .and. "+;
+              "tot_days(dopl->odate)>="+astr(tot_days(sdate))+" .and. "+;
+              "tot_days(dopl->odate)<"+astr(tot_days(fdate))+" .and. !deleted()"
+set filter to &fstr
+go top
+if isopl
+ do while !eof()
+  opl[dopl->tprov]=opl[dopl->tprov]+dopl->summa
+  if dschet->prnds=20
+   oplnds20[dopl->tprov]=oplnds20[dopl->tprov]+dopl->summa/120*20
+  else
+   oplnds18[dopl->tprov]=oplnds18[dopl->tprov]+dopl->summa/118*18
+  endif
+ thesumm:=thesumm+dopl->summa
+ skip 
+ enddo
+else
+ sum dopl->summa to thesumm
+endif
+set filter to
+sele dschet
+
+retu thesumm
+
+
+
+
+
+
+
+func svod_p(nn)
+local summ:=0,opl:=0,usl_:='',nn1:=0
+
+priv provodki:=""
+
+sele svod
+set order to 0
+zap
+
+data:={}
+sums:={0,0,0,0,0,0,0,0,0}
+
+sele dschet
+go top
+
+showprogress(60,0,nn,.t.)
+
+do while !eof()
+ nn1:=nn1+1
+
+ showprogress(60,nn1,nn,.f.)
+
+  sele zakazch
+  set order to 1
+  go top
+  seek id_zl9(dschet->zak_id)
+  set order to 2
+
+  sele ulist
+  set order to 1
+  go top
+  seek id_zl9(dschet->usl_id)
+  set order to 2
+
+  sele dschet
+  usl:=iif(sch_tip=1,"Сметные",iif(sch_tip=2,"Транспортные",iif(sch_tip=4,"Материалы",ulist->usluga)))
+
+if tot_days(dschet->sdate)>=tot_days(pm_dmy(edate))		//Начисление
+ opl:=sumoplp(dschet->id,pm_dmy(edate),edate,.f.)
+ summ:=dschet->summa
+ summ1:=summ-opl
+ if summ!=0
+  sumoplp(dschet->id,pm_dmy(edate),edate,.t.)
+  sele svod
+  append blank
+  repl svod->sch_no with dschet->sch_no,;
+       svod->sch_dt with dschet->sdate,;
+       svod->zakazch with zakazch->zakazch,;
+       svod->usluga with usl,;
+       svod->vhs_deb with 0,;
+       svod->vhs_kr with 0,;
+       svod->nsumma with summ/(100+dschet->prnds)*100,;
+       svod->nsnds with summ/(100+dschet->prnds)*dschet->prnds,;
+       svod->nsvsego with summ,;
+       svod->oplvsego with opl,;
+       svod->ovtcnds with opl/(100+dschet->prnds)*dschet->prnds,;
+       svod->iss_deb with iif(summ1>0,summ1,0),;
+       svod->iss_kred with iif(summ1<0,summ1,0)
+  sele dschet
+ endif
+else								//Вх. сальдо
+ opl:=sumoplp(dschet->id,pm_dmy(edate),edate,.f.)
+ summ:=dschet->summa-sumoplp(dschet->id,ctod('01/01/95'),pm_dmy(edate),.f.)
+ summ1:=summ-opl
+ if summ!=0
+  sumoplp(dschet->id,pm_dmy(edate),edate,.t.)
+  sele svod
+  append blank
+  repl svod->sch_no with dschet->sch_no,;
+       svod->sch_dt with dschet->sdate,;
+       svod->zakazch with zakazch->zakazch,;
+       svod->usluga with usl,;
+       svod->vhs_deb with iif(summ>0,summ,0),;
+       svod->vhs_kr with iif(summ<0,summ,0),;
+       svod->nsumma with 0,;
+       svod->nsnds with 0,;
+       svod->nsvsego with 0,;
+       svod->oplvsego with opl,;
+       svod->ovtcnds with opl/(100+dschet->prnds)*dschet->prnds,;
+       svod->iss_deb with iif(summ1>0,summ1,0),;
+       svod->iss_kred with iif(summ1<0,summ1,0)
+  sele dschet
+ endif
+endif
+sele dschet
+skip
+enddo
+
+sele svod
+set order to 3
+go top
+do while !eof()
+ aadd(data,svod_strp(svod->sch_no,svod->sch_dt,svod->zakazch,;
+       svod->usluga,svod->vhs_deb,svod->vhs_kr,svod->nsumma,;
+       svod->nsnds,svod->nsvsego,svod->oplvsego,svod->ovtcnds,;
+       svod->iss_deb,svod->iss_kred))
+skip
+enddo
+
+sele dschet
+
+retu
+
+
+
+
+func svod_strp(sch_no,sdate,potr,usl,vh_deb,vh_kred,nach,nach_nds,nach_vsego,opl,opl_vtcnds,ish_deb,ish_kred)
+local sss:=''
+sss:=spacezero(sch_no,"999999")+"│"+;
+     iif(valtype(sdate)="D",dtoc(sdate),left(alltrim(sdate)+'           ',10))+"│"+;
+     left(alltrim(potr)+replicate(" ",40),40)+"│"+;
+     left(alltrim(usl)+replicate(" ",30),30)+"│"+;
+     spacezero(abs(vh_deb),"999999999.99")+"│"+;     
+     spacezero(abs(vh_kred),"999999999.99")+"│"+;     
+     spacezero(nach,"999999999.99")+"│"+;     
+     spacezero(nach_nds,"999999999.99")+"│"+;     
+     spacezero(nach_Vsego,"999999999.99")+"│"+;     
+     spacezero(opl,"999999999.99")+"│"+;     
+     spacezero(opl_vtcnds,"999999999.99")+"│"+;     
+     spacezero(abs(ish_deb),"999999999.99")+"│"+;     
+     spacezero(abs(ish_kred),"999999999.99")
+    
+     sums[1]:=sums[1]+vh_deb
+     sums[2]:=sums[2]+vh_kred
+     sums[3]:=sums[3]+nach
+     sums[4]:=sums[4]+nach_nds
+     sums[5]:=sums[5]+nach_vsego
+     sums[6]:=sums[6]+opl
+     sums[7]:=sums[7]+opl_vtcnds
+     sums[8]:=sums[8]+ish_deb
+     sums[9]:=sums[9]+ish_kred
+
+retu sss
+
+
+
+func rasshifr()
+local stroki:={},i
+local ofltr:=dschet->(dbfilter()), opos:=dschet->(recno())
+local _sdate:=date(),_edate:=date(),ym,ocol, _yr, _mn
+local summs:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},daten:=0
+
+local divisor:="------+----------+--------------------------------------------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------"
+local    hdr1:="№ счт.|Дата счета|Наименование орга-ции                             |Основная  |Социальные|Цеховые   |Транспортн|Материалы |Услуги ст.|Общеэкспл.|Рентабель-|Сумм.всего|Сумма НДС |ВСЕГО     "
+local    hdr2:="      |          |                                                  |зарплата  |отчисления|Расходы   |расходы   |          |орг-ций   |расходы   |ность     |без НДС   |          |          "
+local s_empty:="      |          |                                                  |          |          |          |          |          |          |          |          |          |          |          "
+local ss:='',ss1:='',smt_id,_sum,trns_sum_
+
+_sdate:=VarEdit("Введите начальную дату",_sdate,.t.)
+_edate:=nm_dmy(_sdate)
+_edate:=VarEdit("Введите конечную дату (не учитывается)",_edate,.t.)
+ym:=dtos(_sdate)
+
+aadd(stroki,"Расшифровка счетов за период по статьям расходов c "+dtoc(_sdate)+" по "+dtoc(_edate-1)+".")
+aadd(stroki,divisor)
+aadd(stroki,hdr1)
+aadd(stroki,hdr2)
+aadd(stroki,divisor)
+
+sele dschet
+set order to 2
+set filter to
+go top
+seek dtos(_sdate)
+
+if !found()
+ go top
+ do while !found() .and. !eof()
+  _sdate=_sdate+1
+  seek dtos(_sdate)
+  if found()
+   exit
+  endif
+  go top
+ enddo
+endif
+
+if found()
+ go top
+ seek dtos(_sdate)
+ do while !eof() .and. dtos(dschet->sdate)<=dtos(_edate-1)
+  if dschet->fsumma!=0
+   ss:=transform(sch_no,"999999")+"|"+dtoc(sdate)+"|"+left(getbyid("ZAKAZCH",dschet->zak_id,"zakazch"),50)+"|"
+   do case
+    case sch_tip=1	//Сметные
+     seekbyid("smeta",dschet->sm_id)
+     if found()
+      summs[1]:=summs[1]+osn_zp
+      summs[2]:=summs[2]+otch_sum
+      summs[3]:=summs[3]+ceh_sum
+      summs[4]:=summs[4]+trns_sum
+      summs[5]:=summs[5]+mats_sum
+      summs[6]:=summs[6]+uso_sum
+      summs[7]:=summs[7]+ober_sum
+      summs[8]:=summs[8]+rent_sum
+      summs[9]:=summs[9]+itog3
+      summs[10]:=summs[10]+nds_sum
+      summs[11]:=summs[11]+vsego
+      ss1:=ss+transform(osn_zp  ,"9999999.99")+"|"+;
+              transform(otch_sum,"9999999.99")+"|"+;
+              transform(ceh_sum ,"9999999.99")+"|"+;
+              transform(trns_sum,"9999999.99")+"|"+;
+              transform(mats_sum,"9999999.99")+"|"+;
+              transform(uso_sum ,"9999999.99")+"|"+;
+              transform(ober_sum,"9999999.99")+"|"+;
+              transform(rent_sum,"9999999.99")+"|"+;
+              transform(itog3   ,"9999999.99")+"|"+;
+              transform(nds_sum ,"9999999.99")+"|"+;
+              transform(vsego   ,"9999999.99")
+      aadd(stroki,ss1)
+      aadd(stroki,strrepl(s_empty,"Сметные услуги",20))
+      aadd(stroki,divisor)
+     else
+      sele dschet
+      _sum:=fsumma/(100+prnds)*100
+      summs[9]:=summs[9]+_sum
+      summs[10]:=summs[10]+(fsumma-_sum)
+      summs[11]:=summs[11]+fsumma
+      ss1:=ss+replicate("          |",8)+transform(_sum,"9999999.99")+"|"+;
+              transform(fsumma-_sum,"9999999.99")+"|"+transform(fsumma,"9999999.99")
+      aadd(stroki,ss1)
+      aadd(stroki,strrepl(s_empty,left("(вр./см.) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+      aadd(stroki,divisor)
+     endif    
+     sele dschet
+ 
+    case sch_tip=2	//Транспортные
+     trns_sum_:=fsumma/(100+prnds)*100
+     summs[4]:=summs[4]+trns_sum_
+     summs[9]:=summs[9]+trns_sum_
+     summs[10]:=summs[10]+(fsumma-trns_sum_)
+     summs[11]:=summs[11]+fsumma
+     ss1:=ss+replicate("          |",3)+transform(trns_sum_,"9999999.99")+"|"+;
+             replicate("          |",4)+transform(trns_sum_,"9999999.99")+"|"+;
+             transform(fsumma-trns_sum_,"9999999.99")+"|"+transform(fsumma,"9999999.99")
+     aadd(stroki,ss1)
+     aadd(stroki,strrepl(s_empty,"Услуги транспорта",20))
+     aadd(stroki,divisor)
+ 
+    case sch_tip=3	//Прочие
+     smt_id=getbyid("ulist",usl_id,"sm_id")
+     if smt_id>0
+      seekbyid("smeta",smt_id)
+      if found()
+       n=dschet->fsumma/vsego
+       summs[1]:=summs[1]+osn_zp*n
+       summs[2]:=summs[2]+otch_sum*n
+       summs[3]:=summs[3]+ceh_sum*n
+       summs[4]:=summs[4]+trns_sum*n
+       summs[5]:=summs[5]+mats_sum*n
+       summs[6]:=summs[6]+uso_sum*n
+       summs[7]:=summs[7]+ober_sum*n
+       summs[8]:=summs[8]+rent_sum*n
+       summs[9]:=summs[9]+itog3*n
+       summs[10]:=summs[10]+nds_sum*n
+       summs[11]:=summs[11]+vsego*n
+       ss1:=ss+transform(osn_zp*n  ,"9999999.99")+"|"+;
+               transform(otch_sum*n,"9999999.99")+"|"+;
+               transform(ceh_sum*n ,"9999999.99")+"|"+;
+               transform(trns_sum*n,"9999999.99")+"|"+;
+               transform(mats_sum*n,"9999999.99")+"|"+;
+               transform(uso_sum*n ,"9999999.99")+"|"+;
+               transform(ober_sum*n,"9999999.99")+"|"+;
+               transform(rent_sum*n,"9999999.99")+"|"+;
+               transform(itog3*n   ,"9999999.99")+"|"+;
+               transform(nds_sum*n ,"9999999.99")+"|"+;
+               transform(vsego*n   ,"9999999.99")
+       aadd(stroki,ss1)
+       aadd(stroki,strrepl(s_empty,left(GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+       aadd(stroki,divisor)
+      endif
+     else
+      _sum:=fsumma/(100+prnds)*100
+      summs[9]:=summs[9]+_sum
+      summs[10]:=summs[10]+(fsumma-_sum)
+      summs[11]:=summs[11]+fsumma
+      ss1:=ss+replicate("          |",8)+transform(_sum,"9999999.99")+"|"+;
+              transform(fsumma-_sum,"9999999.99")+"|"+transform(fsumma,"9999999.99")
+      aadd(stroki,ss1)
+      aadd(stroki,strrepl(s_empty,left("(б/к) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+      aadd(stroki,divisor)
+     endif    
+     sele dschet
+ 
+    case sch_tip=6	//Вручную
+     _sum:=fsumma/(100+prnds)*100
+     summs[9]:=summs[9]+_sum
+     summs[10]:=summs[10]+(fsumma-_sum)
+     summs[11]:=summs[11]+fsumma
+     ss1:=ss+replicate("          |",8)+transform(_sum,"9999999.99")+"|"+;
+             transform(fsumma-_sum,"9999999.99")+"|"+transform(fsumma,"9999999.99")
+     aadd(stroki,ss1)
+     aadd(stroki,strrepl(s_empty,left("(вр.) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+     aadd(stroki,divisor)
+  
+   endcase
+  endif
+
+  sele dschet
+  skip
+ enddo
+endif
+
+ss:=left(s_empty,68)
+for i=1 to 11
+ ss:=ss+"|"+transform(summs[i],"9999999.99")
+endfor
+aadd(stroki,ss)
+aadd(stroki,divisor)
+aadd(stroki,chr(12))
+TextView(0,0,79,24,"gr+/b",stroki)
+
+retu
+
+
+
+
+
+
+
+
+func rasshifr_pr()
+local stroki:={},i
+local ofltr:=dschet->(dbfilter()), opos:=dschet->(recno())
+local _sdate:=date(),_edate:=date(),ym,ocol, _yr, _mn
+local summs:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},daten:=0
+
+local divisor:="------+----------+--------------------------------------------------+----------+----------+----------"
+local    hdr1:="№ счт.|Дата счета|Наименование орга-ции                             |Сумм.всего|Сумма НДС |ВСЕГО     "
+local    hdr2:="      |          |                                                  |без НДС   |          |          "
+local s_empty:="      |          |                                                  |          |          |          "
+local ss:='',ss1:='',smt_id,_sum,trns_sum_
+
+_sdate:=VarEdit("Введите начальную дату",_sdate,.t.)
+_edate:=nm_dmy(_sdate)
+_edate:=VarEdit("Введите конечную дату (не учитывается)",_edate,.t.)
+ym:=dtos(_sdate)
+
+if (_edate<_sdate) 
+_tmpdt=_sdate
+_sdate=_edate
+_edate=_tmpdt
+endif
+
+aadd(stroki,"Реестр счетов по предоплате за период по статьям расходов c "+dtoc(_sdate)+" по "+dtoc(_edate-1)+".")
+aadd(stroki,divisor)
+aadd(stroki,hdr1)
+aadd(stroki,hdr2)
+aadd(stroki,divisor)
+
+sele dschet
+set order to 2
+set filter to
+go top
+seek dtos(_sdate)
+
+if !found()
+ go top
+ do while !found() .and. !eof()
+  _sdate=_sdate+1
+  seek dtos(_sdate)
+  if found()
+   exit
+  endif
+  go top
+ enddo
+endif
+
+if found()
+ go top
+ seek dtos(_sdate)
+ do while !eof() .and. dtos(dschet->sdate)<=dtos(_edate-1)
+  if dschet->summa!=0
+   ss:=transform(sch_no,"999999")+"|"+dtoc(sdate)+"|"+left(getbyid("ZAKAZCH",dschet->zak_id,"zakazch"),50)+"|"
+   do case
+    case sch_tip=1	//Сметные
+     seekbyid("smeta",dschet->sm_id)
+     if found()
+      summs[1]:=summs[1]+osn_zp
+      summs[2]:=summs[2]+otch_sum
+      summs[3]:=summs[3]+ceh_sum
+      summs[4]:=summs[4]+trns_sum
+      summs[5]:=summs[5]+mats_sum
+      summs[6]:=summs[6]+uso_sum
+      summs[7]:=summs[7]+ober_sum
+      summs[8]:=summs[8]+rent_sum
+      summs[9]:=summs[9]+itog3
+      summs[10]:=summs[10]+nds_sum
+      summs[11]:=summs[11]+vsego
+      ss1:=ss+transform(itog3   ,"9999999.99")+"|"+;
+              transform(nds_sum ,"9999999.99")+"|"+;
+              transform(vsego   ,"9999999.99")
+      aadd(stroki,ss1)
+      aadd(stroki,strrepl(s_empty,"Сметные услуги",20))
+      aadd(stroki,divisor)
+     else
+      sele dschet
+      _sum:=summa/(100+prnds)*100
+      summs[9]:=summs[9]+_sum
+      summs[10]:=summs[10]+(summa-_sum)
+      summs[11]:=summs[11]+summa
+      ss1:=ss+transform(_sum,"9999999.99")+"|"+;
+              transform(summa-_sum,"9999999.99")+"|"+transform(summa,"9999999.99")
+      aadd(stroki,ss1)
+      aadd(stroki,strrepl(s_empty,left("(вр./см.) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+      aadd(stroki,divisor)
+     endif    
+     sele dschet
+ 
+    case sch_tip=2	//Транспортные
+     trns_sum_:=summa/(100+prnds)*100
+     summs[4]:=summs[4]+trns_sum_
+     summs[9]:=summs[9]+trns_sum_
+     summs[10]:=summs[10]+(summa-trns_sum_)
+     summs[11]:=summs[11]+summa
+     ss1:=ss+transform(trns_sum_,"9999999.99")+"|"+;
+             transform(summa-trns_sum_,"9999999.99")+"|"+transform(summa,"9999999.99")
+     aadd(stroki,ss1)
+     aadd(stroki,strrepl(s_empty,"Услуги транспорта",20))
+     aadd(stroki,divisor)
+ 
+    case sch_tip=3	//Прочие
+     smt_id=getbyid("ulist",usl_id,"sm_id")
+     if smt_id>0
+      seekbyid("smeta",smt_id)
+      if found()
+       n=dschet->summa/vsego
+       summs[1]:=summs[1]+osn_zp*n
+       summs[2]:=summs[2]+otch_sum*n
+       summs[3]:=summs[3]+ceh_sum*n
+       summs[4]:=summs[4]+trns_sum*n
+       summs[5]:=summs[5]+mats_sum*n
+       summs[6]:=summs[6]+uso_sum*n
+       summs[7]:=summs[7]+ober_sum*n
+       summs[8]:=summs[8]+rent_sum*n
+       summs[9]:=summs[9]+itog3*n
+       summs[10]:=summs[10]+nds_sum*n
+       summs[11]:=summs[11]+vsego*n
+       ss1:=ss+transform(itog3*n   ,"9999999.99")+"|"+;
+               transform(nds_sum*n ,"9999999.99")+"|"+;
+               transform(vsego*n   ,"9999999.99")
+       aadd(stroki,ss1)
+       aadd(stroki,strrepl(s_empty,left(GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+       aadd(stroki,divisor)
+      endif
+     else
+      _sum:=summa/(100+prnds)*100
+      summs[9]:=summs[9]+_sum
+      summs[10]:=summs[10]+(summa-_sum)
+      summs[11]:=summs[11]+summa
+      ss1:=ss+transform(_sum,"9999999.99")+"|"+;
+              transform(summa-_sum,"9999999.99")+"|"+transform(summa,"9999999.99")
+      aadd(stroki,ss1)
+      aadd(stroki,strrepl(s_empty,left("(б/к) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+      aadd(stroki,divisor)
+     endif    
+     sele dschet
+ 
+    case sch_tip=6	//Вручную
+     _sum:=summa/(100+prnds)*100
+     summs[9]:=summs[9]+_sum
+     summs[10]:=summs[10]+(summa-_sum)
+     summs[11]:=summs[11]+summa
+     ss1:=ss+transform(_sum,"9999999.99")+"|"+;
+             transform(summa-_sum,"9999999.99")+"|"+transform(summa,"9999999.99")
+     aadd(stroki,ss1)
+     aadd(stroki,strrepl(s_empty,left("(вр.) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),20))
+     aadd(stroki,divisor)
+  
+   endcase
+  endif
+
+  sele dschet
+  skip
+ enddo
+endif
+
+ss:=left(s_empty,68)
+for i=9 to 11
+ ss:=ss+"|"+transform(summs[i],"9999999.99")
+endfor
+aadd(stroki,ss)
+aadd(stroki,divisor)
+aadd(stroki,chr(12))
+TextView(0,0,79,24,"gr+/b",stroki)
+
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+func opl_rasshifr()
+local stroki:={},i
+local ofltr:=dschet->(dbfilter()), opos:=dschet->(recno())
+local _sdate:=date(),ym,ocol, _yr, _mn
+local summs:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+
+local divisor:="------+----------+----------+--------------------------------------------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+---"
+local    hdr1:="№ счт.|Дата счета|Дата опл. |Наименование орга-ции                             |Основная  |Социальные|Цеховые   |Транспортн|Материалы |Услуги ст.|Общеэкспл.|Рентабель-|Сумм.всего|Сумма НДС |ВСЕГО     |Прв"
+local    hdr2:="      |          |          |                                                  |зарплата  |отчисления|Расходы   |расходы   |          |орг-ций   |расходы   |ность     |без НДС   |          |          |   "
+local s_empty:="      |          |          |                                                  |          |          |          |          |          |          |          |          |          |          |          |   "
+local ss:='',ss1:='',smt_id,_sum,trns_sum_
+local _osn_zp, _otch_sum, _ceh_sum, _itog1, _itog1t, _trns_sum, _mats_sum, uso_sum
+local _ober_sum, _rent_sum, _itog2, _itog3, nds_sum, _vsego, _koef
+local _k_itog1, _k_trns, _k_mats, _k_uso
+local prov_sums:={0,0,0,0,0,0,0,0,0,0},rt:=0
+
+_sdate:=VarEdit("Введите начальную дату",_sdate,.t.)
+_edate:=nm_dmy(_sdate)
+if lastkey()=27
+ retu
+endif
+_edate:=VarEdit("Введите конечную дату (не учитывается)",_edate,.t.)
+if lastkey()=27
+ retu
+endif
+ym:=dtos(_sdate)
+
+aadd(stroki,"Расшифровка оплат за период по статьям расходов c "+dtoc(_sdate)+" по "+dtoc(_edate-1)+".")
+aadd(stroki,divisor)
+aadd(stroki,hdr1)
+aadd(stroki,hdr2)
+aadd(stroki,divisor)
+
+sele dopl
+set order to 2
+set filter to
+go top
+seek dtos(_sdate)
+
+if !found()
+ go top
+ do while !found() .and. !eof()
+  _sdate=_sdate+1
+  seek dtos(_sdate)
+  if found()
+   exit
+  endif
+  go top
+ enddo
+endif
+
+if found()
+ go top
+ seek dtos(_sdate)
+ scrsave()
+ rotator(39,13,'gr+/n',rt,.t.)
+ do while !eof() .and. dtos(dopl->odate)<=dtos(_edate-1)
+  rotator(39,13,'gr+/n',rt,.f.)
+  rt:=rt+1
+  sele dschet
+  set order to 1
+  go top
+  seek id_zl9(dopl->sch_id)
+  if found() .and. dopl->tprov!=0
+   ss:=transform(dschet->sch_no,"999999")+"|"+dtoc(dschet->sdate)+"|"+dtoc(dopl->odate)+"|"+left(getbyid("ZAKAZCH",dschet->zak_id,"zakazch"),50)+"|"
+   do case
+    case sch_tip=1	//Сметные
+     seekbyid("smeta",dschet->sm_id)
+     if found() .and. smeta->itog1<>0
+
+      sele smeta
+      _k_itog1=smeta->itog1t/smeta->itog1
+      _k_trns=smeta->trns_sum/smeta->itog1
+      _k_mats=smeta->mats_sum/smeta->itog1
+      _k_uso=smeta->USO_SUM/smeta->itog1
+
+      _vsego=dopl->summa
+      _koef=_vsego/smeta->vsego
+      _itog3=_vsego/(100+nds_pr)*100
+      _nds_sum=_vsego-_itog3
+      _itog2=_itog3/(100+rent_pr)*100
+      _rent_sum=_itog3-_itog2
+      _itog1t=_itog2/(100+ober_pr)*100
+      _ober_sum=_itog2-_itog1t
+      _itog1=_itog1t*_k_itog1
+      _trns_sum=_itog1t*_k_trns
+      _mats_sum=_itog1t*_k_mats
+      _uso_sum=_itog1t*_k_uso
+      _osn_zp=_itog1/(100+otch_pr+ceh_pr)*100
+      _otch_sum=_osn_zp/100*otch_pr
+      _ceh_sum=_itog1-_osn_zp-_otch_sum
+
+      summs[1]:=summs[1]+_osn_zp
+      summs[2]:=summs[2]+_otch_sum
+      summs[3]:=summs[3]+_ceh_sum
+      summs[4]:=summs[4]+_trns_sum
+      summs[5]:=summs[5]+_mats_sum
+      summs[6]:=summs[6]+_uso_sum
+      summs[7]:=summs[7]+_ober_sum
+      summs[8]:=summs[8]+_rent_sum
+      summs[9]:=summs[9]+_itog3
+      summs[10]:=summs[10]+_nds_sum
+      summs[11]:=summs[11]+_vsego
+      ss1:=ss+transform(_osn_zp  ,"9999999.99")+"|"+;
+              transform(_otch_sum,"9999999.99")+"|"+;
+              transform(_ceh_sum ,"9999999.99")+"|"+;
+              transform(_trns_sum,"9999999.99")+"|"+;
+              transform(_mats_sum,"9999999.99")+"|"+;
+              transform(_uso_sum ,"9999999.99")+"|"+;
+              transform(_ober_sum,"9999999.99")+"|"+;
+              transform(_rent_sum,"9999999.99")+"|"+;
+              transform(_itog3   ,"9999999.99")+"|"+;
+              transform(_nds_sum ,"9999999.99")+"|"+;
+              transform(_vsego   ,"9999999.99")
+      aadd(stroki,ss1+"|"+transform(dopl->tprov,"999"))
+      prov_sums[dopl->tprov]:=prov_sums[dopl->tprov]+_vsego
+      aadd(stroki,strrepl(s_empty,"Сметные услуги",30))
+      aadd(stroki,divisor)
+     else
+      sele dschet
+
+      _vsego=dopl->summa
+      _koef=_vsego/dschet->fsumma
+      _sum=_vsego/(100+prnds)*100
+
+      summs[9]:=summs[9]+_sum
+      summs[10]:=summs[10]+(_vsego-_sum)
+      summs[11]:=summs[11]+_vsego
+      ss1:=ss+replicate("          |",8)+transform(_sum,"9999999.99")+"|"+;
+              transform(_vsego-_sum,"9999999.99")+"|"+transform(_vsego,"9999999.99")
+      aadd(stroki,ss1+"|"+transform(dopl->tprov,"999"))
+      prov_sums[dopl->tprov]:=prov_sums[dopl->tprov]+_vsego
+      aadd(stroki,strrepl(s_empty,left("(вр./см.) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),30))
+      aadd(stroki,divisor)
+     endif    
+     sele dschet
+ 
+    case sch_tip=2	//Транспортные
+
+     _vsego=dopl->summa
+     _koef=_vsego/dschet->fsumma
+     trns_sum_:=_Vsego/(100+prnds)*100
+
+     summs[4]:=summs[4]+trns_sum_
+     summs[9]:=summs[9]+trns_sum_
+     summs[10]:=summs[10]+(_Vsego-trns_sum_)
+     summs[11]:=summs[11]+_vsego
+     ss1:=ss+replicate("          |",3)+transform(trns_sum_,"9999999.99")+"|"+;
+             replicate("          |",4)+transform(trns_sum_,"9999999.99")+"|"+;
+             transform(_vsego-trns_sum_,"9999999.99")+"|"+transform(_vsego,"9999999.99")
+     aadd(stroki,ss1+"|"+transform(dopl->tprov,"999"))
+      prov_sums[dopl->tprov]:=prov_sums[dopl->tprov]+_vsego
+     aadd(stroki,strrepl(s_empty,"Услуги транспорта",30))
+     aadd(stroki,divisor)
+ 
+    case sch_tip=3	//Прочие
+     smt_id=getbyid("ulist",usl_id,"sm_id")
+     if valtype(smt_id)='N' .and. smt_id>0
+      seekbyid("smeta",smt_id)
+      if found() .and. smeta->itog1<>0
+ 
+       sele smeta
+       _k_itog1=smeta->itog1t/smeta->itog1
+       _k_trns=smeta->trns_sum/smeta->itog1
+       _k_mats=smeta->mats_sum/smeta->itog1
+       _k_uso=smeta->USO_SUM/smeta->itog1
+  
+       _vsego=dopl->summa
+       _koef=_vsego/smeta->vsego
+       _itog3=_vsego/(100+nds_pr)*100
+       _nds_sum=_vsego-_itog3
+       _itog2=_itog3/(100+rent_pr)*100
+       _rent_sum=_itog3-_itog2
+       _itog1t=_itog2/(100+ober_pr)*100
+       _ober_sum=_itog2-_itog1t
+       _itog1=_itog1t*_k_itog1
+       _trns_sum=_itog1t*_k_trns
+       _mats_sum=_itog1t*_k_mats
+       _uso_sum=_itog1t*_k_uso
+       _osn_zp=_itog1/(100+otch_pr+ceh_pr)*100
+       _otch_sum=_osn_zp/100*otch_pr
+       _ceh_sum=_itog1-_osn_zp-_otch_sum
+
+       summs[1]:=summs[1]+_osn_zp
+       summs[2]:=summs[2]+_otch_sum
+       summs[3]:=summs[3]+_ceh_sum
+       summs[4]:=summs[4]+_trns_sum
+       summs[5]:=summs[5]+_mats_sum
+       summs[6]:=summs[6]+_uso_sum
+       summs[7]:=summs[7]+_ober_sum
+       summs[8]:=summs[8]+_rent_sum
+       summs[9]:=summs[9]+_itog3
+       summs[10]:=summs[10]+_nds_sum
+       summs[11]:=summs[11]+_vsego
+       ss1:=ss+transform(_osn_zp  ,"9999999.99")+"|"+;
+               transform(_otch_sum,"9999999.99")+"|"+;
+               transform(_ceh_sum ,"9999999.99")+"|"+;
+               transform(_trns_sum,"9999999.99")+"|"+;
+               transform(_mats_sum,"9999999.99")+"|"+;
+               transform(_uso_sum ,"9999999.99")+"|"+;
+               transform(_ober_sum,"9999999.99")+"|"+;
+               transform(_rent_sum,"9999999.99")+"|"+;
+               transform(_itog3   ,"9999999.99")+"|"+;
+               transform(_nds_sum ,"9999999.99")+"|"+;
+               transform(_vsego   ,"9999999.99")
+       aadd(stroki,ss1+"|"+transform(dopl->tprov,"999"))
+       prov_sums[dopl->tprov]:=prov_sums[dopl->tprov]+_vsego
+       aadd(stroki,strrepl(s_empty,left(GetByID("ULIST",dschet->usl_id,"USLUGA"),49),30))
+       aadd(stroki,divisor)
+      endif
+     else
+
+      _vsego=dopl->summa
+      _sum:=_vsego/(100+prnds)*100
+      summs[9]:=summs[9]+_sum
+      summs[10]:=summs[10]+(_vsego-_sum)
+      summs[11]:=summs[11]+_vsego
+      ss1:=ss+replicate("          |",8)+transform(_sum,"9999999.99")+"|"+;
+              transform(_vsego-_sum,"9999999.99")+"|"+transform(_vsego,"9999999.99")
+      aadd(stroki,ss1+"|"+transform(dopl->tprov,"999"))
+      prov_sums[dopl->tprov]:=prov_sums[dopl->tprov]+_vsego
+      aadd(stroki,strrepl(s_empty,left("(б/к) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),30))
+      aadd(stroki,divisor)
+     endif    
+     sele dschet
+ 
+    case sch_tip=6	//Вручную
+
+     _vsego=dopl->summa
+
+     _sum:=_vsego/(100+prnds)*100
+     summs[9]:=summs[9]+_sum
+     summs[10]:=summs[10]+(_vsego-_sum)
+     summs[11]:=summs[11]+_vsego
+     ss1:=ss+replicate("          |",8)+transform(_sum,"9999999.99")+"|"+;
+             transform(vsego-_sum,"9999999.99")+"|"+transform(vsego,"9999999.99")
+     aadd(stroki,ss1+"|"+transform(dopl->tprov,"999"))
+     prov_sums[dopl->tprov]:=prov_sums[dopl->tprov]+_vsego
+     aadd(stroki,strrepl(s_empty,left("(вр.) "+GetByID("ULIST",dschet->usl_id,"USLUGA"),49),30))
+     aadd(stroki,divisor)
+  
+   endcase
+  endif
+
+  sele dopl
+  skip
+ enddo
+ scrrest()
+endif
+
+ss:=left(s_empty,79)
+for i=1 to 11
+ ss:=ss+"|"+transform(summs[i],"9999999.99")
+endfor
+aadd(stroki,ss)
+aadd(stroki,divisor)
+nn:=0
+for i=1 to 9
+ if prov_sums[i]!=0
+  aadd(stroki,"Всего по проводке №"+astr(i)+" : "+transform(prov_sums[i],"999999999.99"))
+  nn:=nn+prov_sums[i]
+ endif
+endfor
+if nn!=0
+ aadd(stroki,"------------------------------------------------")
+ aadd(stroki,"Итого по проводкам   : "+transform(nn,"999999999.99"))
+endif
+aadd(stroki,chr(12))
+TextView(0,0,79,24,"gr+/b",stroki)
+
+retu

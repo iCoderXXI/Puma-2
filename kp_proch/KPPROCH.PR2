@@ -1,0 +1,111 @@
+
+func kp_proch(yr,mn)
+local arr:={},fltr:=""
+local n,ndsval
+
+ use j:\common\puma-2\bases\zakazch.dbf alias ZAKAZCH shared new
+ set index to j:\common\puma-2\bases\zakazch.CDX
+ set order to 1
+ go top
+
+ use j:\common\puma-2\bases\dschet.dbf alias DSCHET shared new
+ set index to j:\common\puma-2\bases\dschet.CDX
+ set order to 1
+ go top
+
+ use j:\common\puma-2\bases\dopl.DBF alias DOPL shared new
+ set index to j:\common\puma-2\bases\dopl.CDX
+ set order to 2
+ go top
+
+ fltr:="(year(DOPL->odate)="+astr(yr)+;
+       " .or. year(DOPL->odate)="+astr(yr-2000)+;
+       ") .and. month(odate)="+astr(mn)+" .and. DOPL->sch_id!=0"
+ set filter to &fltr
+ go top
+
+
+
+
+ // Отображает все суммы по счетам-фактурам выписанным 
+ // по 31/12/2005 г. включительно по оплатам за yr/mn  
+
+ do while !eof()
+
+  sele dschet
+  go top
+  seek ID_ZL9(dopl->sch_id)
+  if found()
+   sele zakazch
+   go top
+   seek ID_ZL9(dschet->zak_id)
+   if found() .and. year(dschet->sdate)<2006
+    NDSVAL=iif(dschet->prnds=20,dopl->summa/120*20,;
+            iif(dschet->prnds=18,dopl->summa/118*18,0))
+    aadd(arr,{;
+              dschet->sdate, Str(dschet->sch_no,10),;
+              zakazch->zakazch, zakazch->inn, zakazch->kpp,;
+              dopl->odate, dopl->summa,;
+              iif(dschet->prnds=18,dopl->summa-NDSVAL,0),;
+              iif(dschet->prnds=18,NDSVAL,0),0,0,0,;
+              iif(dschet->prnds=20,dopl->summa-NDSVAL,0),;
+              iif(dschet->prnds=20,NDSVAL,0),0})
+   endif
+  endif
+
+  sele dopl
+  skip
+ enddo
+
+
+
+
+ // Отображает все суммы по выписанным счетам-фактурам за yr/mn начиная с 1/1/2006 г.
+ if yr>=2006
+
+  sele dschet
+  set order to 2
+  go top
+ 
+  shablon= right("0000"+alltrim(str(yr)),4)+right("00"+alltrim(str(mn)),2)
+  seek shablon
+  
+  if found() 
+            
+   do while !eof() .and. year(sdate)=yr .and. month(sdate)=mn
+    if dschet->fsumma>0 .and. dschet->sch_tip!=5
+
+     sele zakazch
+     go top
+     seek ID_ZL9(dschet->zak_id)
+     if found()
+
+      NDSVAL=iif(dschet->prnds=20,dschet->fsumma/120*20,;
+              iif(dschet->prnds=18,dschet->fsumma/118*18,0))
+      aadd(arr,{;
+                dschet->sdate, Str(dschet->sch_no,10),;
+                zakazch->zakazch, zakazch->inn, zakazch->kpp,;
+                dschet->sdate, dschet->fsumma,;
+                iif(dschet->prnds=18,dschet->fsumma-NDSVAL,0),;
+                iif(dschet->prnds=18,NDSVAL,0),0,0,0,;
+                iif(dschet->prnds=20,dschet->fsumma-NDSVAL,0),;
+                iif(dschet->prnds=20,NDSVAL,0),0})
+     endif 
+    endif 
+    sele dschet
+    skip      
+   enddo
+ 
+  else
+   alert('не найдены счета в базе dschet.dbf (прочие услуги) по шаблону даты '+shablon)
+  endif
+ endif
+
+ sele dschet
+ use
+ sele zakazch
+ use
+ sele dopl
+ use
+
+retu arr

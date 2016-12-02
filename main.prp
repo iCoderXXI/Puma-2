@@ -1,0 +1,390 @@
+#include "SixCDX.ch"
+
+
+retu
+
+
+func sprav(_nb)
+local x,y,xx:=0,yy,i,dta:={},ss
+local clr:={"b+/gr*,gr+/b,,,gr/gr*",;
+            "b/g*,w+/b*,,,g+/g*",;
+            "b/g*,w+/b*,,,g+/g*"},ocol
+local clr1:={"gr/gr*","g/g*","g/g*"}
+local clr2:={"r+/gr*","b/g*","w+/g*"}
+local cbe:={{.t.,.t.,.t.,.t.,.t.,.t.,.t.,.t.,.t.,.t.,.f.,.t.,.t.,.t.},;
+           {.t.,.t.,.t.,.t.,.t.,.t.,.t.,.t.,.t.,.t.,.t.},{.t.,.t.,.t.,.t.}}
+local osel:=select(), ofltr:=dbfilter(), orn:=recno(),nn,yy2
+local HEADER:={"‘€‚—ˆŠˆ","€Š’› ¨ ‘‚„›","‘—…’€"}
+
+priv  nb,smtsums:={0,0,0,0,0,0,0,0,0}
+priv  spr_data:={{;
+      {'   €Šˆ                   ','rDBE_sprav("RDF_BANK")'},;
+      {'   ƒ„€                  ','rDBE_sprav("RDF_CITY")'},;
+      {'   …„.ˆ‡Œ….               ','rDBE_sprav("RDF_EDIZM")'},;
+      {'   ‡€Š€‡—ˆŠˆ               ','rDBE_sprav("RDF_Zakazch")'},;
+      {'   Œ€’…ˆ€‹›               ','rDBE_sprav("RDF_MLIST")'},;
+      {'   ”…‘‘ˆˆ               ','rDBE_sprav("RDF_PROFES")'},;
+      {'   ‘‹“†›                  ','rDBE_sprav("RDF_SLUJBA")'},;
+      {'   ’€‘’               ','rDBE_sprav("RDF_TRANS")'},;
+      {'   “‹ˆ–›                   ','rDBE_sprav("RDF_STREET")'},;
+      {'   “‘‹“ƒˆ                  ','rDBE_ulist()'},;
+      {'ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ',''},;
+      {'   €Š’› ¨ ‘‚„›            ','sprav(1)'},;
+      {'   ‘—…’€                   ','sprav(2)'},;
+      {'   Š€‹œŠ“‹Ÿ–ˆˆ € “‘‹“ƒˆ   ','smet_calc()'},;
+      {'   ü ¯®á«¥¤­¥£® áç¥â       ','LastSN()'}},{;
+;
+      {'   €Š’› ‘‚…Šˆ ’…Š“™.             ','saktsv(pudog->zak_id)'},;
+      {'   €Š’› ‘‚…Šˆ ‚›€’œ            ','saktsv()'},;
+      {'   ……‘’ ‘—…’‚                  ','rscht()'},;
+      {'   ‘‚„›‰ ’—…’                  ','crt_svod()'},;
+      {'   ‘‚„›‰ ’—…’ (‘†€’›‰)         ','SJ_SVOD()'},;
+      {'   ‘‚„›‰ ’—…’(’€‘’)       ','trns_svod()'},;
+      {'   ‘‚„  Œ€’…ˆ€‹€Œ             ','crt_svodm()'},;
+      {'   ‘‚„  „……’€Œ (…)        ','svod_debit()'},;
+      {'   ‘‚„  „……’€Œ („)        ','svod_budget()'},;
+      {'   ……‘’ ‘’ˆ• ‘—…’‚        ','strn_reestr()'},;
+      {'   €‘˜ˆ”‚Š€ ‘—…’‚ ‡€ …ˆ„   ','rasshifr()'},;
+      {'   €‘˜ˆ”. ‘—.…„‹. ‡€ ….   ','rasshifr_pr()'},;
+      {'   €‘˜ˆ”‚Š€ ‹€’ ‡€ …ˆ„    ','opl_rasshifr()'},;
+      {'   ‘‚„  ‘—.­  …„‹.         ','crt_svpr()'}},{;
+;
+      {'   ‘—…’€ 1 ‘’. ’…Š“™.     ','f_schet(pudog->zak_id)'},;
+      {'   ‘—…’€ 1 ‘’. ‚›€’œ    ','f_schet()'},;
+      {'   ‘—…’€ ‚“—“ ’…Š“™.    ','r_schet(pudog->zak_id)'},;
+      {'   ‘—…’€ 1 ‚“—.‚›€’œ   ','r_schet()'}}}
+
+if _nb=NIL .or. _nb<0 .or. _nb>2
+ _nb=0
+endif
+
+nb:=_nb+1
+
+ocol:=setcolor(clr[nb])
+
+xx:=0
+yy:=len(spr_data[nb])
+yy2:=int(yy/2)
+for i=1 to yy
+ if xx<len(spr_data[nb,i,1])
+  xx=len(spr_data[nb,i,1])
+ endif
+ aadd(dta,spr_data[nb,i,1])
+endfor
+
+scrsave()
+
+ramka(13-yy2-1,40-xx/2-1,13-yy2+yy,40+xx/2,clr1[nb])
+nort({{"ESC","‚›•„"},{"ENTER","’Š›’œ"},{"‘’…‹Šˆ","……Œ…™."}},24)
+setcolor(clr2[nb])
+ss=" ú"+HEADER[NB]+"ú "
+@13-yy2-1,40-len(ss)/2 say ss
+setcolor(clr[nb])
+achoice(13-yy2,40-xx/2,13-yy2+yy-1,40+xx/2-1,dta,cbe[nb],"sprav_fnc",spravn)
+scrrest()
+setcolor(ocol)
+
+sele &osel
+set filter to &ofltr
+goto orn
+
+retu
+
+
+func sprav_fnc(a,nCEl,b)
+local lk:=lastkey(),n,ocol:=setcolor()
+
+setcolor(ocol)
+
+do case 
+ case lk=13
+  spravn:=nCEl
+  n=&(spr_data[nb,nCEl,2])
+  setcolor(ocol)
+  KERASE("!")
+  retu 2
+ 
+ case lk=27
+  KERASE("!")
+  retu 0
+  
+endcase
+
+retu 2
+
+
+
+func puma_main(prm)
+
+ sprav()
+
+ Finish=.t.
+retu
+
+
+
+
+
+
+func rDBE_sprav(RDF_a)
+local ocol:=setcolor("gr+/b,w+/gr,,,gr+/n")
+
+scrsave()
+
+ramka(4,2,22,77,"b+/b")
+nort({{"ESC","‚›•„"},{"…‹","…„€Š’."},{"‘’…‹Šˆ","……Œ…™."},{"F7","ˆ‘Š"}},24)
+set order to 2
+rDBEdit(5,3,21,76,&RDF_A,"","³","Ü",.t.)
+
+setcolor(ocol)
+
+scrrest()
+
+retu
+
+
+
+
+func rDBE_ulist()
+local ocol:=setcolor("gr+/b,w+/gr,,,gr+/n")
+
+scrsave()
+
+ramka(4,2,22,77,"b+/b")
+nort({{"F3","Š€‹œŠ."},{"ESC","‚›•„"},{"…‹","…„€Š’."},{"‘’…‹Šˆ","……Œ…™."},{"F7","ˆ‘Š"}},24)
+set order to 2
+rDBEdit(5,3,21,76,RDF_ULIST,"frde_ulist","³","Ü",.t.)
+
+setcolor(ocol)
+
+scrrest()
+
+retu
+
+
+
+
+func frde_ulist()
+local lk:=lastkey(),ofltr:=ulist->(dbfilter()),orn:=ulist->(recno())
+local _id:=ulist->id,ofltr1,opos1,smt_id:=-99
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("„®¡ ¢¨âì ­®¢ãî áâà®ªã?",{" … ’"," „ € "})=2
+   rDBE_refresh:=.t. 
+   sele ulist
+   set filter to   
+   _id:=mNetAppBl(100,5)
+   set filter to &ofltr
+   go top
+   seek id_zl9(_id)
+   KErase(chr(32))
+  endif
+
+ case lk=-2
+  sele smeta
+  ofltr1:=smeta->(dbfilter())
+  opos1:=smeta->(recno())
+  set filter to dog_id=-1
+  go top
+  smt_id=-99
+  if FTAMenu(2,2,20,74,"comment1","Š «ìªã«ïæ¨¨","b/w*,gr+/b,,,w+/n",.t.,"ed_smeta(-1,.t.)",.f.)
+   if lastkey()!=27
+    smt_id=ID    
+   else
+    smt_id=-99
+   endif
+  endif
+  sele smeta
+  set filter to &ofltr1
+  go top
+  goto opos1
+  sele ulist
+  set filter to &ofltr
+  go top
+  goto orn
+  if ulist->id=_id .and. smt_id!=-99
+   mrlockF(100,5)
+   repl sm_id with smt_id
+   unlock
+  endif
+  rDBE_refresh:=.t.
+  finish:=.f.
+
+endcase
+retu
+
+
+
+
+
+
+
+
+func LastSN()
+local orn:=dschet->(recno()), ofltr:=dschet->(dbfilter())
+local MaxN:=0, fyear:=year(date())
+local ocol:=setcolor("b/bg*,w+/b,,,r+/r")
+
+fyear:=VarEdit("‚¢¥¤¨â¥ £®¤:",fyear)
+
+sele dschet
+set filter to &("year(sdate)="+astr(fyear))
+set order to 3
+go top
+
+scrsave()
+ 
+ramka(2,2,22,77,"bg/bg*")
+nort({{"F9","ˆ’."},{"ESC","‚›•„"}},24)
+rDBEdit(3,3,21,76,RDF_fSCHTr,"","³","Ü",.t.)
+ 
+setcolor(ocol)
+ 
+scrrest()
+
+go top
+go bottom
+MaxN:=dschet->Sch_NO
+
+alert("ü ¯®á«¥¤­¥£® áç¥â  - "+astr(MaxN))
+
+set filter to &ofltr
+go top
+goto ORN
+
+retu
+
+
+
+func KillDupes()
+local zdupe,zmain,_smeta:={},_pudog:={},_dschet:={},i:=0
+ sele zakazch
+ go top
+ if FTAMenu(2,2,20,74,"zakazch","‡ ª §ç¨ª¨ (‚›…ˆ’… „“‹œ)","b/w*,gr+/b,,,w+/n",.f.,"")
+  zdupe=zakazch->id
+  if FTAMenu(2,2,20,74,"zakazch","‡ ª §ç¨ª¨ (‚›…ˆ’… ‘‚ƒ)","b/w*,gr+/b,,,w+/n",.f.,"")
+   zmain=zakazch->id
+   if zmain=zdupe
+    alert('‚ë ¢ë¡à «¨ ®¤­®£® ¨ â®£® ¦¥ § ª §ç¨ª ! ”ã­ªæ¨ï ®â¬¥­ï¥âáï.')
+    retu
+   endif
+   if alert("‚ë ¤¥©áâ¢¨â¥«ì­® å®â¨â¥ ¯à¨á®¥¤¨­¨âì;;"+;
+            "("+astr(zdupe)+")"+alltrim(GetByID("ZAKAZCH",zdupe,"ZAKAZCH"))+";; ª ;;"+;
+            "("+astr(zmain)+")"+alltrim(GetByID("ZAKAZCH",zmain,"ZAKAZCH"))+"? ; ",{" … ’"," „ € "})=2
+    if alert("‚ˆŒ€ˆ…!!! „€… „…‰‘’‚ˆ… …‚‡Œ† “„…’ ’Œ…ˆ’œ!;;‚ë â®ç­® ã¢¥à¥­ë, çâ® ¤¥©áâ¢¨â¥«ì­® å®â¨â¥ ¯à¨á®¥¤¨­¨âì;;"+;
+             "("+astr(zdupe)+")"+alltrim(GetByID("ZAKAZCH",zdupe,"ZAKAZCH"))+";; ª ;;"+;
+             "("+astr(zmain)+")"+alltrim(GetByID("ZAKAZCH",zmain,"ZAKAZCH"))+"? ; ",{" … ’"," „ € "})=2
+
+     sele smeta
+     set filter to &("smeta->zak_id="+astr(zdupe))
+     go top
+     do while !eof()
+      aadd(_smeta,smeta->id)
+      showprogress(60,len(_smeta),len(_smeta),.t.)
+      skip
+     enddo        
+     set filter to
+
+     sele pudog
+     set filter to &("pudog->zak_id="+astr(zdupe))
+     go top
+     do while !eof()
+      aadd(_pudog,pudog->id)
+      showprogress(60,len(_pudog),len(_pudog),.t.)
+      skip
+     enddo        
+     set filter to
+
+     sele dschet
+     set filter to &("dschet->zak_id="+astr(zdupe))
+     go top
+     do while !eof()
+      aadd(_dschet,dschet->id)
+      showprogress(60,len(_dschet),len(_dschet),.t.)
+      skip
+     enddo        
+     set filter to
+
+     sele pudog
+     set order to 1
+     mflockF(100,5)
+     scrsave()
+     for i=1 to len(_pudog)
+      showprogress(60,i,len(_pudog),.t.)
+      go top
+      seek id_zl9(_pudog[i])
+      if found()
+       repl pudog->zak_id with zmain
+      endif
+     endfor
+     scrrest()
+     unlock
+     set order to 2
+     go top
+
+     sele smeta
+     set order to 1
+     mflockF(100,5)
+     scrsave()
+     for i=1 to len(_smeta)
+      showprogress(60,i,len(_smeta),.t.)
+      go top
+      seek id_zl9(_smeta[i])
+      if found()
+       repl smeta->zak_id with zmain
+      endif
+     endfor
+     scrrest()
+     unlock
+     set order to 2
+     go top
+
+     sele dschet
+     set order to 1
+     mflockF(100,5)
+     scrsave()
+     for i=1 to len(_dschet)
+      showprogress(60,i,len(_dschet),.t.)
+      go top
+      seek id_zl9(_dschet[i])
+      if found()
+       repl dschet->zak_id with zmain
+      endif
+     endfor
+     scrrest()
+     unlock
+     set order to 2
+     go top
+
+     sele zakazch
+     set order to 1
+     go top
+     seek id_zl9(zdupe)
+     if found()
+      mflockF(100,5)
+      dele
+      unlock
+     endif
+     set order to 2
+     go top
+    
+    endif
+   endif
+  endif
+ endif 
+retu
+
+
+
+
+
+
+
+
+
+

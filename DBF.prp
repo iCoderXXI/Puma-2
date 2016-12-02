@@ -1,0 +1,631 @@
+//===============================================================
+local i,j,chkcdx:=.f.
+local aDir,n_dbf,n_cdx
+
+public BASES:={},BS_TMP:={}
+public fltrposarr:={},fpa_n:=0
+
+ #include "fileio.ch"
+ #include "setcurs.ch"
+ #include "SixCDX.ch"
+
+ #define NULLC ""
+ #define NTX_EXPR_SIZE 256
+ #define NTX_KEY_START 22
+
+aadd(bases,;
+        {"ZAKAZCH",	{{'ID'      ,'n', 6,0},;
+                   	 {'ZAKAZCH' ,'c',60,0},;
+                   	 {'SHRTNAME','c',20,0},;
+                   	 {'BUD_ID'  ,'n', 6,0},;
+                   	 {'NACH'    ,'c',50,0},;
+                   	 {'CITY_ID' ,'n', 6,0},;
+                   	 {'STR_ID'  ,'n', 6,0},;
+                   	 {'APPART'  ,'c',20,0},;
+                   	 {'INDEX'   ,'n', 8,0},;
+                   	 {'TEL'     ,'c',15,0},;
+                   	 {'PL_ID'   ,'N', 6,0},;
+                   	 {'BANK_ID' ,'N', 6,0},;
+                   	 {'R_S'     ,'C',20,0},;
+                   	 {'INN'     ,'C',15,0},;
+                   	 {'KPP'     ,'C', 9,0},;
+                   	 {'BIK'     ,'C', 9,0},;
+                   	 {'OKPO'    ,'C', 8,0},;
+                   	 {'OKONH'   ,'C', 8,0},;
+                   	 {'K_S'     ,'C',20,0},;
+                   	 {'in_rep'  ,'L', 1,0}},;
+	{"ID","ZAKAZCH","BUD_ID","pl_id"},.f.,.t.})
+
+aadd(bases,;
+	{"DT",		{{'ID'      ,'n', 6,0},;
+ 		 	 {'DT_CMNT' ,'C',20,0}},;
+	{"ID","DT_CMNT"},.f.,.f.})
+
+aadd(bases,;
+	{"BUDGET",	{{'ID'      ,'n', 6,0},;
+ 		 	 {'BUDGET'  ,'C',30,0}},;
+	{"ID","BUDGET"},.f.,.f.})
+
+aadd(bases,;
+	{"VNDS",	{{'ID'      ,'n', 6,0},;
+ 		 	 {'VNDST'   ,'C',10,0}},;
+	{"ID","VNDST"},.f.,.f.})
+
+aadd(bases,;
+	{"SLUJBA",	{{'ID'      ,'n', 6,0},;
+		         {'SLUJBA'  ,'C',40,0}},;
+	{"ID","SLUJBA"},.t.,.t.})
+
+aadd(bases,;
+        {"BANK",	{{'ID'      ,'n', 6,0},;
+			 {'B_code'  ,'C',10,0},;
+			 {'BANK'    ,'C',40,0}},;
+	{"ID","BANK"},.t.,.t.})
+
+aadd(bases,;
+        {"ISPOLN",	{{'ID'      ,'n', 6,0},;
+                	 {'sm_ID'   ,'n', 6,0},;
+                	 {'date'    ,'d', 8,0},;
+  			 {'PROF_ID' ,'n', 6,0},;
+  			 {'RAZR'    ,'n', 2,0},;
+  			 {'CHEL_N'  ,'n', 2,0},;
+  			 {'CHAS'    ,'n', 5,2},;
+  			 {'SUMM'    ,'n',12,3}},;
+	{"ID","DATE"},.t.,.f.})
+
+aadd(bases,;
+        {"IWORK",	{{'ID'      ,'n', 6,0},;
+                	 {'sm_ID'   ,'n', 6,0},;
+                	 {'date'    ,'d', 8,0},;
+  			 {'USL_ID'  ,'n', 6,0},;
+                	 {'Kolvo'   ,'n', 8,3},;
+  			 {'COMMENT' ,'C',20,0}},;
+	{"ID","DATE","sm_id"},.f.,.f.})
+
+aadd(bases,;
+        {"ITRANS",	{{'ID'      ,'n', 6,0},;
+                	 {'Dog_ID'  ,'n', 6,0},;
+                	 {'sm_ID'   ,'n', 6,0},;
+			 {'gp'      ,'L', 1,0},;	
+                	 {'date'    ,'d', 8,0},;
+  			 {'TRANS_ID','n', 6,0},;
+                	 {'CHas'    ,'n', 6,2},;
+                	 {'pCHas'   ,'n', 6,2},;
+                	 {'Cena'    ,'n',10,3},;
+                	 {'Summa'   ,'n',11,3},;
+                	 {'PSumma'  ,'n',11,3},;
+                  	 {'sch_id'  ,'N', 9,0},;
+                  	 {'sch_tmp' ,'L', 1,0},;
+                  	 {'sch_tmp1','L', 1,0},;
+                  	 {'COMMENT1','c',50,0},;
+                  	 {'COMMENT2','c',50,0},;
+                  	 {'COMMENT3','c',50,0}},;
+	{"ID","DATE"},.f.,.f.})
+
+aadd(bases,;
+        {"SMETA",	{{'ID'      ,'n', 6,0},;
+			 {'DOG_ID'  ,'n', 6,0},;
+			 {'sch_ID'  ,'n', 6,0},;
+			 {'CDATE'   ,'d', 8,0},;
+			 {'DDATE'   ,'d', 8,0},;
+                  	 {'ZAK_ID'  ,'n', 6,0},;
+                  	 {'SLUJ_ID' ,'n', 6,0},;
+                  	 {'JEU'     ,'c',20,0},;
+                  	 {'RAB_CHAS','N', 5,2},;
+                  	 {'OSN_ZP'  ,'N',10,2},;
+                  	 {'OTCH_PR' ,'N', 6,2},;
+                  	 {'OTCH_SUM','N',10,2},;
+                  	 {'CEH_PR'  ,'N', 6,2},;
+                  	 {'CEH_SUM' ,'N',10,2},;
+                  	 {'ITOG1'   ,'N',10,2},;
+                  	 {'TRNS_CH' ,'N', 6,2},;
+                  	 {'TRNS_SUM','N',10,2},;
+                  	 {'MATs_SUM','N',10,2},;
+                  	 {'USO_SUM' ,'N',10,2},;
+                  	 {'ITOG1t'  ,'N',10,2},;
+                  	 {'OBER_PR' ,'N', 6,2},;
+                  	 {'OBER_SUM','N',10,2},;
+                  	 {'ITOG2'   ,'N',10,2},;
+                  	 {'RENT_PR' ,'N', 6,2},;
+                  	 {'RENT_SUM','N',10,2},;
+                  	 {'ITOG3'   ,'N',10,2},;
+                  	 {'NDS_PR'  ,'N', 6,2},;
+                  	 {'NDS_SUM' ,'N',10,2},;
+                  	 {'COMMENT1','c',50,0},;
+                  	 {'COMMENT2','c',50,0},;
+                  	 {'COMMENT3','c',50,0},;
+                  	 {'VSEGO'   ,'N',10,2}},;
+	{"ID","CDATE","dog_id","zak_id"},.f.,.f.})
+
+aadd(bases,;
+        {"MList",	{{'ID'      ,'n', 6,0},;
+			 {'MATERIAL','C',25,0},;
+			 {'EI_ID'   ,'n', 6,0},;
+                         {'Alone'   ,'l', 1,0},;
+                         {'groupto' ,'n', 6,0}},;
+	{"ID","MATERIAL"},.t.,.t.})
+
+aadd(bases,;
+        {"UList",	{{'ID'      ,'n', 6,0},;
+			 {'SLUJ_ID' ,'n', 6,0},;
+			 {'USLUGA'  ,'C',75,0},;
+			 {'EI_ID'   ,'n', 6,0},;
+                         {'Alone'   ,'l', 1,0},;
+                         {'groupto' ,'n', 6,0},;
+			 {'sm_id'   ,'n', 6,0},;
+			 {'other'   ,'l', 1,0}},;
+	{"ID","USLUGA","GROUPTO"},.t.,.t.})
+
+aadd(bases,;
+        {"EdIzm",	{{'ID'      ,'n', 6,0},;
+			 {'EdIzm'   ,'C', 5,0}},;
+	{"ID","EDIZM"},.f.,.t.})
+
+aadd(bases,;
+        {"Profes",	{{'ID'      ,'n', 6,0},;
+			 {'Profes'  ,'C',30,0}},;
+	{"ID","PROFES"},.t.,.t.})
+
+aadd(bases,;
+        {"Mats",	{{'ID'      ,'n', 6,0},;
+			 {'DOG_ID'  ,'n', 6,0},;
+			 {'sm_ID'   ,'n', 6,0},;
+                	 {'date'    ,'d', 8,0},;
+			 {'Mat_ID'  ,'n', 6,0},;
+			 {'IS_MAT'  ,'L', 1,0},;
+			 {'KolVo'   ,'n', 9,3},;
+			 {'pKolVo'  ,'n', 9,3},;
+			 {'Cena'    ,'n',11,3},;
+			 {'Summa'   ,'n',12,3},;
+			 {'pSumma'  ,'n',12,3},;
+			 {'pNDS'    ,'n', 3,0},;
+			 {'NDS'     ,'n',10,2},;
+			 {'NDS_p'   ,'n',10,2},;
+			 {'VNDS'    ,'n', 1,0},;
+			 {'SummaD'  ,'n',12,3},;
+			 {'pSummaD' ,'n',12,3},;
+			 {'pNSP'    ,'n', 3,0},;
+			 {'NSP'     ,'n',10,2},;
+			 {'NSP_p'   ,'n',10,2},;
+			 {'SummaS'  ,'n',12,3},;
+			 {'pSummaS' ,'n',12,3},;
+                  	 {'sch_id'  ,'N', 9,0},;
+                  	 {'sch_tmp' ,'L', 1,0},;
+                  	 {'sch_tmp1','L', 1,0},;
+                  	 {'COMMENT1','c',50,0},;
+                  	 {'COMMENT2','c',50,0},;
+                  	 {'COMMENT3','c',50,0}},;
+	{"ID","DATE"},.f.,.f.})
+
+aadd(bases,;
+        {"TRANS",	{{'ID'      ,'n', 6,0},;
+			 {'TRANS'   ,'C',30,0}},;
+	{"ID","trans"},.t.,.t.})
+
+aadd(bases,;
+        {"CITY",	{{'ID'      ,'n', 6,0},;
+			 {'CITY'    ,'C',40,0}},;
+	{"ID","CITY"},.t.,.t.})
+
+aadd(bases,;
+        {"STREET",	{{'ID'      ,'n', 6,0},;
+			 {'STREET'  ,'C',40,0}},;
+	{"ID","STREET"},.t.,.t.})
+
+aadd(bases,;
+        {"pudog",	{{'ID'      ,'n', 9,0},;
+			 {'DOG_NO'  ,'c',10,0},;
+                  	 {'ZAK_ID'  ,'n', 6,0},;
+                  	 {'DOG_DT'  ,'d', 8,0},;	//Дата заключения
+                  	 {'U_NACH'  ,'d', 8,0},;	//Начало оказания услуг
+                  	 {'U_KON'   ,'d', 8,0},;	//Конец оказания услуг
+                  	 {'P_CENA'  ,'n',11,2},;	//Предварительная цена
+                  	 {'F_CENA'  ,'n',11,2},;	//Фактическая цена
+			 {'DOG_TIP' ,'n', 1,0}},;	// c/t/p/m
+	{"ID","dog_dt","dog_tip","Zak_ID"},.f.,.f.})
+
+aadd(bases,;
+        {"dschet",	{{'ID'      ,'n', 9,0},;	//ID
+			 {'DOG_ID'  ,'n', 6,0},;	//ID договора
+			 {'ZAK_ID'  ,'n', 6,0},;	//ID Заказчика
+			 {'sm_ID'   ,'n', 6,0},;	//ID сметы
+			 {'Sch_no'  ,'n', 6,0},;	//№ счёта
+                  	 {'cdate'   ,'d', 8,0},;	//Дата создания счёта
+                  	 {'sdate'   ,'d', 8,0},;        //Дата счёта
+                  	 {'summa'   ,'n',12,2},;	//Сумма
+                  	 {'fsumma'  ,'n',12,2},;	//Сумма фактура
+                  	 {'fopl'    ,'n',12,2},;	//Факт. оплата
+                  	 {'fsald'   ,'n',12,2},;	//Факт. оплата
+			 {'sch_TIP' ,'n', 1,0},;	//1'Сметные',2'Транспортные',3'Прочие',4'Материалы',5'Сторонние',9'Вручную'
+			 {'usl_id'  ,'n', 6,0},;	//ulist->id (usluga)
+                  	 {'sost'    ,'L', 1,0},;	//Признак "остаточного" счёта
+                  	 {'PRNDS'   ,'N', 2,0},;	//Признак налоговой ставки
+                  	 {'VRUCHN'  ,'L', 1,0},;	//Признак "вручную"
+                  	 {'CloseDate','D', 8,0},;	//Дата закрытия (нет задолженности)
+                  	 {'Primech' ,'C',20,0}},;	//Примечание
+	{"ID","sdate","sch_no","sch_tip","zak_id","usl_id"},.f.,.t.})
+
+
+aadd(bases,;
+        {"schstr",	{{'ID'      ,'n', 9,0},;	//ID
+			 {'sch_id'  ,'n', 9,0},;	//ID счёта
+                  	 {'name0'   ,'c',70,0},;	//
+                  	 {'name1'   ,'c',70,0},;	//
+                  	 {'name2'   ,'c',70,0},;	//
+                  	 {'name3'   ,'c',70,0},;	//
+                  	 {'ei_id'   ,'n', 9,0},;	//
+                  	 {'pkolvo'  ,'n',11,2},;	//
+                  	 {'pcena'   ,'n',12,3},;	//
+                  	 {'kolvo'   ,'n',11,2},;	//
+                  	 {'cena'    ,'n',12,3},;	//
+			 {'VNDS'    ,'n', 1,0},;
+                  	 {'psumma'  ,'n',12,2},;	//
+                  	 {'summa'   ,'n',12,2},;	//
+                  	 {'pvtcakc' ,'n', 6,0},;	//
+                  	 {'vtcakc'  ,'n', 6,0},;	//
+                  	 {'pnds'    ,'n', 6,0},;	//
+                  	 {'psnds'   ,'n',11,2},;	//
+                  	 {'snds'    ,'n',11,2},;	//
+                  	 {'pnsumma' ,'n',12,2},;	//
+                  	 {'nsumma'  ,'n',12,2}},;	//
+	{"ID"},.f.,.f.})
+
+
+aadd(bases,;
+        {"dopl",	{{'ID'      ,'n', 9,0},;	//ID
+			 {'Sch_id'  ,'n', 9,0},;	//ID счёта
+			 {'Opl_no'  ,'n', 6,0},;	//ID проплаты
+                  	 {'cdate'   ,'d', 8,0},;	//Дата создания проводки
+                  	 {'Odate'   ,'d', 8,0},;        //Дата оплаты
+                  	 {'tprov'   ,'n', 1,0},;        //Тип проводки
+                  	 {'summa'   ,'n',12,2}},;	//Сумма
+	{"ID","odate","tprov","sch_id"},.f.,.t.})
+
+aadd(BS_TMP,;
+        {"svod",	{{'SCH_NO'  ,'N', 6,0},;
+			 {'SCH_DT'  ,'D', 8,0},;
+			 {'ZAKAZCH' ,'C',60,0},;
+			 {'USLUGA'  ,'C',60,0},;
+			 {'VHS_DEB' ,'N',12,2},;
+			 {'VHS_KR'  ,'N',12,2},;
+			 {'NSUMMA'  ,'N',12,2},;
+			 {'NSNDS'   ,'N',12,2},;
+			 {'NSVSEGO' ,'N',12,2},;
+			 {'OPLVSEGO','N',12,2},;
+			 {'OVTCNDS' ,'N',12,2},;
+			 {'OPLNPROV','C',30,0},;
+			 {'ISS_DEB' ,'N',12,2},;
+			 {'ISS_KRED','N',12,2},;
+			 {'zak_id'  ,'N', 6,0},;
+			 {'gp'      ,'L', 1,0}},;
+	{"ZAKAZCH","SCH_DT","SCH_NO","USLUGA","zak_id"}})
+
+public lip_disp:=.f.
+public dbf_path:="",rdn:=""
+
+
+//===============================================================
+
+ if !IsInBases()
+  dirmake('Bases')
+  DirChange('Bases')
+  run ("del *.mem >>NUL")
+  dbf_path="\"+curdir()+"\"
+  set default to &dbf_path
+  set path to &dbf_path
+ 
+ endif
+
+ readexit(.f.)
+
+ //===============================================================
+
+ for i=1 to len(bases)
+  if !file(bases[i,1]+".dbf")
+   j=alert("Таблица "+bases[i,1]+".dbf не существует.",{"Создать","Завершить"})
+   if j=1
+    dbcreate(bases[i,1]+".dbf",bases[i,2])
+   elseif j=2
+    close all
+    retu .f.
+   endif
+  endif
+  mNetUseF(bases[i,1],.t.,100,10,bases[i,1])
+  set index to
+
+  if !file(dbf_path+bases[i,1]+".cdx")
+   for j=1 to len(bases[i,3])
+    @24,0 say ""
+    ?
+    @24,0 say "Индексирую таблицу "+bases[i,1]+" по полю "+bases[i,3,j]
+    ind_progress(bases[i,3,j],bases[i,1])
+   endfor
+  endif
+ 
+  ? "Подключаю индекс -",bases[i,1],"..."
+  dbselectar(bases[i,1])
+  dbsetindex(dbf_path+bases[i,1]+".cdx")  
+  if len(bases[i,3])>1
+   set order to 2
+  else
+   set order to 1
+  endif
+  go top
+
+  if bases[i,4]
+   set order to 1
+   go top
+   seek id_zl9(0)
+   set order to 2
+   if !found()
+    mflockF(100,5)
+    append blank
+    repl id with 0
+    for j:=1 to len(bases[i,2])
+     if lower(bases[i,2,j,2])=lower("c")
+      repl &(bases[i,2,j,1]) with "-"
+     endif
+    endfor
+    ? "В справочник "+bases[i,1]+" добавлена пустая строка, для возможности обнуления..."
+    unlock
+   else
+    mflockF(100,5)
+    for j:=1 to len(bases[i,2])
+     if lower(bases[i,2,j,2])=lower("c") .and. alltrim(bases[i,2,j,2])!="-"
+      repl &(bases[i,2,j,1]) with "-"
+     endif
+    endfor
+    unlock
+   endif
+  endif
+
+ endfor
+
+ sele dt
+ set filter to
+ for i=1 to len(dogtips[1])
+  go top
+  locate for id=dogtips[1,i]
+  if !found()
+   mflockF(100,5)
+   append blank
+   repl id with dogtips[1,i],;
+        dt_cmnt with lower(dogtips[2,i])
+   unlock
+  endif
+ endfor
+
+ sele vnds
+ set filter to
+ for i=1 to len(vNDStip[1])
+  go top
+  locate for id=vNDStip[1,i]
+  if !found()
+   mflockF(100,5)
+   append blank
+   repl id with vNDStip[1,i],;
+        VNDSt with vNDStip[2,i]
+   unlock
+  endif
+ endfor
+ mflockF(100,5)
+ dele all for ID!=0 .and. ID!=1
+ unlock
+
+
+ sele budget
+ set filter to
+ for i=1 to len(sBUDGET[1])
+  go top
+  locate for id=sBUDGET[1,i]
+  if !found()
+   mflockF(100,5)
+   append blank
+   repl id with sBUDGET[1,i],;
+        BUDGET with lower(sBUDGET[2,i])
+   unlock
+  endif
+ endfor
+
+ sele pudog
+ set order to 1
+ go top
+ if !seekbyid("pudog",-1)
+  mflockF(100,5)
+  append blank
+  repl dog_tip with 9, id with -1
+  unlock
+ endif
+ set order to 2
+ go top
+
+ sele smeta
+ set order to 1
+ go top
+ if !seekbyid("smeta",-1)
+  mflockF(100,5)
+  append blank
+  repl dog_id with -1, id with -1, comment1 with "-"
+  unlock
+ endif
+ set order to 2
+ go top
+
+ dirmake('TEMP')
+ DirChange('TEMP')
+ rdn=rnddirname()
+ dirmake(rdn)
+ dirchange(rdn)
+ set default to &(dbf_path+"TEMP\"+rdn+"\")
+ set path to &(dbf_path+"TEMP\"+rdn+"\")
+
+// CDrive()
+// dirmake("puli.tmp")
+// dirchange("puli.tmp")
+// set default to "c:\puli.tmp"
+// set path to "c:\puli.tmp"
+
+retu .t.
+
+
+
+//**********************************************************************
+func ind_progress(fld,ind_fl)
+local i,s:="",ss:=""
+
+ private first_time, save_curs
+
+ ip_start()
+
+  if valtype(&fld)="D"
+   s="dtos("+fld+")+ip_disp()"		
+  elseif valtype(&fld)="L"
+   s="iif("+fld+",'1','0')+ip_disp()"	
+  else
+   if at("ID",upper(fld))>0
+    s="'ID'+zuptolen("+fld+",9)+ip_disp()"
+   else
+    s="transform("+fld+",'')+ip_disp()"	
+   endif
+  endif
+ 
+ OrdCreate( dbf_path+ind_fl+".cdx", fld, s, &("{ || "+s+"}"))
+
+ set index to
+ ip_end(ind_fl)
+retu
+
+func ip_start()
+ save_curs=set(_SET_CURSOR,SC_NONE)
+ first_time=.t.
+ @24,0 say ""
+ ?
+ @24,0 say "Индексирование % завершено."
+ lip_disp=.t.
+retu NIL
+
+func ip_disp()
+ if !lip_disp
+  retu ""
+ else
+  if first_time
+   first_time=.f.
+  else
+   @24,0 say "Индексирование "+str(recno()/reccount()*100,3)+"% завершено."
+//   inkey(0.01)
+  endif    
+ endif
+retu ""
+
+func ip_end(f_name)
+ @24,0 say "Индексирование 100% завершено."
+ lip_disp=.f.
+retu NIL
+
+
+func reindex_all()
+local ocol:=setcolor("gr+/n")
+ scrsave()
+ if alert("Восстановить поврежденные индексы?",{"Н Е Т"," Д А "})=2
+  for i=1 to len(bases)
+   sele (bases[i,1])
+   set index to    
+   for j=1 to len(bases[i,3])
+    @24,0 say ""
+    ?
+    @24,0 say "Индексирую таблицу "+bases[i,1]+" по полю "+bases[i,3,j]
+    ind_progress(bases[i,3,j],bases[i,1])
+   endfor
+   ? "Подключаю индекс -",bases[i,1],"..."
+   dbsetindex(dbf_path+bases[i,1]+".cdx")
+   if len(bases[i,3])>1
+    set order to 2
+   else
+    set order to 1
+   endif
+   go top
+  endfor
+ endif
+ scrrest()
+ setcolor(ocol)
+retu
+
+
+
+
+
+
+FUNC B_TMP_CRT(NAME)
+local n:=0,i,expr:='',tp:=":\temp\puma-2\"+rdn+"\"
+local dl:="A"
+for i:=1 to len(BS_TMP)
+ if la(name)=la(BS_TMP[i,1])
+  n=i
+ endif
+endfor
+
+for i:=3 to 10
+ if diskspace(i)>1024*1024
+  dl:=chr(96+i)
+  exit
+ endif
+endfor
+
+if dl="A"
+ alert("Не хватает свободного места;для создания отчета;ни на одном из дисков!")
+ retu
+endif
+
+tp:=dl+tp
+
+if n>0
+ dirmake(dl+':\TEMP')
+ dirmake(dl+':\TEMP\puma-2')
+ dirmake(dl+':\TEMP\puma-2\'+rdn)
+ dbcreate(tp+bs_tmp[n,1]+".dbf",bs_tmp[n,2])
+ mNetUseF(tp+bs_tmp[n,1]+".dbf",.f.,100,10,bs_tmp[n,1])
+ append blank
+ fieldput(2,date()) 
+ set index to
+ expr:=""
+ for i=1 to len(bs_tmp[n,3])
+  expr:=expr+"indmstr("+bs_tmp[n,3,i]+")"+iif(i<len(bs_tmp[n,3]),"+","")
+ endfor
+ OrdCreate( tp+bs_tmp[n,1]+".cdx", bs_tmp[n,1], expr, &("{ || "+expr+"}"))
+ for i=1 to len(bs_tmp[n,3])
+  expr:="indmstr("+bs_tmp[n,3,i]+")"
+  OrdCreate( tp+bs_tmp[n,1]+".cdx", bs_tmp[n,3,i], expr, &("{ || "+expr+"}"))
+ endfor
+else
+ alert('Параметры заданой таблицы ('+name+') не описаны.;Создать невозможно!')
+endif
+
+retu n>0
+
+
+
+
+func push_fp()
+local fpa:={},i
+for i:=1 to len(bases)
+ aadd(fpa,{&(bases[i,1])->(dbfilter()),&(bases[i,1])->(recno())})
+endfor
+fpa_n:=fpa_n+1
+aadd(fltrposarr,fpa)
+retu
+
+
+func pop_fp()
+local i,osel:=select(),bs
+if fpa_n>0
+ for i:=1 to len(bases)
+  dbselectarea(bases[i,1])
+  set filter to &(fltrposarr[fpa_n,i,1])
+  go top
+  goto fltrposarr[fpa_n,i,2]
+ endfor
+ adel(fltrposarr,fpa_n)
+ fpa_n:=fpa_n-1
+endif
+sele &osel
+retu

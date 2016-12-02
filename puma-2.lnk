@@ -1,0 +1,7 @@
+EXOSPACE EXECUTABLE CLIPPER F60 //VMSIZE:16384 //MAXMEM:16384
+EXOSPACE PROCEDURE DEPTH 100
+lib clipper,six3
+FILE puma-2.obj, sixcdx.obj, obj\dp.obj, obj\re.obj, obj\printhp.obj, obj\textvw.obj, obj\pd_itr.obj, obj\pd_mats.obj, obj\pd_usl.obj, obj\smeta.obj
+
+
+

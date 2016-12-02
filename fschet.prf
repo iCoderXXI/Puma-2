@@ -1,0 +1,632 @@
+local i,j,k,summ:=0.00,sNDS:=0.00,__pnds
+private fstr:={},atemp:={}
+
+para sch_NO, sch_DATE, USLUGI, Z_REKV, ndsvtch
+
+for i=1 to 9
+ aadd(z_rekv,'')
+endfor
+
+#DEFINE PMaxWidth 126
+
+fstr:={}
+
+/*
+aadd(fstr,{' '  ,SetPrnCPI(11)+LeftMarg(5)+''})
+aadd(fstr,{' '  ,DoubleWidth(EmphaSized('‘—ð’-”€Š’“€ ü'+astr(SCH_NO)+' ®â '+dtoc(sch_date)))})
+
+aadd(fstr,{' '  ,SetPrnCPI(12)})
+aadd(fstr,{' '  ,'®áâ ¢é¨ª:        Œ“ "ƒ“†Š•"'})
+aadd(fstr,{' '  ,'€¤à¥á:            624760, £. ‚.‘ «¤ , ã«.  àª®¢ ï 1 '})
+aadd(fstr,{' '  ,'/‘:              40702810816150100054 / 30101810500000000674'})
+aadd(fstr,{' '  ,'ˆ:              6607001454 ¢ “à «ìáª®¬ ¡ ­ª¥ ‘ ” £. …ª â¥à¨­¡ãà£ '})
+aadd(fstr,{' '  ,'Š:              660701001'})
+aadd(fstr,{' '  ,'ˆŠ:              046577674'})
+aadd(fstr,{' '  ,'ŽŠŽ•:            90110'})
+aadd(fstr,{' '  ,'ŽŠŽ:             44122916'})
+
+aadd(fstr,{' '  ,''})
+aadd(fstr,{' '  ,'ƒàã§®¯®«ãç â¥«ì:  '+iif(len(z_rekv)>=1,z_rekv[1,1],'')})
+aadd(fstr,{' '  ,'€¤à¥á:            '+iif(len(z_rekv)>=2,z_rekv[2,1],'')})
+aadd(fstr,{' '  ,'®ªã¯ â¥«ì:       '+iif(len(z_rekv)>=1,z_rekv[1,2],'')})
+aadd(fstr,{' '  ,'€¤à¥á:            '+iif(len(z_rekv)>=2,z_rekv[2,2],'')})
+aadd(fstr,{' '  ,'/‘:              '+iif(len(z_rekv)>=3,z_rekv[3],'')})
+aadd(fstr,{' '  ,'ˆ:              '+iif(len(z_rekv)>=6,z_rekv[6],'')+;
+                                      iif(len(z_rekv)>=5,' ¢ '+z_rekv[5],'')})
+aadd(fstr,{' '  ,'Š:              '+iif(len(z_rekv)>=7,z_rekv[7],'')})
+aadd(fstr,{' '  ,'ˆŠ:              '+iif(len(z_rekv)>=8,z_rekv[8],'')})
+aadd(fstr,{' '  ,'ŽŠŽ•:            '+iif(len(z_rekv)>=9,z_rekv[9],'')})
+aadd(fstr,{' '  ,'ŽŠŽ:             '+iif(len(z_rekv)>=10,z_rekv[10],'')})
+*/
+
+aadd(fstr,{' '  ,SetPrnCPI(12)+SetPrnLPI(6)+LeftMarg(5)+''})
+aadd(fstr,{' '  ,' ‘—ð’-”€Š’“€ N '+lurepl(str(SCH_NO)," ",16)+' ®â '+lurepl(dtoc(sch_date)+" £."," ",51)})
+aadd(fstr,{' '  ,' '})
+
+aadd(fstr,{' '  ,EmphaSized('®áâ ¢é¨ª: ')+lurepl('Œ“ "ƒ“†Š•"',' ',76)})
+aadd(fstr,{' '  ,EmphaSized('€¤à¥á: ')+lurepl('£. ‚.‘ «¤ , ã«.  àª®¢ ï 1 ',' ',80)})
+aadd(fstr,{' '  ,EmphaSized('ˆ¤¥­â¨ä¨ª æ¨®­­ë© ­®¬¥à ¯®áâ ¢é¨ª  (ˆ/Š): ')+lurepl('6607001454/660701001',' ',41)})
+aadd(fstr,{' '  ,EmphaSized('ƒàã§®®â¯à ¢¨â¥«ì ¨ ¥£®  ¤à¥á: ')+lurepl('Œ“ "ƒ“†Š•" 624760 £. ‚.‘ «¤ , ã«.  àª®¢ ï 1 ',' ',57)})
+aadd(fstr,{' '  ,EmphaSized('ƒàã§®¯®«ãç â¥«ì ¨ ¥£®  ¤à¥á: ')+SetPrnCPI(17)+;
+                  lurepl(iif(len(z_rekv)>=1,alltrim(z_rekv[1,1]),'')+iif(len(z_rekv)>=2,alltrim(z_rekv[2,1]),''),' ',95)+SetPrnCPI(12)})
+aadd(fstr,{' '  ,EmphaSized('Š ¯« â¥¦­®-à áç¥â­®¬ã ¤®ªã¬¥­âã N ')+underline(repl(' ',17))+' ®â '+underline(repl(' ',32))})
+aadd(fstr,{' '  ,EmphaSized('®ªã¯ â¥«ì: ')+lurepl(iif(len(z_rekv)>=1,alltrim(z_rekv[1,2]),''),' ',75)})
+aadd(fstr,{' '  ,EmphaSized('€¤à¥á: ')+lurepl(iif(len(z_rekv)>=2,alltrim(z_rekv[2,2]),''),' ',80)})
+aadd(fstr,{' '  ,EmphaSized('ˆ¤¥­â¨ä¨ª æ¨®­­ë© ­®¬¥à ¯®«ãç â¥«ï (ˆ/Š): ')+lurepl(iif(len(z_rekv)>=6,alltrim(z_rekv[6]),'')+'/'+iif(len(z_rekv)>=7,alltrim(z_rekv[7]),''),' ',41)})
+aadd(fstr,{' '  ,EmphaSized('„®¯®«­¥­¨¥ (ãá«®¢¨ï ®¯« âë ¯® ¤®£®¢®àã (ª®­âà ªâã), á¯®á®¡ ®â¯à ¢«¥­¨ï ¨ â.¯.) ')+underline('        ')})
+aadd(fstr,{' '  ,underline(repl(' ',87))})
+//aadd(fstr,{' '  ,' '})
+
+aadd(fstr,{' '  ,SetPrnCPI(18)+SetPrnLPI(8)+''})
+aadd(fstr,{'  ' ,'ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÑÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÍÍÍÍÍÍÑÍÍÍÍÍÍÑÍÍÍÍÍÍ'})
+aadd(fstr,{'  ' ,'                              ³     ³           ³            ³ ‘â®¨¬®áâì  ³      ³      ³           ³  ‘â®¨¬®áâì ³      ³      '})
+aadd(fstr,{'  ' ,'                              ³     ³           ³            ³ â®¢ à®¢ (  ³      ³      ³           ³ â®¢ à®¢ (  ³      ³      '})
+aadd(fstr,{'  ' ,'                              ³     ³           ³            ³à ¡®â,ãá«ã£,³      ³      ³           ³à ¡®â,ãá«ã£,³      ³®¬¥à '})
+aadd(fstr,{'  ' ,'   ¨¬¥­®¢ ­¨¥ â®¢ à          ³     ³           ³   –¥­      ³¨¬ãé¥áâ¢¥­. ³      ³      ³           ³¨¬ãé¥áâ¢¥­. ³‘âà ­ ³â ¬®- '})
+aadd(fstr,{'  ' ,' (®¯¨á ­¨¥ ¢ë¯®«­¥­­ëå        ³     ³           ³  (â à¨ä)   ³   ¯à ¢)    ³      ³  «®-³           ³   ¯à ¢)    ³¯à®¨á-³¦¥­­®©'})
+aadd(fstr,{'  ' ,' à ¡®â, ®ª § ­­ëå ãá«ã£,      ³…¤-æ ³           ³§  ¥¤¨­¨æã  ³  ‚á¥£® ¡¥§ ³‚ â.ç.³ £®¢ ï³   ‘ã¬¬    ³   ¢á¥£® á  ³å®¦¤¥-³¤¥ª« -'})
+aadd(fstr,{'  ' ,' ¨¬ãé¥áâ¢¥­­®£® ¯à ¢ )        ³ ¨§¬.³ Š®«¨ç¥áâ¢®³ ¨§¬¥à¥­¨ï  ³   ­ «®£    ³ ªæ¨§ ³áâ ¢ª ³   ­ «®£   ³   ­ «®£®¬  ³ ­¨ï  ³à æ¨¨ '})
+aadd(fstr,{'  ' ,'ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍØÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍÍÍÍÍÍÍØÍÍÍÍÍÍØÍÍÍÍÍÍ'})
+aadd(fstr,{'  ' ,'               1              |  2  |     3     |     4      |      5     |  6   |  7   |     8     |      9     |  10  |  11  '})
+aadd(fstr,{'  ' ,'ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄ'})
+if valtype(USLUGI[1])="C"
+ atemp=str2strs(USLUGI[1],30) 
+ for i=1 to len(atemp)
+  aadd(fstr,{'  ' ,EmphaSized(NLeft(atemp[i],30))+'³     ³           ³            ³            ³      ³      ³           ³            ³      ³      '})
+ endfor
+elseif valtype(USLUGI[1])="A"
+ for i=1 to len(USLUGI[1])
+  if len(alltrim(USLUGI[1,i]))>0
+   atemp=str2strs(USLUGI[1,i],30) 
+   for j=1 to len(atemp)
+    aadd(fstr,{'  ' ,EmphaSized(NLeft(atemp[j],30))+'³     ³           ³            ³            ³      ³      ³           ³            ³      ³      '})
+   endfor
+  endif  
+ endfor
+endif
+
+ aadd(fstr,{'  ' ,'                              ³     ³           ³            ³            ³      ³      ³           ³            ³      ³      '})
+ for i=2 to len(USLUGI)
+  nds_=round(iif(ndsvtch,USLUGI[i,5]/(100+USLUGI[i,6])*USLUGI[i,6],USLUGI[i,5]/100*USLUGI[i,6]),2)
+  summ_=round(iif(ndsvtch,USLUGI[i,5]-nds_,USLUGI[i,5]),2)
+  snds=snds+round(nds_,2)
+  summ=summ+round(summ_,2)
+   if i<len(USLUGI)
+    atemp=str2strs(USLUGI[i,1]+replicate(" ",31),30) 
+    for j=1 to len(atemp)-1
+     aadd(fstr,{'  ' ,;
+          EmphaSized(NLeft(atemp[j] ,30))+'³     ³           ³            ³            ³      ³      ³           ³            ³      ³      '})
+    endfor
+
+    if len(atemp)>0
+     aadd(fstr,{'  ' ,EmphaSized(NLeft(atemp[len(atemp)],30))+'³'+; 
+                      iif(summ_=0 .and. len(alltrim(USLUGI[i,2]))=0,"     ",NLeft(USLUGI[i,2] ,5)) +'³'+;      
+                      mytransform(USLUGI[i,3],"99999999.99")+'³'+;      
+                      mytransform(USLUGI[i,4]*iif(ndsvtch,1/(100+USLUGI[i,6])*100,1),"99999999.999")+'³'+;
+                      mytransform(summ_,"999999999.99")+"³      ³"+;
+                      iif(summ_=0 .and. len(alltrim(USLUGI[i,2]))=0,"      ",mytransform(USLUGI[i,6],"99.99")+iif(USLUGI[i,6]>0,"%"," "))+"³"+;
+                      mytransform(nds_,"99999999.99")+"³"+;
+                      EmphaSized(mytransform(summ_+nds_,"999999999.99"))+"³"+iif(summ_>0,"      ","      ")+"³      "})
+    endif
+   else
+    atemp=str2strs(USLUGI[i,1],30) 
+    for j=1 to len(atemp)-1
+     aadd(fstr,{'  ' ,;
+          EmphaSized(NLeft(atemp[j] ,30))+'³     ³           ³            ³            ³      ³      ³           ³            ³      ³      '})
+    endfor
+    nds_=round(iif(ndsvtch,USLUGI[i,5]/(100+USLUGI[i,6])*USLUGI[i,6],USLUGI[i,5]/100*USLUGI[i,6]),2)
+    summ_=iif(ndsvtch,USLUGI[i,5]-nds_,USLUGI[i,5])
+    aadd(fstr,{'  ' ,;
+                     EmphaSized(NLeft(atemp[len(atemp)],30))+'³'+;
+                     iif(summ_=0 .and. len(alltrim(USLUGI[i,2]))=0,"     ",NLeft(USLUGI[i,2] ,5)) +'³'+;
+                     mytransform(USLUGI[i,3],"99999999.99")+'³'+;      
+                     mytransform(USLUGI[i,4]*iif(ndsvtch,1/(100+USLUGI[i,6])*100,1),"99999999.999")+'³'+;
+                     mytransform(summ_,"999999999.99")+"³      ³"+;
+                     iif(summ_=0 .and. len(alltrim(USLUGI[i,2]))=0,"      ",mytransform(USLUGI[i,6],"99.99")+iif(USLUGI[i,6]>0,"%"," "))+"³"+;
+                     mytransform(nds_,"99999999.99")+"³"+;
+                     EmphaSized(mytransform(summ_+nds_,"999999999.99"))+"³"+iif(summ_>0,"      ","      ")+"³      "})
+   endif
+  if USLUGI[i,6]>0
+   if valtype(USLUGI[i,6])!="N"
+    __pnds:=0
+   else
+    __pnds:=USLUGI[i,6]
+   endif
+  endif
+  if i<len(USLUGI)
+   aadd(fstr,{'  ' ,'ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄ'})
+  endif
+ endfor
+
+ if valtype(__pnds)!="N"
+  __pnds:=0
+ endif
+
+aadd(fstr,{'  ' ,'ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÅÄÄÄÄÄÄ'})
+aadd(fstr,{'  ' ,' '+EmphaSized(nleft('‚á¥£® ª ®¯« â¥',29))+'³     ³           ³            ³'+;
+                 EmphaSized(mytransform(summ,"999999999.99"))+'³      ³'+mytransform(__pnds,"99.99")+iif(__pnds>0,"%"," ")+'³'+;
+                 EmphaSized(mytransform(sNDS,"99999999.99")) +'³'+;
+                 EmphaSized(mytransform(summ+snds,"999999999.99"))+'³      ³      '})
+aadd(fstr,{'  ' ,'ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄ'})
+
+aadd(fstr,{' '  ,SetPrnCPI(12)+SetPrnLPI(6)+''})
+
+aadd(fstr,{' '  ,'ãª®¢®¤¨â¥«ì ®à£ ­¨§ æ¨¨                    ƒ« ¢­ë© ¡ãå£ «â¥à '})
+aadd(fstr,{' '  ,' '})
+aadd(fstr,{' '  ,'______________ Š «¬ëª®¢ €.ˆ.                _______________ Š®à®«ñ¢  .€.'})
+aadd(fstr,{' '  ,' '})
+aadd(fstr,{' '  ,' '})
+aadd(fstr,{' '  ,'ˆ­¤¨¢¨¤ã «ì­ë© ¯à¥¤¯à¨­¨¬ â¥«ì              (à¥ª¢¨§¨âë á¢¨¤¥â¥«ìáâ¢ '})
+aadd(fstr,{' '  ,'     (¯®¤¯¨áì ä.¨.®)                        ® £®áã¤ àáâ¢¥­­®© à¥£¨áâà æ¨¨'})
+aadd(fstr,{' '  ,'                                            ¨­¤¨¢¨¤ã «ì­®£® ¯à¥¤¯à¨­¨¬ â¥«ï)'})
+aadd(fstr,{' '  ,' '})
+aadd(fstr,{' '  ,'à¨¬¥ç ­¨¥: ¥à¢ë© íª§¥¬¯«ïà - ¯®ªã¯ â¥«î, ¢â®à®© íª§¥¬¯«ïà - ¯à®¤ ¢æã'})
+
+//aadd(fstr,{' '  ,SetPrnCPI(13)+''})
+//aadd(fstr,{' '  ,'à¨¬¥ç ­¨ï: 1. ¥§ ¯¥ç â¨ ­¥¤¥©áâ¢¨â¥«¥­.'})
+//aadd(fstr,{' '  ,'¥à¢ë© íª§¥¬¯«ïà (®à¨£¨­ «) - ¯®ªã¯ â¥«î'})
+//aadd(fstr,{' '  ,'‚â®à®© íª§¥¬¯«ïà (ª®¯¨ï) - ¯à®¤ ¢æã'})
+aadd(fstr,{' '  ,''})
+
+cFormat1(.t.,PMaxWidth)
+
+retu
+
+
+
+func fschetprint(ndsvtch)
+
+       if zakazch->pl_id>0
+       plid=zakazch->pl_id
+       zkzn=zakazch->zakazch
+       zkza=alltrim(GetByID('CITY',zakazch->CITY_ID,'CITY'))+;
+            ', '+alltrim(GetByID('STREET',zakazch->STR_ID,'STREET'))+;
+            ', '+alltrim(zakazch->appart)+'.'
+       sele zakazch
+       set filter to zakazch->id=plid
+       go top
+
+       rekv:={{zkzn,alltrim(zakazch->zakazch)},;
+              {zkza,alltrim(GetByID('CITY',zakazch->CITY_ID,'CITY'))+;
+               ', '+alltrim(GetByID('STREET',zakazch->STR_ID,'STREET'))+;
+               ', '+alltrim(zakazch->appart)+'.'},;
+              zakazch->r_s,;
+              zakazch->k_s,;
+              GetByID('BANK',zakazch->BANK_ID,'BANK'),;
+              zakazch->INN,;
+              zakazch->KPP,;
+              zakazch->BIK,;
+              zakazch->OKONH,;
+              zakazch->OKPO}
+       else
+       zkza=alltrim(GetByID('CITY',zakazch->CITY_ID,'CITY'))+;
+            ', '+alltrim(GetByID('STREET',zakazch->STR_ID,'STREET'))+;
+            ', '+alltrim(zakazch->appart)+'.'
+       zkzn=alltrim(zakazch->zakazch)
+       rekv:={{zkzn,zkzn},;
+              {zkza,zkza},;
+              zakazch->r_s,;
+              zakazch->k_s,;
+              GetByID('BANK',zakazch->BANK_ID,'BANK'),;
+              zakazch->INN,;
+              zakazch->KPP,;
+              zakazch->BIK,;
+              zakazch->OKONH,;
+              zakazch->OKPO}
+       endif
+ 
+       fschet(dschet->sch_no, dschet->sdate, stroki, rekv, ndsvtch)
+retu
+
+
+
+
+func MSF_trans()
+local pd_orn:=pudog->(recno()),ds_orn:=dschet->(recno())
+local itr_orn:=itrans->(recno()),osel:=select()
+local pd_ofltr:=pudog->(dbfilter()),ds_ofltr:=dschet->(dbfilter())
+local itr_ofltr:=itrans->(dbfilter()),atemp:={},zfltr:=zakazch->(dbfilter())
+priv stroki:={},pred:=0,snds:=18.00
+
+pred:=(alert('ä®à¬¨à®¢ âì áçñâ-ä ªâãàã ¯®:',{"”€Š’“","…„Ž‹€’…"})=2)
+
+sele pudog
+set order to 1
+go top
+seek ID_ZL9(DSCHET->DOG_ID)
+set order to 2
+
+sele dschet
+
+aadd(atemp,'“á«ã£¨ âà ­á¯®àâ  á-­® ¤®£. ü'+alltrim(pudog->dog_no)+' ®â '+dtoc(pudog->dog_dt)+' £.'+iif(pred," (¯à¥¤®¯« â )","             "))
+aadd(atemp,replicate(" ",30))
+aadd(stroki,a2a(VarEdit("à¥¤¬¥â áçñâ ",atemp),30))
+ 
+if LastKey()!=27
+ snds:=iif(year(dschet->sdate)<2004,20,18)
+ snds:=VarEdit("‘â ¢ª  „‘",snds,.t.)
+ sele itrans
+ set filter to itrans->sch_id=dschet->id .and. iif(pred,itrans->psumma!=0,itrans->summa!=0)
+ go top
+ count to n
+ go top
+ if n<1
+  alert('¥â áâà®ª ¤«ï à á¯¥ç âª¨!;;‚®§¬®¦­® áã¬¬ë ­  ¯à¥¤®¯« âã;à ¢­ë ­ã«î - ­¥®¡å®¤¨¬® ¨á¯à ¢¨âì!')
+ else
+  do while !eof()
+   sele trans
+   set filter to trans->id=itrans->trans_id
+   go top
+   ss:=alltrim(trans->trans)
+   ss1:=""
+   sele itrans
+   if lena(itrans->comment1)>0
+    ss1=ss1+" "+alltrim(itrans->comment1)
+   endif
+   if lena(itrans->comment2)>0
+    ss1=ss1+" "+alltrim(itrans->comment2)
+   endif
+   if lena(itrans->comment3)>0
+    ss1=ss1+" "+alltrim(itrans->comment3)
+   endif
+ 
+   ss1:=alltrim(ss1)
+   if lena(ss1)>0
+    ss1:="("+ss1+")"
+   endif 
+ 
+   aadd(stroki,{ss+" "+ss1,;
+               ' ¬/ç ',;
+               iif(pred,itrans->pchas,itrans->chas),;
+               itrans->cena,;
+               iif(pred,itrans->psumma,itrans->summa),;
+               snds})
+ 
+   if lena(itrans->comment1)>0 .or. lena(itrans->comment2)>0 .or. lena(itrans->comment3)>0
+    aadd(stroki,{nleft("ÿ ",57),"     ",0,0,0,0,0})
+   endif
+   skip
+  enddo
+  sele zakazch
+  set filter to zakazch->id=pudog->zak_id
+  go top  
+  fschetprint(.t.) 
+  sele zakazch
+  set filter to &zfltr
+ endif 
+
+ sele itrans
+ set filter to &itr_ofltr
+ goto itr_orn
+ 
+ sele dschet
+ set filter to &ds_ofltr
+ goto ds_orn
+
+ sele pudog
+ set filter to &pd_ofltr
+ goto pd_orn
+
+endif 
+
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func MSF_usl()
+local pd_orn:=pudog->(recno()),ds_orn:=dschet->(recno())
+local mats_orn:=mats->(recno()),osel:=select()
+local pd_ofltr:=pudog->(dbfilter()),ds_ofltr:=dschet->(dbfilter())
+local mats_ofltr:=mats->(dbfilter()),atemp:={},zfltr:=zakazch->(dbfilter())
+priv stroki:={},pred:=0
+
+pred:=(alert('ä®à¬¨à®¢ âì áçñâ-ä ªâãàã ¯®:',{"”€Š’“","…„Ž‹€’…"})=2)
+
+sele pudog
+set order to 1
+go top
+seek ID_ZL9(DSCHET->DOG_ID)
+set order to 2
+
+sele dschet
+
+aadd(atemp,'“á«ã£¨ á-­® ¤®£. ü'+alltrim(pudog->dog_no)+' ®â '+dtoc(pudog->dog_dt)+' £.'+iif(pred," (¯à¥¤®¯« â )","             "))
+aadd(atemp,replicate(" ",30))
+aadd(stroki,a2a(VarEdit("à¥¤¬¥â áçñâ ",atemp),30))
+ 
+if LastKey()!=27
+ sele mats
+ set filter to mats->sch_id=dschet->id .and. iif(pred,mats->psummad!=0,mats->summad!=0)
+ count to n
+ go top
+ if n<1
+  alert('¥â áâà®ª ¤«ï à á¯¥ç âª¨!;;‚®§¬®¦­® áã¬¬ë ­  ¯à¥¤®¯« âã;à ¢­ë ­ã«î - ­¥®¡å®¤¨¬® ¨á¯à ¢¨âì!')
+ else
+  do while !eof()
+   sele ulist
+   set filter to ulist->id=mats->mat_id
+   go top
+   ss:=alltrim(ulist->usluga)
+   sele edizm
+   set filter to edizm->id=ulist->ei_id
+   go top
+   ss1:=""
+   sele mats
+   if lena(mats->comment1)>0
+    ss1=ss1+" "+alltrim(mats->comment1)
+   endif
+   if lena(mats->comment2)>0
+    ss1=ss1+" "+alltrim(mats->comment2)
+   endif
+   if lena(mats->comment3)>0
+    ss1=ss1+" "+alltrim(mats->comment3)
+   endif
+ 
+   ss1:=alltrim(ss1)
+   if lena(ss1)>0
+    ss1:="("+ss1+")"
+   endif 
+ 
+   aadd(stroki,{ss+" "+ss1,;
+               strcent(alltrim(edizm->edizm+' '),5),;
+               mats->kolvo,;
+               mats->cena,;
+               mats->summad,;
+               mats->pNDS})
+ 
+   if lena(mats->comment1)>0 .or. lena(mats->comment2)>0 .or. lena(mats->comment3)>0
+    aadd(stroki,{nleft("ÿ ",57),"     ",0,0,0,0,0})
+   endif
+   skip
+  enddo
+  sele zakazch
+  set filter to zakazch->id=pudog->zak_id
+  go top  
+  fschetprint(.t.) 
+  sele zakazch
+  set filter to &zfltr
+ endif
+
+ sele mats
+ set filter to &mats_ofltr
+ goto mats_orn
+
+ sele dschet
+ set filter to &ds_ofltr
+ goto ds_orn
+
+ sele pudog
+ set filter to &pd_ofltr
+ goto pd_orn
+
+endif 
+
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func MSF_mats()
+local pd_orn:=pudog->(recno()),ds_orn:=dschet->(recno())
+local mats_orn:=mats->(recno()),osel:=select()
+local pd_ofltr:=pudog->(dbfilter()),ds_ofltr:=dschet->(dbfilter())
+local mats_ofltr:=mats->(dbfilter()),atemp:={},zfltr:=zakazch->(dbfilter())
+priv stroki:={},pred:=0
+
+pred:=(alert('ä®à¬¨à®¢ âì áçñâ-ä ªâãàã ¯®:',{"”€Š’“","…„Ž‹€’…"})=2)
+
+sele pudog
+set order to 1
+go top
+seek ID_ZL9(DSCHET->DOG_ID)
+set order to 2
+
+sele dschet
+
+aadd(atemp,'Œ â¥à¨ «ë á-­® ¯¨áì¬  ü'+alltrim(pudog->dog_no)+' ®â '+dtoc(pudog->dog_dt)+' £.'+iif(pred," (¯à¥¤®¯« â )","             "))
+aadd(atemp,replicate(" ",30))
+aadd(stroki,a2a(VarEdit("à¥¤¬¥â áçñâ ",atemp),30))
+ 
+if LastKey()!=27
+ sele mats
+ set filter to mats->sch_id=dschet->id .and. iif(pred,mats->psummad!=0,mats->summad!=0)
+ count to n
+ go top
+ if n<1
+  alert('¥â áâà®ª ¤«ï à á¯¥ç âª¨!;;‚®§¬®¦­® áã¬¬ë ­  ¯à¥¤®¯« âã;à ¢­ë ­ã«î - ­¥®¡å®¤¨¬® ¨á¯à ¢¨âì!')
+ else
+  do while !eof()
+   sele mlist
+   set filter to mlist->id=mats->mat_id
+   go top
+   ss:=alltrim(mlist->material)
+   sele edizm
+   set filter to edizm->id=mlist->ei_id
+   go top
+   ss1:=""
+   sele mats
+   if lena(mats->comment1)>0
+    ss1=ss1+" "+alltrim(mats->comment1)
+   endif
+   if lena(mats->comment2)>0
+    ss1=ss1+" "+alltrim(mats->comment2)
+   endif
+   if lena(mats->comment3)>0
+    ss1=ss1+" "+alltrim(mats->comment3)
+   endif
+ 
+   ss1:=alltrim(ss1)
+   if lena(ss1)>0
+    ss1:="("+ss1+")"
+   endif 
+ 
+   aadd(stroki,{ss+" "+ss1,;
+               strcent(alltrim(edizm->edizm+' '),5),;
+               mats->kolvo,;
+               mats->cena,;
+               mats->summad,;
+               mats->pNDS})
+ 
+   if lena(mats->comment1)>0 .or. lena(mats->comment2)>0 .or. lena(mats->comment3)>0
+    aadd(stroki,{nleft("ÿ ",57),"     ",0,0,0,0,0,0,0})
+   endif
+   skip
+  enddo
+  sele zakazch
+  set filter to zakazch->id=pudog->zak_id
+  go top  
+  fschetprint(.t.) 
+  sele zakazch
+  set filter to &zfltr
+ endif 
+
+ sele mats
+ set filter to &mats_ofltr
+ goto mats_orn
+
+ sele dschet
+ set filter to &ds_ofltr
+ goto ds_orn
+
+ sele pudog
+ set filter to &pd_ofltr
+ goto pd_orn
+
+endif 
+
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func MSF_schstr()
+local ds_orn:=dschet->(recno())
+local osel:=select(),zfltr:=zakazch->(dbfilter())
+local ds_ofltr:=dschet->(dbfilter())
+local atemp:={},_summ,_snds,ss
+priv stroki:={},pred:=0
+
+pred:=(alert('ä®à¬¨à®¢ âì áçñâ-ä ªâãàã ¯®:',{"”€Š’“","…„Ž‹€’…"})=2)
+
+             
+sele dschet
+
+if LastKey()!=27
+ sele schstr
+ set filter to schstr->sch_id=dschet->id //.and. iif(pred,schstr->psumma,schstr->summa)!=0
+ go top
+ count to n
+ go top
+ if n<1
+  alert('¥â áâà®ª ¤«ï à á¯¥ç âª¨!')
+ else
+  aadd(stroki,replicate("",30))
+  if pred
+   aadd(stroki,{left("(à¥¤®¯« â )"+nleft("ÿ ",30),30),"     ",0,0,0,0,0,0,0})
+   aadd(stroki,{nleft("ÿ ",30),"     ",0,0,0,0,0,0,0})
+  endif
+  do while !eof()
+   sele edizm
+   set filter to edizm->id=schstr->ei_id
+   go top
+   ss1:=""
+   sele schstr
+
+   ss:=alltrim(schstr->name0+" "+schstr->name1+" "+schstr->name2+" "+schstr->name3)
+   if len(ss)>0
+    if schstr->vnds=0
+     aadd(stroki,{ss,;
+                  strcent(alltrim(edizm->edizm+' '),5),;
+                  iif(pred,schstr->pkolvo,schstr->kolvo),;
+                  round(iif(pred,schstr->pcena,schstr->cena)+iif(pred,schstr->pcena,schstr->cena)/100*schstr->pnds,3),;
+                  round(iif(pred,schstr->psumma,schstr->summa)+iif(pred,schstr->psumma,schstr->summa)/100*schstr->pnds,2),;
+                  schstr->pNDS})
+    else
+     aadd(stroki,{ss,;
+                  strcent(alltrim(edizm->edizm+' '),5),;
+                  iif(pred,schstr->pkolvo,schstr->kolvo),;
+                  iif(pred,schstr->pcena,schstr->cena),;
+                  iif(pred,schstr->pnsumma,schstr->nsumma),;
+                  schstr->pNDS})
+    endif
+   endif
+
+   skip
+  enddo
+  sele zakazch
+  set filter to zakazch->id=dschet->zak_id
+  go top  
+
+  fschetprint(.t.) 
+  sele zakazch
+  set filter to &zfltr
+ endif 
+
+ sele schstr
+ set filter to
+
+ sele dschet
+ set filter to &ds_ofltr
+ goto ds_orn
+
+endif 
+
+retu
+
+
+

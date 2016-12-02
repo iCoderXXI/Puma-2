@@ -1,0 +1,558 @@
+retu
+
+set procedure to dog02.prp
+
+func pDog03()
+ para DOG_NO, DOG_DATE, USLUGI, DT_START, DT_END, O_CENA, Z_REKV
+ pdog01(DOG_NO, DOG_DATE, USLUGI, DT_START, DT_END, O_CENA, Z_REKV)
+retu
+
+func pDog01()
+local i,j,k,OCol:=SetColor("w+/b"), ej:=.f.,atemp:={},atemp1:={}
+private stroki:={},fstr:={}
+
+para DOG_NO, DOG_DATE, USLUGI, DT_START, DT_END, O_CENA, Z_REKV
+
+for i=1 to 9
+ aadd(z_rekv,'')
+endfor
+
+#DEFINE PMaxWidth 70 
+#DEFINE MaxLines  82 //74
+
+stroki={}
+aadd(stroki,{' '  ,LeftMarg(4)+SetPrnCPI(10)+SetPrnLPI(5)})
+aadd(stroki,{'cB' ,'ДОГОВОР №'+alltrim(DOG_NO)})
+aadd(stroki,{'cB' ,'на оказание услуг'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'c'  ,'г. В.Салда                                   '+dtoec(dog_date)})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'Муниципальное унитарное предприятие "Городское управление жилищно- коммунального хозяйства"'})
+aadd(stroki,{'+'  ,'в лице директора КАЛМЫКОВА А.И., действующего на основании Устава, именуемого в дальнейшем'})
+aadd(stroki,{'+'  ,'ИСПОЛНИТЕЛЬ, с одной стороны и '+Z_rekv[1,1]})
+aadd(stroki,{'+'  ,'в лице '+Z_rekv[1,2]+', именуемый (ое/ая) в дальнейшем ЗАКАЗЧИК,'})
+aadd(stroki,{' '  ,'с другой стороны, заключили настоящий договор о нижеследующем:'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'1. ПРЕДМЕТ ДОГОВОРА'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'1.1. По договору возмездного оказания услуг ИСПОЛНИТЕЛЬ обязуется по заданию ЗАКАЗЧИКА'})
+aadd(stroki,{' '  ,'оказать услуги, указанные в п. 1.2. настоящего договора, а ЗАКАЗЧИК обязуется оплатить эти услуги.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'1.2. ИСПОЛНИТЕЛЬ обязуется оказать следующие услуги:'})
+
+/*
+for i=1 to len(USLUGI[1])
+ if len(alltrim(USLUGI[1,i]))>0
+  aadd(stroki,{'U'  ,'   *) '+USLUGI[1,i]})
+ endif
+endfor
+*/
+
+if SHOW_SUMM
+ for i=1 to len(USLUGI)
+ aadd(stroki,{'U'  ,'  *) '+;
+      left(USLUGI[i],at(':',USLUGI[i])-1)})
+ endfor
+else
+ aadd(stroki,{' '  ,''})
+ for i=1 to len(USLUGI)
+ aadd(stroki,{'U'  ,'  *) '+USLUGI[i]})
+ endfor
+ aadd(stroki,{' '  ,''})
+endif
+
+aadd(stroki,{' '  ,'     именуемые в дальнейшем "Услуги"'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'1.3. Срок оказания услуг с '+dtoec(dt_start)+' до '+dtoec(dt_end)})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'2. ПРАВА И ОБЯЗАННОСТИ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'2.1. ИСПОЛНИТЕЛЬ обязан:'})
+aadd(stroki,{' '  ,'- оказать "Услуги" с надлежащим качеством;'})
+aadd(stroki,{' '  ,'- оказать "Услуги" в полном объёме и в срок, указанный в п. 1.3. настоящего договора.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'2.2. ЗАКАЗЧИК обязан:'})
+aadd(stroki,{' '  ,'- оплатить работу по цене, указанной в п.3 настоящего договора.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'2.3. Результат выполненных работ оформляется двусторонним актом.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'3. ЦЕНА ДОГОВОРА И ПОРЯДОК РАСЧЁТОВ'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'3.1. Расчёт за оказанные "Услуги" производятся путём внесения денежных средств в кассу'})
+aadd(stroki,{' '  ,'Исполнителя до момента начала выполнения работ.'})
+aadd(stroki,{' '  ,''})
+
+if len(stroki)>MaxLines
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+if SHOW_SUMM
+ aadd(stroki,{'+'  ,'3.2. Ориентировочная цена настоящего договора на момент его заключения, составляет'})
+ aadd(stroki,{'+U' ,astr(int(O_CENA))+' руб. '+astr(round((o_CENA-int(O_CENA))*100,0))+' коп.'})
+ aadd(stroki,{'+CU','('+n2str(O_CENA)+').'})
+else
+ aadd(stroki,{' '  ,'3.2. Ориентировочная цена настоящего договора на момент его заключения, составляет'})
+ aadd(stroki,{' '  ,''})
+ aadd(stroki,{' '  ,'______________________________________________________________________'})
+ aadd(stroki,{' '  ,''})
+ aadd(stroki,{' '  ,'______________________________________________________________________'})
+ aadd(stroki,{' '  ,''})
+endif
+aadd(stroki,{'+'  ,'В последующем цена договора корректируется в соответствии со сметой фактических затрат,'})
+aadd(stroki,{' '  ,'на основании чего производится перерасчёт уплаченных денежных средств.'})
+
+if !ej .and. len(stroki)>MaxLines
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+aadd(stroki,{'CB' ,'4. ОТВЕТСТВЕННОСТЬ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'4.1. Меры ответственности сторон, не предусмотренные в настоящем договоре применяются в'})
+aadd(stroki,{' '  ,'соответствии с нормами гражданского законодательства, действующего на территории России.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+
+if !ej .and. len(stroki)>MaxLines
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+aadd(stroki,{'CB' ,'5. ПОРЯДОК РАЗРЕШЕНИЯ СПОРОВ'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'5.1. Споры и разногласия, которые могут возникнуть при исполнении настоящего договора, будут'})
+aadd(stroki,{' '  ,'по возможности решаться путём переговоров между сторонами, а при недостижении согласия - в судебном порядке.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+
+if !ej .and. len(stroki)+6>MaxLines
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+aadd(stroki,{'CB' ,'6. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'+'  ,'6.1. Любые изменения и дополнения к настоящему договору действительны лишь при условии,'})
+aadd(stroki,{'+'  ,'что они совершены в письменной форме и подписаны уполномоченными на то представителями'})
+aadd(stroki,{' '  ,'сторон. Приложения к настоящему договору составляют его неотъемлему часть.'})
+aadd(stroki,{' '  ,''})
+
+if !ej
+ aadd(stroki,{'E'  ,''})
+ ej=.t.
+endif
+
+aadd(stroki,{'+'  ,'6.2. Настоящий договор составлен в двух экземплярах на русском языке. Оба экземпляра'})
+aadd(stroki,{'+'  ,'идентичны и имеют одинаковую юридическую силу. У каждой из сторон находится один'})
+aadd(stroki,{' '  ,'экземпляр настоящего договора.'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'7. РЕКВИЗИТЫ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'B'  ,'ИСПОЛНИТЕЛЬ                   ЗАКАЗЧИК'})
+aadd(stroki,{' '  ,''})
+
+atemp=str2strs(z_rekv[1,1],40) 
+atemp1:={left('МУП "ГУЖКХ"'+replicate(" ",30),30),replicate(" ",30),;
+         replicate(" ",30),replicate(" ",30),replicate(" ",30)}
+for i=1 to len(atemp)
+ aadd(stroki,{' '  ,atemp1[i]+atemp[i]})
+endfor
+
+aadd(stroki,{' '  ,'г. В.Салда, ул. Парковая, 1А  '+;
+                   iif(len(z_rekv[1])>=3,z_rekv[1,3],'')})
+aadd(stroki,{' '  ,'Р/сч: 40702810816150100054    Р/сч: '+;
+                   iif(len(z_rekv[1])>=4,z_rekv[1,4],'')})
+aadd(stroki,{' '  ,'К/сч: 30101810500000000674    К/сч: '+;
+                   iif(len(z_rekv[1])>=5,z_rekv[1,5],'')})
+aadd(stroki,{' '  ,'Уральский банк СБ РФ          '+;
+                   iif(len(z_rekv[1])>=6,z_rekv[1,6],'')})
+aadd(stroki,{' '  ,'ИНН: 6607001454               ИНН: '+;
+                   iif(len(z_rekv[1])>=7,z_rekv[1,7],'')})
+aadd(stroki,{' '  ,'КПП: 660701001                КПП: '+;
+                   iif(len(z_rekv[1])>=8,z_rekv[1,8],'')})
+aadd(stroki,{' '  ,'БИК: 046577674                БИК: '+;
+                   iif(len(z_rekv[1])>=9,z_rekv[1,9],'')})
+aadd(stroki,{' '  ,'ОКОНХ: 90110                  ОКОНХ: '+;
+                   iif(len(z_rekv[1])>=10,z_rekv[1,10],'')})
+aadd(stroki,{' '  ,'ОКПО: 44122916                ОКПО: '+;
+                   iif(len(z_rekv[1])>=11,z_rekv[1,11],'')})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{'CB' ,'8. ПОДПИСИ СТОРОН'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' B' ,'ИСПОЛНИТЕЛЬ                   ЗАКАЗЧИК'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'_________________             _________________'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'_________________             _________________'})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,''})
+aadd(stroki,{' '  ,'Приложение: -акт выполненных работ'})
+aadd(stroki,{' '  ,'            -смета фактических затрат'})
+
+cFormat(.f.,-1)
+
+SetColor(OCol)
+
+retu
+
+
+//-----------------------------------
+set procedure to dog01_3.prp
+//-----------------------------------
+
+
+
+
+func CFormat(OnlyPrint,PW)
+local i:=1,ii:=1,s:='',pn:=.f.,ps,ocol
+local pstrs:={}
+
+ fstr={}
+ 
+ do while i<=len(stroki)
+  if at('+',stroki[i,1])>0
+   if !pn
+    s=alltrim(stroki[i,2])
+    pn=.t.
+   else
+    s=s+' '+alltrim(stroki[i,2])
+   endif
+  else
+   if pn
+    s=s+' '+alltrim(stroki[i,2])
+    cdivide(s,iif(pw>0,pw,iif(at('O',upper(stroki[i,1]))>0,2000,PMaxWidth)),stroki[i,1])
+   else
+    s=alltrim(stroki[i,2])
+    cdivide(s,iif(pw>0,pw,iif(at('O',upper(stroki[i,1]))>0,2000,PMaxWidth)),stroki[i,1])
+   endif
+   pn=.f.
+  endif
+
+  i=i+1
+ enddo
+
+
+ for i=1 to len(fstr)
+  if at('e',lower(fstr[i,1]))>0
+   aadd(pstrs,chr(12))
+  endif
+ 
+  ps=if(at('j',lower(fstr[i,1]))>0,;
+        StrFix(fstr[i,2],iif(pw>0,pw,PMaxWidth)),;
+        fstr[i,2])
+  ps=if(at('c',lower(fstr[i,1]))>0,; 
+        StrCent(ps,iif(pw>0,pw,PMaxWidth)),ps)
+  ps=if(at('u',lower(fstr[i,1]))>0,underline(ps),ps)
+  ps=if(at('b',lower(fstr[i,1]))>0,EmphaSized(ps),ps)
+  aadd(pstrs,ps)
+ endfor
+
+ aadd(pstrs,chr(12))
+
+ TextView(0,0,79,24,"gr+/b",pstrs)
+
+retu .f.
+
+
+
+
+
+func CFormat1(OnlyPrint,PW)
+local i:=1,ii:=1,s:='',pn:=.f.,ps,ocol
+local pstrs:={}
+
+ for i=1 to len(fstr)
+  if at('e',lower(fstr[i,1]))>0
+   aadd(pstrs,chr(12))
+  endif
+ 
+  ps=if(at('j',lower(fstr[i,1]))>0,;
+        StrFix(fstr[i,2],iif(pw>0,pw,PMaxWidth)),;
+        fstr[i,2])
+  ps=if(at('c',lower(fstr[i,1]))>0,; 
+        StrCent(ps,iif(pw>0,pw,PMaxWidth)),ps)
+  ps=if(at('u',lower(fstr[i,1]))>0,underline(ps),ps)
+  ps=if(at('b',lower(fstr[i,1]))>0,EmphaSized(ps),ps)
+  aadd(pstrs,ps)
+ endfor
+
+ aadd(pstrs,chr(12))
+
+ TextView(0,0,79,24,"gr+/b",pstrs)
+
+retu .f.
+
+
+
+
+func cdivide(s,nn,ss1)
+local i:=0,ss:='',s1:=s,l,f:=.f.,n,k:=0
+priv result:={}
+
+n=if(nn>len(s1),len(s1),nn)
+
+if n<nn
+ ss=s1
+ aadd(fstr,{' '+ss1,ss+' '})
+else
+
+
+ cdivide_(s,nn)
+
+// TextView(0,0,79,24,"gr+/b",result)
+
+ for i:=1 to len(result)
+  aadd(fstr,{" "+ss1,result[i]+" "})
+ endfor
+
+/*
+ do while .t.
+  ss=""
+  f=.f.
+  l=len(s1)
+  if l>n
+   for i=1 to n
+    if substr(s1,n-i+1,1)=' '
+     ss=alltrim(left(s1,n-i+1))
+     s1=alltrim(right(s1,l-(n-i+1)+1))
+     f=.t.
+     exit
+    endif
+   endfor
+   if !f
+    ss=alltrim(left(s1,n))
+    s1=alltrim(right(s1,l-n+1))
+   endif
+   aadd(fstr,{'j'+ss1,ss+' '})
+  else
+   ss=s1
+   aadd(fstr,{' '+ss1,ss+' '})
+   exit
+  endif
+  if len(alltrim(s1))=0
+   exit
+  endif
+ enddo
+*/
+
+endif
+
+retu
+
+
+
+
+
+func tr_dogprint(dog_id)
+local tarr,pd_rn:=pudog->(recno()),osel:=select()
+public SHOW_SUMM:=.t.
+
+   sele pudog
+   set order to 1
+   go top
+   seek id_zl9(dog_id)
+   set order to 2
+
+   if found() .and. alert('Распечатать договор №'+alltrim(pudog->dog_no)+'?',{'Н Е Т',' Д А '})=2
+    tarr={}
+    sele itrans
+    set filter to itrans->dog_ID=dog_ID
+    go top
+    count to n
+    go top
+    for i=1 to n
+     aadd(tarr,GetByID('TRANS',itrans->trans_id,'TRANS')+':'+;
+               str(pchas)+'ч.X'+str(cena)+'р.='+str(psumma)+'р.')
+     skip
+    endfor
+    set filter to
+    if n>0
+     dogprint(tarr,2)
+    else
+     alert('Нет данных.;Укажите вид транспорта, и прочие данные.')
+    endif
+   endif
+
+  sele pudog
+  goto pd_rn
+
+  sele &osel
+
+retu
+
+
+
+
+
+
+
+
+func usl_dogprint(dog_id)
+local tarr,pd_rn:=pudog->(recno()),osel:=select()
+public SHOW_SUMM:=.t.
+
+   sele pudog
+   set order to 1
+   go top
+   seek id_zl9(dog_id)
+   set order to 2
+
+   if found() .and. alert('Распечатать договор №'+alltrim(pudog->dog_no)+'?',{'Н Е Т',' Д А '})=2
+    tarr={}
+    sele mats
+    set filter to mats->dog_ID=dog_ID
+    go top
+    count to n
+    go top
+    for i=1 to n
+     ei_id=GetByID('UList',mats->mat_id,'EI_ID')
+     aadd(tarr,GetByID('UList',mats->mat_id,'USLUGA')+':'+;
+               str(pkolvo)+'X'+; 				//GetByID('EdIzm',ei_id,'EdIzm')+'.X'+;
+               str(cena)+'р.='+str(psumma)+'р.')
+     skip
+    endfor
+    set filter to
+    if n>0
+     dogprint(tarr,3)
+    else
+     alert('Нет данных.;Укажите вид услуг, и прочие данные.')
+    endif
+   endif
+
+  sele pudog
+  goto pd_rn
+
+  sele osel
+
+retu
+
+
+
+
+func smt_dogprint(_dog_id)
+local tarr,pd_rn:=pudog->(recno()),smt_rn:=smeta->(recno()),osel:=select()
+public SHOW_SUMM:=.f.
+
+   sele pudog
+   set order to 1
+   go top
+   seek id_zl9(_dog_id)
+   set order to 2
+
+   sele smeta
+   set order to 3
+   go top
+   seek id_zl9(_dog_id)
+   set order to 2
+
+   if found() .and. alert('Распечатать договор №'+alltrim(pudog->dog_no)+'?',{'Н Е Т',' Д А '})=2
+    tarr={}
+    sele iwork
+    set order to 3
+    go top
+    seek id_zl9(smeta->id)
+    n:=0
+    if found()
+     do while iwork->sm_id=smeta->id .and. !eof()
+      n=n+1
+      aadd(tarr,GetByID('UList',iwork->work_id,'USLUGA'))
+      skip
+     enddo
+    endif
+    set order to 2
+    if n>0
+     dogprint(tarr,1)
+    else
+     alert('Нет данных по смете ID='+astr(smeta->id)+' DOG_ID='+astr(pudog->id)+'.;Укажите вид услуг.')
+    endif
+   endif
+
+  sele smeta
+  goto smt_rn
+
+  sele pudog
+  goto pd_rn
+
+  sele &osel
+
+retu
+
+
+
+
+
+
+
+
+
+func dogprint(USLUGI,n)
+local zkzn,zkzl,zkza,x3:=.f.
+local rekvz:={},rekvp:={},rekv:={}
+
+sele zakazch
+set order to 1
+seek id_zl9(pudog->zak_id)
+set order to 2
+
+if !found()
+ alert("Не определен Заказчик! Невозможно распечатать договор!")
+else
+       rekvz:={zakazch->zakazch,;
+                   zakazch->nach,;
+                   alltrim(GetByID('CITY',zakazch->CITY_ID,'CITY'))+', '+alltrim(GetByID('STREET',zakazch->STR_ID,'STREET'))+', '+alltrim(zakazch->appart)+'.',;
+                   zakazch->r_s,;
+                   zakazch->k_s,;
+                   GetByID('BANK',zakazch->BANK_ID,'BANK'),;
+                   zakazch->INN,;
+                   zakazch->KPP,;
+                   zakazch->BIK,;
+                   zakazch->OKONH,;
+                   zakazch->OKPO}
+
+     if zakazch->pl_id>0 .and. zakazch->pl_id!=zakazch->id
+      plid=zakazch->pl_id
+
+      set order to 1
+      go top
+      seek id_zl9(plid)
+      if !found()
+       alert("Плательщик не найден! Невозможно распечатать договор!")
+       retu
+      else
+           rekvp:={zakazch->zakazch,;
+                   zakazch->nach,;
+                   alltrim(GetByID('CITY',zakazch->CITY_ID,'CITY'))+', '+alltrim(GetByID('STREET',zakazch->STR_ID,'STREET'))+', '+alltrim(zakazch->appart)+'.',;
+                   zakazch->r_s,;
+                   zakazch->k_s,;
+                   GetByID('BANK',zakazch->BANK_ID,'BANK'),;
+                   zakazch->INN,;
+                   zakazch->KPP,;
+                   zakazch->BIK,;
+                   zakazch->OKONH,;
+                   zakazch->OKPO}
+      endif
+      aadd(rekv,rekvz)
+      aadd(rekv,rekvp)
+      x3:=.t.
+     else
+      aadd(rekv,rekvz)
+      aadd(rekv,rekvz)
+     endif
+ 
+      if !x3
+       do &("pDog0"+astr(n)) with pudog->DOG_NO, pudog->DOG_DT, USLUGI, pudog->U_NACH, pudog->U_KON, pudog->P_CENA, REKV
+      else
+       do &("pDog0"+astr(n)+"_3") with pudog->DOG_NO, pudog->DOG_DT, USLUGI, pudog->U_NACH, pudog->U_KON, pudog->P_CENA, REKV
+      endif
+ endif
+retu
+

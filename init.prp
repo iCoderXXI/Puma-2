@@ -1,0 +1,117 @@
+#include "SixCDX.ch"
+
+setREAEFunc()
+
+readinsert(.t.)
+readexit(.t.)
+Setblink(.f.)
+
+set deleted on
+set epoch to 1995
+set date format to "dd/mm/yyyy"
+set century On
+set scoreboard off
+set talk off
+set cursor off
+
+//alert(dt_ymd(date()))
+
+public DogTips:={{1,2,3,4,5,9},{'Сметные','Транспортные','Прочие','Материалы','Сторонние','Вручную'}}
+public sBUDGET:={{0,1,2,3,4},{'Не бюджетные','Федеральный бюджет','Областной бюджет','Местный бюджет','Муниципальные предприятия'}}
+public vNDStip:={{0,1},{'НДС+','НДС в т.ч.'}}
+public DtTypes:={'Без фильтра','По году','По кварталу','По месяцу'}
+public Finish:=.f., tocall:="dog_select()",spravn:=1, plid:=0
+public FTA_alias:={}, FTA_Al_id:={}
+
+//set procedure to re.prp
+call re
+
+//set procedure to dp.prp
+call dp
+
+set procedure to DefA.prp
+call DefA
+
+setcolor("w/n")
+cls
+setcolor("gr+/n")
+
+set procedure to dbf.prp
+res=dbf()
+
+//
+//sele zakazch
+//go top
+//mflockF(100,5)
+//do while !eof()
+// repl shrtname with right(replicate(" ",20)+alltrim(zakazch),20)
+//
+// skip
+//enddo
+//unlock
+
+//quit
+
+
+//RecountCloseDates()
+//quit
+
+set procedure to pudog.prp
+set procedure to smeta.prp
+
+set procedure to dog01.prp
+//set procedure to printhp.p2
+set procedure to schet.prf
+set procedure to fschet.prf
+
+set procedure to aktisv.prf
+
+set procedure to svod.prf
+set procedure to svodm.prf
+
+
+
+//======================
+
+retu res
+
+
+
+func RecountCloseDates()
+if alert("Пересчитать даты закрытия счетов?",{"Н Е Т"," Д А "})=2
+
+MaxDate:=ctod("01/01/1996")
+clear
+sele dschet
+go top
+do while !eof()
+
+ sele dopl
+ set filter to dopl->sch_id=dschet->id .and. !deleted()
+ go top
+ _summa:=0
+ do while !eof()
+  _summa:=_summa+dopl->summa
+  if dopl->ODate>MaxDate
+   MaxDate:=dopl->ODate
+  endif
+  skip
+ enddo
+
+ sele dschet
+ mrlockF(100,5)
+ if dschet->fsumma=_summa .and. _summa!=0
+  repl dschet->CloseDate with MaxDate 
+  ? dschet->id,' ',dschet->sch_no,' ',dschet->fsumma,' ',_summa,' ',MaxDate
+ else
+  repl dschet->CloseDate with ctod("31/12/2094")
+  ? dschet->id,' ',dschet->sch_no,' ',dschet->fsumma,' ',_summa,' ',dschet->closedate
+ endif
+ unlock
+
+ skip
+enddo
+//quit
+endif
+
+retu

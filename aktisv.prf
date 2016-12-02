@@ -1,0 +1,1192 @@
+
+func saktsv(zkz_id)
+local a:=0,plt:=.f.
+a=alert('‚›…ˆ’… ’ˆ €Š’€ ‘‚…Šˆ',{' “‘‹“ƒ€Œ',' Œ€’…ˆ€‹€Œ',' ŠŠ.“‘‹.'})
+plt:=(alert('‚›…ˆ’… ”Œ“ €Š’€ ‘‚…Šˆ',{' ‡€Š€‡—ˆŠ€Œ',' ‹€’…‹œ™ˆŠ€Œ'})=2)
+
+if lastkey()!=27
+
+ do case
+  case a=3
+   if lastkey()!=27
+    aktsvU(zkz_id,plt)
+   endif
+  case a=2
+   if lastkey()!=27
+    aktsvm(zkz_id,plt)
+   endif
+  case a=1
+   if lastkey()!=27
+    aktsv(zkz_id,plt)
+   endif
+ endcase
+endif
+kerase("!")
+retu
+
+
+
+
+
+
+
+
+
+//-------------------------------------------
+
+
+
+func aktsvU(zkz_id,plt)
+local summn:=0, summn1:=0,summo:=0, summo1:=0,i,predm:='',utype:=0,uarr:={}
+local orglist:={},currec:=0
+priv sayedstrs:=0,allstrs:={}
+
+sele zakazch
+set order to 2
+KErase("!")
+
+if ((lower(valtype(zkz_id))!="n" .or.;
+    (lower(valtype(zkz_id))="n" .and. zkz_id<1)) .and.;
+     (FTAMenu(2,2,20,74,"zakazch",iif(plt,"‚ë¡¥à¨â¥ ¯« â¥«ìé¨ª ","‡ ª §ç¨ª¨"),"b/w*,gr+/b,,,w+/n",.t.,"") .and.;
+      lastkey()!=27)) .or. (lower(valtype(zkz_id))="n" .and. zkz_id>0)
+ if lower(valtype(zkz_id))="n" .and. zkz_id>0
+  sele zakazch
+  set order to 1
+  seek id_zl9(zkz_id)
+//  alert(astr(zkz_id)+" "+astr(zakazch->zakazch))
+  set order to 2
+  if !found()
+   message("‡ ¤ ­ ­¥¢¥à­ë© ¨¤¥­â¨ä¨ª â®à § ª §ç¨ª !",5,"gr+/r","w+/r")
+   setcolor(ocol)
+   retu
+  endif
+ else
+  zkz_id:=zakazch->id
+ endif
+
+ sele ulist
+ set filter to
+ set order to 2
+// go top
+ FTAMenu(2,2,20,74,"usluga","‚ë¡¥à¨â¥ ¢¨¤ ãá«ã£:","b/w*,gr+/b,,,w+/n",.t.,"")
+ utype:=ulist->id
+
+ if lastkey()!=27
+ aadd(uarr,utype)
+ sele ulist
+ fltr:="ulist->groupto="+astr(utype)
+ set filter to &fltr
+ go top
+ count to n
+ go top
+ if n>0
+  do while !eof()
+   aadd(uarr,ulist->id)
+   skip
+  enddo
+ endif
+
+ set filter to
+
+// alert(astr(utype)+" - "+getbyid("ulist",utype,"usluga"))
+
+ sele zakazch
+ currec:=recno()
+ set filter to
+// set order to 2
+ go top
+ _pl_id:=getbyid("zakazch",zkz_id,"pl_id")
+ if _pl_id>0
+  zkz_id:=_pl_id
+ endif
+ do while !eof()
+  if (plt .and. zakazch->pl_id=zkz_id) .or. zakazch->id=zkz_id
+   aadd(orglist,zakazch->id)
+  endif
+  skip
+ enddo
+ goto currec
+
+ totflag=0
+
+// alert(iif(plt,'t','f')+" "+astr(len(orglist)))
+
+ sele ulist
+
+ do while .t.
+  allstrs:={}
+
+  summflag=.t.
+  summflag=VarEdit("‘ã¬¬¨à®¢ ­âì ¯® á®áâ®ï­¨î ­ ­ ç «® ¯¥à¨®¤ ?",summflag)
+ 
+  if lastkey()=27
+   retu
+  endif
+
+  sdate1=date()
+  if summflag
+   sdate1=VarEdit("‚¢¥¤¨â¥ ­ ç «ì­ãî ¤ âã",sdate1)
+
+   if lastkey()=27
+    retu
+   endif
+ 
+  endif
+
+  edate=date()
+  edate=VarEdit("‚¢¥¤¨â¥ ¤ âã (¯® á®áâ®ï­¨î ­ )",edate)
+
+  if lastkey()=27
+   retu
+  endif
+ 
+  stdays1=tot_days(sdate1)
+  etdays=tot_days(edate)
+
+  sele dopl
+  set order to 2
+  
+  sele dschet
+  set order to 2
+  
+  aadd(allstrs,strcent("€Š’ ‘‚…Šˆ  Š€‡€›Œ “‘‹“ƒ€Œ"+iif(plt," (¯® ¯« â¥«ìé¨ª ¬)",""),129+iif(plt,21,0)))
+  aadd(allstrs,strcent("("+alltrim(getbyid("ulist",utype,'usluga'))+")",129+iif(plt,21,0)))
+  aadd(allstrs,strcent("¯® á®áâ®ï­¨î ­  "+dtoc(edate)+" £.",129+iif(plt,21,0)))
+  aadd(allstrs," ")
+  aadd(allstrs,'®áâ ¢é¨ª: Œ“ "ƒ“†Š•" £. ‚¥àå­ïï ‘ «¤ ')
+  _pl_id=getbyid("zakazch",zkz_id,"pl_id")
+  if _pl_id>0
+   aadd(allstrs,"« â¥«ìé¨ª: "+alltrim(getbyid("zakazch",_pl_id,"zakazch")))
+  else
+   aadd(allstrs,"« â¥«ìé¨ª: "+alltrim(getbyid("zakazch",zkz_id,"zakazch")))
+  endif
+  aadd(allstrs," ")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³                                                       ® ¤ ­­ë¬ “†Š•                                                          ³")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³     à¥¤êï¢«¥­® ª ®¯« â¥     ³              ¯« â                ³                             áè¨äà®¢ª                      |")
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³ü áç¥â³   „ â    ³ ‘ã¬¬ ,àã¡. ³  N ¯®àãç. ³   „ â    ³ ‘ã¬¬ ,àã¡. ³                                                            |")
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+ 
+  sele dschet
+  set filter to ascan(orglist,dschet->zak_id)>0 .and. tot_days(sdate)<=etdays .and. fsumma!=0 .and. (dschet->sch_tip=3 .or. dschet->sch_tip=9) .and. ascan(uarr,dschet->usl_id)>0
+  go top
+  count to n
+  go top
+  scrsave()
+  showprogress(60,0,n,.t.)
+  nn:=0
+  
+  do while !eof()
+   nn:=nn+1 
+   showprogress(60,nn,n,.f.)
+   sele ulist
+   set order to 1
+   go top
+   seek id_zl9(dschet->usl_id)
+   set order to 2
+   sele dschet
+   predm:=left(iif(sch_tip=1,"“á«ã£¨ ¯® á¬¥â¥",iif(sch_tip=2,"“á«ã£¨ âà ­á¯®àâ ",ulist->usluga))+replicate(" ",60),60)
+   sele dopl
+   set filter to dopl->sch_id=dschet->id .and. tot_days(odate)<=etdays
+   go top
+   i=0
+
+   do while !eof()
+    i=i+1
+    if (tot_days(dopl->odate)>=stdays1 .and. summflag)
+     aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,i,dopl->opl_no,dopl->odate,dopl->summa,;
+                  iif(len(alltrim(dschet->primech))>0,left(predm,37)+" - "+dschet->primech,predm))+iif(plt,getbyid("zakazch",dschet->zak_id,"shrtname"),""))
+    endif
+    summo=summo+dopl->summa
+    skip
+   enddo
+   if i=0
+    if (tot_days(dschet->sdate)>=stdays1 .and. summflag)
+     aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,1,0,date(),0,;
+                  iif(len(alltrim(dschet->primech))>0,left(predm,37)+" - "+dschet->primech,predm))+iif(plt,getbyid("zakazch",dschet->zak_id,"shrtname"),""))
+    endif
+   endif
+
+   summn=summn+dschet->fsumma
+   summo1=summo1+summo
+   summn1=summn1+dschet->fsumma
+
+   if (tot_days(dschet->sdate)>=stdays1 .and. totflag=0 .and. summflag)
+    aadd(allstrs," "+iif(summn>summo,"„¥¡¥â®àáª ï","Šà¥¤¨â®àáª ï")+" § ¤®«¦¥­­®áâì “†Š• ¯® á®áâ. ­  "+dtos(sdate1)+" "+astr(abs(summn1-summo1))+" àã¡.")
+    aadd(allstrs,"+===============================================================================================================================+")  
+    totflag++
+   endif
+
+   sele dschet
+   skip
+  enddo
+  scrrest()
+
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³          ˆ’ƒ   "+mytransform(summn,"999999999.99")+"³               ˆ’ƒ   "+mytransform(summo,"999999999.99")+"³"+replicate(" ",60)+"³")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")  
+  aadd(allstrs," ")
+  aadd(allstrs,iif(summn>summo,"„¥¡¥â®àáª ï","Šà¥¤¨â®àáª ï")+" § ¤®«¦¥­­®áâì “†Š• "+astr(abs(summn-summo))+" àã¡.")
+  aadd(allstrs," ")
+  aadd(allstrs,"‚ á«ãç ¥ ­¥á®®â¢¥áâ¢¨ï ¯à®á¨¬ ¯à¥¤®áâ ¢¨âì ¯à®â®ª®« à §­®£« á¨© ")
+  aadd(allstrs," ")
+  aadd(allstrs,'        Œ“ "ƒ“†Š•"           '+alltrim(zakazch->zakazch))
+  aadd(allstrs," ")
+  aadd(allstrs,"        „¨à¥ªâ®à “†Š•                     ãª®¢®¤¨â¥«ì")
+  aadd(allstrs," ")
+  aadd(allstrs,"        ãå£ «â¥à                         ãå£ «â¥à")
+  aadd(allstrs," ")
+  aadd(allstrs,"   Œ..                              Œ.. ")
+
+  TextView(0,0,79,24,"gr+/b",allstrs)
+
+  if alert("à®¤®«¦¨âì á ‡ ª §ç¨ª®¬;"+alltrim(zakazch->zakazch),{" … ’"," „ € "})!=2
+   exit
+  endif
+ enddo
+ endif
+endif
+ 
+sele dopl
+set filter to
+set order to 2
+sele dschet  
+set filter to
+set order to 2
+
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//===================================================================
+
+func aktsv(zkz_id,plt)
+local summn:=0,summo:=0,i,predm:='',orglist:={}
+priv sayedstrs:=0,allstrs:={}
+
+sele zakazch
+set order to 2
+KErase("!")
+
+if ((lower(valtype(zkz_id))!="n" .or.;
+    (lower(valtype(zkz_id))="n" .and. zkz_id<1)) .and.;
+     (FTAMenu(2,2,20,74,"zakazch","‡ ª §ç¨ª¨","b/w*,gr+/b,,,w+/n",.t.,"") .and.;
+      lastkey()!=27)) .or. (lower(valtype(zkz_id))="n" .and. zkz_id>0)
+ if lower(valtype(zkz_id))="n" .and. zkz_id>0
+  sele zakazch
+  set order to 1
+  seek id_zl9(zkz_id)
+//  alert(astr(zkz_id)+" "+astr(zakazch->zakazch))
+  set order to 2
+  if !found()
+   message("‡ ¤ ­ ­¥¢¥à­ë© ¨¤¥­â¨ä¨ª â®à § ª §ç¨ª !",5,"gr+/r","w+/r")
+   setcolor(ocol)
+   retu
+  endif
+ else
+  zkz_id:=zakazch->id
+ endif
+
+ sele zakazch
+ currec:=recno()
+ set filter to
+// set order to 2
+ go top
+ _pl_id:=getbyid("zakazch",zkz_id,"pl_id")
+ if _pl_id>0
+  zkz_id:=_pl_id
+ endif
+ do while !eof()
+  if (plt .and. zakazch->pl_id=zkz_id) .or. zakazch->id=zkz_id
+   aadd(orglist,zakazch->id)
+  endif
+  skip
+ enddo
+ goto currec
+
+
+ do while .t.
+  allstrs:={}
+  edate=date()
+  edate=VarEdit("‚¢¥¤¨â¥ ¤ âã",edate)
+ 
+  etdays=tot_days(edate)
+ 
+  if lastkey()=27
+   retu
+  endif
+ 
+  sele dopl
+  set order to 2
+  
+  sele dschet
+  set order to 2
+  
+  aadd(allstrs,strcent("€Š’ ‘‚…Šˆ  Š€‡€›Œ “‘‹“ƒ€Œ",129+iif(plt,21,0)))
+  aadd(allstrs,strcent("¯® á®áâ®ï­¨î ­  "+dtoc(edate)+" £.",129+iif(plt,21,0)))
+  aadd(allstrs," ")
+  aadd(allstrs,'®áâ ¢é¨ª: Œ“ "ƒ“†Š•" £. ‚¥àå­ïï ‘ «¤ ')
+//  aadd(allstrs,"« â¥«ìé¨ª: "+alltrim(zakazch->zakazch))
+  _pl_id=getbyid("zakazch",zkz_id,"pl_id")
+  if _pl_id>0
+   aadd(allstrs,"« â¥«ìé¨ª: "+alltrim(getbyid("zakazch",_pl_id,"zakazch")))
+  else
+   aadd(allstrs,"« â¥«ìé¨ª: "+alltrim(getbyid("zakazch",zkz_id,"zakazch")))
+  endif
+  aadd(allstrs," ")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³                                                       ® ¤ ­­ë¬ “†Š•                                                          ³")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³     à¥¤êï¢«¥­® ª ®¯« â¥     ³              ¯« â                ³                             áè¨äà®¢ª                      |")
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³ü áç¥â³   „ â    ³ ‘ã¬¬ ,àã¡. ³  N ¯®àãç. ³   „ â    ³ ‘ã¬¬ ,àã¡. ³                                                            |")
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+ 
+  sele dschet
+  set filter to ascan(orglist,dschet->zak_id)>0 .and. tot_days(sdate)<=etdays .and. fsumma!=0 .and. dschet->sch_tip!=4 .and. dschet->sch_tip!=5
+  go top
+  count to n
+  go top
+  scrsave()
+  showprogress(60,0,n,.t.)
+  nn:=0
+  
+  do while !eof()
+   nn:=nn+1 
+   showprogress(60,nn,n,.f.)
+   sele ulist
+   set order to 1
+   go top
+   seek id_zl9(dschet->usl_id)
+   set order to 2
+   sele dschet
+   predm:=left(iif(sch_tip=1,"“á«ã£¨ ¯® á¬¥â¥",iif(sch_tip=2,"“á«ã£¨ âà ­á¯®àâ ",ulist->usluga))+replicate(" ",60),60)
+   sele dopl
+   set filter to dopl->sch_id=dschet->id .and. tot_days(odate)<=etdays
+   go top
+   i=0
+   do while !eof()
+    i=i+1
+    aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,i,dopl->opl_no,dopl->odate,dopl->summa,;
+                 iif(len(alltrim(dschet->primech))>0,left(predm,37)+" - "+dschet->primech,predm))+iif(plt,getbyid("zakazch",dschet->zak_id,"shrtname"),""))
+    summo=summo+dopl->summa
+    skip
+   enddo
+   if i=0
+    aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,1,0,date(),0,;
+                 iif(len(alltrim(dschet->primech))>0,left(predm,37)+" - "+dschet->primech,predm))+iif(plt,getbyid("zakazch",dschet->zak_id,"shrtname"),""))
+   endif
+   summn=summn+dschet->fsumma
+   sele dschet
+   skip
+  enddo
+  scrrest()
+
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³          ˆ’ƒ   "+mytransform(summn,"999999999.99")+"³               ˆ’ƒ   "+mytransform(summo,"999999999.99")+"³"+replicate(" ",60)+"³")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")  
+  aadd(allstrs," ")
+  aadd(allstrs,iif(summn>summo,"„¥¡¥â®àáª ï","Šà¥¤¨â®àáª ï")+" § ¤®«¦¥­­®áâì “†Š• "+astr(abs(summn-summo))+" àã¡.")
+  aadd(allstrs," ")
+  aadd(allstrs,"‚ á«ãç ¥ ­¥á®®â¢¥áâ¢¨ï ¯à®á¨¬ ¯à¥¤®áâ ¢¨âì ¯à®â®ª®« à §­®£« á¨© ")
+  aadd(allstrs," ")
+  aadd(allstrs,'        Œ“ "ƒ“†Š•"           '+alltrim(zakazch->zakazch))
+  aadd(allstrs," ")
+  aadd(allstrs,"        „¨à¥ªâ®à “†Š•                     ãª®¢®¤¨â¥«ì")
+  aadd(allstrs," ")
+  aadd(allstrs,"        ãå£ «â¥à                         ãå£ «â¥à")
+  aadd(allstrs," ")
+  aadd(allstrs,"   Œ..                              Œ.. ")
+
+  TextView(0,0,79,24,"gr+/b",allstrs)
+
+  if alert("à®¤®«¦¨âì á ‡ ª §ç¨ª®¬;"+alltrim(zakazch->zakazch),{" … ’"," „ € "})!=2
+   exit
+  endif
+ enddo
+endif
+ 
+sele dopl
+set filter to
+set order to 2
+sele dschet  
+set filter to
+set order to 2
+
+retu
+
+
+
+
+
+
+
+
+
+func aktsvm(zkz_id)
+local summn:=0,summo:=0,i,predm:=''
+priv sayedstrs:=0,allstrs:={}
+
+sele zakazch
+set order to 2
+KErase("!")
+
+if ((lower(valtype(zkz_id))!="n" .or.;
+    (lower(valtype(zkz_id))="n" .and. zkz_id<1)) .and.;
+     (FTAMenu(2,2,20,74,"zakazch","‡ ª §ç¨ª¨","b/w*,gr+/b,,,w+/n",.t.,"") .and.;
+      lastkey()!=27)) .or. (lower(valtype(zkz_id))="n" .and. zkz_id>0)
+ if lower(valtype(zkz_id))="n" .and. zkz_id>0
+  sele zakazch
+  set order to 1
+  seek id_zl9(zkz_id)
+  set order to 2
+  if !found()
+   message("‡ ¤ ­ ­¥¢¥à­ë© ¨¤¥­â¨ä¨ª â®à § ª §ç¨ª !",5,"gr+/r","w+/r")
+   setcolor(ocol)
+   retu
+  endif
+ endif
+ do while .t.
+  allstrs:={}
+  edate=date()
+  edate=VarEdit("‚¢¥¤¨â¥ ¤ âã",edate)
+ 
+  etdays=tot_days(edate)
+ 
+  if lastkey()=27
+   retu
+  endif
+ 
+  sele dopl
+  set order to 2
+  
+  sele dschet
+  set order to 2
+  
+  aadd(allstrs,strcent("€Š’ ‘‚…Šˆ  Œ€’…ˆ€‹€Œ",64))
+  aadd(allstrs,strcent("¯® á®áâ®ï­¨î ­  "+dtoc(edate)+" £.",64))
+  aadd(allstrs," ")
+  aadd(allstrs,'®áâ ¢é¨ª: Œ“ "ƒ“†Š•" £. ‚¥àå­ïï ‘ «¤ ')
+  aadd(allstrs,"« â¥«ìé¨ª: "+alltrim(zakazch->zakazch))
+  aadd(allstrs," ")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³                                                       ® ¤ ­­ë¬ “†Š•                                                          ³")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³     à¥¤êï¢«¥­® ª ®¯« â¥     ³              ¯« â                ³                             áè¨äà®¢ª                      |")
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³ü áç¥â³   „ â    ³ ‘ã¬¬ ,àã¡. ³  N ¯®àãç. ³   „ â    ³ ‘ã¬¬ ,àã¡. ³                                                            |")
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+ 
+  sele dschet
+  set filter to dschet->zak_id=zakazch->id .and. tot_days(sdate)<=etdays .and. fsumma!=0 .and. dschet->sch_tip=4
+  go top
+  count to n
+  go top
+  scrsave()
+  showprogress(60,0,n,.t.)
+  nn:=0
+  
+  do while !eof()
+   nn:=nn+1 
+   showprogress(60,nn,n,.f.)
+   sele mlist
+   set order to 1
+   go top
+   seek id_zl9(dschet->usl_id)
+   set order to 2
+   sele dschet
+   predm:=left(alltrim(mlist->material)+replicate(" ",60),60)
+   sele dopl
+   set filter to dopl->sch_id=dschet->id .and. tot_days(odate)<=etdays
+   go top
+   i=0
+   do while !eof()
+    i=i+1
+    aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,i,dopl->opl_no,dopl->odate,dopl->summa,predm))
+    summo=summo+dopl->summa
+    skip
+   enddo
+   if i=0
+    aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,1,0,date(),0,predm))
+   endif
+   summn=summn+dschet->fsumma
+   sele dschet
+   skip
+  enddo
+  scrrest()
+
+  aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  aadd(allstrs,"³          ˆ’ƒ   "+mytransform(summn,"999999999.99")+"³               ˆ’ƒ   "+mytransform(summo,"999999999.99")+"³"+replicate(" ",60)+"³")
+  aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")  
+  aadd(allstrs," ")
+  aadd(allstrs,iif(summn>summo,"„¥¡¥â®àáª ï","Šà¥¤¨â®àáª ï")+" § ¤®«¦¥­­®áâì “†Š• "+astr(abs(summn-summo))+" àã¡.")
+  aadd(allstrs," ")
+  aadd(allstrs,"‚ á«ãç ¥ ­¥á®®â¢¥áâ¢¨ï ¯à®á¨¬ ¯à¥¤®áâ ¢¨âì ¯à®â®ª®« à §­®£« á¨© ")
+  aadd(allstrs," ")
+  aadd(allstrs,'        Œ“ "ƒ“†Š•"           '+alltrim(zakazch->zakazch))
+  aadd(allstrs," ")
+  aadd(allstrs,"        „¨à¥ªâ®à “†Š•                     ãª®¢®¤¨â¥«ì")
+  aadd(allstrs," ")
+  aadd(allstrs,"        ãå£ «â¥à                         ãå£ «â¥à")
+  aadd(allstrs," ")
+  aadd(allstrs,"   Œ..                              Œ.. ")
+
+  TextView(0,0,79,24,"gr+/b",allstrs)
+
+  if alert("à®¤®«¦¨âì á ‡ ª §ç¨ª®¬;"+alltrim(zakazch->zakazch),{" … ’"," „ € "})!=2
+   exit
+  endif
+ enddo
+endif
+ 
+sele dopl
+set filter to
+set order to 2
+sele dschet  
+set filter to
+set order to 2
+
+retu
+
+
+
+
+
+
+
+
+
+func akt_str(sch_no,sdate,sch_summ,n,plat_no,pdate,plat_summ,predm)
+local s:=""
+s:="³"+iif(n=1,mytransform(sch_no,"999999"),"      ")+;
+   "³"+iif(n=1,dtoc(sdate),"          ")+;
+   "³"+iif(n=1,mytransform(sch_summ,"999999999.99"),"            ")+;
+   "³"+iif(plat_summ!=0,mytransform(plat_no,"99999999999"),"           ")+;
+   "³"+iif(plat_summ!=0,dtoc(pdate),"          ")+;
+   "³"+iif(plat_summ!=0,mytransform(plat_summ,"999999999.99"),"            ")+;
+   "³"+iif(n=1,predm,replicate(" ",60))+"³"
+retu s
+
+func akt_str1(predm)
+local s:=""
+s:="³      ³          ³            ³           ³          ³            ³"+lefT(alltrim(predm)+replicate(" ",60),60)+"³"
+retu s
+
+
+
+
+
+
+
+func rscht()
+local summn:=0,summo:=0,i,sdate:=date(),edate:=nm_dmy(date()),etdays,stdays,fltr
+local zkz_id:={},zkz,fltr1
+priv sayedstrs:=0,allstrs:={}
+
+sdate=VarEdit("‚¢¥¤¨â¥ ­ ç «ì­ãî ¤ âã",sdate)
+edate=nm_dmy(sdate)
+edate=VarEdit("‚¢¥¤¨â¥ ª®­¥ç­ãî ¤ âã",edate)
+
+stdays:=tot_days(sdate)
+etdays:=tot_days(edate)
+
+sele zakazch
+set filter to 
+go top
+
+sele dopl
+set order to 2
+go top
+
+sele dschet
+set order to 2
+go top
+
+fltr:="tot_days(dschet->sdate)>="+astr(stdays)+" .and. "+;
+       "tot_days(dschet->sdate)<"+astr(etdays)+" .and. fsumma!=0"
+
+set filter to &(fltr)
+go top
+
+do while !eof()
+
+ if ascan(zkz_id,dschet->zak_id)=0
+  aadd(zkz_id,dschet->zak_id)
+ endif
+ 
+sele dschet
+skip
+enddo
+
+scrsave()
+
+showprogress(60,0,len(zkz_id),.t.)
+
+for zkz=1 to len(zkz_id)
+
+ showprogress(60,zkz,len(zkz_id),.f.)
+
+ summn:=0
+ summo:=0
+ sele dschet
+ go top
+ fltr:="dschet->zak_id="+astr(zkz_id[zkz])+" .and. "+;
+       "tot_days(dschet->sdate)>="+astr(stdays)+" .and. "+;
+       "tot_days(dschet->sdate)<"+astr(etdays)+" .and. fsumma!=0"
+ locate for &(fltr)
+
+ if found()
+  sele dschet
+  set filter to &(fltr)
+  go top
+
+  sele zakazch
+  set order to 1
+  go top
+  seek ID_ZL9(zkz_id[zkz])
+  if found()
+ 
+   aadd(allstrs," ")
+   aadd(allstrs,"« â¥«ìé¨ª: "+alltrim(zakazch->zakazch))
+   aadd(allstrs," ")
+   aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+   aadd(allstrs,"³                                                       ® ¤ ­­ë¬ “†Š•                                                          ³")
+   aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+   aadd(allstrs,"³     à¥¤êï¢«¥­® ª ®¯« â¥     ³              ¯« â                ³                             áè¨äà®¢ª                      |")
+   aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+   aadd(allstrs,"³ü áç¥â³   „ â    ³ ‘ã¬¬ ,àã¡. ³  N ¯®àãç. ³   „ â    ³ ‘ã¬¬ ,àã¡. ³                                                            |")
+   aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+  
+   sele dschet
+   do while !eof()
+
+    sele ulist
+    set order to 1
+    go top
+    seek id_zl9(dschet->usl_id)
+    set order to 2
+    sele dschet
+    predm:=left(iif(sch_tip=1,"“á«ã£¨ ¯® á¬¥â¥",iif(sch_tip=2,"“á«ã£¨ âà ­á¯®àâ ",ulist->usluga))+replicate(" ",60),60)
+
+    sele dopl
+    fltr1:="dopl->sch_id="+astr(dschet->id)+" .and. tot_days(odate)<="+astr(etdays)
+    set filter to &(fltr1)
+    go top
+    i=0
+    do while !eof()
+     i=i+1
+     aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,i,dopl->opl_no,dopl->odate,dopl->summa,predm))
+     summo=summo+dopl->summa
+     skip
+    enddo
+    if i=0
+     aadd(allstrs,akt_str(dschet->sch_no,dschet->sdate,dschet->fsumma,1,0,date(),0,predm))
+    endif
+    summn=summn+dschet->fsumma
+    sele dschet
+    skip
+   enddo
+  
+   aadd(allstrs,"+ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")
+   aadd(allstrs,"³          ˆ’ƒ   "+mytransform(summn,"999999999.99")+"³               ˆ’ƒ   "+mytransform(summo,"999999999.99")+"³"+replicate(" ",60)+"³")
+   aadd(allstrs,"+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+")   
+   aadd(allstrs," ")
+   aadd(allstrs,iif(summn>summo,"„¥¡¥â®àáª ï","Šà¥¤¨â®àáª ï")+" § ¤®«¦¥­­®áâì “†Š• "+astr(abs(summn-summo))+" àã¡.")
+   aadd(allstrs," ")
+   aadd(allstrs,replicate("=",68))
+ 
+  endif
+ endif
+endfor
+
+scrrest()
+
+TextView(0,0,79,24,"gr+/b",allstrs)
+ 
+sele dopl
+set filter to
+set order to 2
+sele dschet
+set filter to
+set order to 2
+sele zakazch
+set filter to
+set order to 2
+
+retu
+
+
+
+
+
+
+
+func svod_debit()
+local periods:={{'„® 3 ¬¥á.',;
+                 '4-6 ¬¥á.',;
+                 '7-12 ¬¥á.',;
+                 '1-3 £®¤ ',;
+                 '‘¢ëè¥ 3 «¥â.'},{0,0,0,0,0}}
+local nn:=0,summn:=0,summo:=0,summt:=0,i,edate,edate1:=date(),etdays,stdays,fltr,fltr1
+local zakn,zaknn,per:=0,sm:=0,oper
+local dtarr:={},dtarr1:={}, ismat:=.f., nb:=0
+local divisor:="-----+-"+replicate("-",len(zakazch->zakazch))+"-+------------+-------------+------------"
+LOCAL usl_name,usl_spis
+priv sayedstrs:=0,allstrs:={}
+
+scrsave()
+
+nb:=alert("‚ë¡¥à¨â¥ â¨¯ á¢®¤  ¯® „¥¡¥â®à ¬ ¯® ¯¥à¨®¤ ¬",{"“‘‹“ƒˆ","Œ€’…ˆ€‹›"})
+
+if lastkey()=27
+ scrrest()
+ retu
+endif
+
+ismat:=(nb=2)
+
+edate1=VarEdit("‚¢¥¤¨â¥ ª®­¥ç­ãî ¤ âã",edate1)
+edate:=edate1-1
+
+etdays=tot_days(edate1)
+
+if lastkey()=27
+ scrrest()
+ retu
+endif
+
+sele zakazch
+set filter to 
+set order to 2
+go top
+count to zakn
+go top
+
+sele dopl
+set order to 2
+go top
+
+sele dschet
+set order to 2
+set filter to dschet->sch_tip!=5 .and.;
+              iif(ismat,dschet->sch_tip=4,dschet->sch_tip!=4)
+go top
+
+aadd(allstrs,strcent('‘‚„  „……’€Œ/Š…„ˆ’€Œ Œ“ "ƒ“†Š•" £. ‚.‘ «¤ ',80))
+aadd(allstrs,strcent(" ¯® "+iif(ismat,"¬ â¥à¨ « ¬","¯« â­ë¬ ãá«ã£ ¬")+"¯® á®áâ®ï­¨î ­  "+dtoc(edate)+" £.",80))
+aadd(allstrs," ")
+aadd(allstrs,strcent('®áâ ¢é¨ª: Œ“ "ƒ“†Š•" £. ‚¥àå­ïï ‘ «¤ ',80))
+
+
+zaknn=0
+showprogress(60,zaknn,zakn,.t.)
+do while !eof()
+
+ usl_spis:={}  
+ zaknn=zaknn+1
+ showprogress(60,zaknn,zakn,.f.)
+ summn:=0
+ summo:=0
+ sele dschet
+ fltr='dschet->zak_id='+astr(zakazch->id)+' .and. tot_days(dschet->sdate)<'+astr(etdays)+' .and. fsumma!=0 .and. '+;
+      "dschet->sch_tip!=5 .and. "+iif(ismat,"dschet->sch_tip=4","dschet->sch_tip!=4")
+ set filter to &fltr
+ go top
+ count to n
+ go top
+
+ if n>0
+  
+  sdt:=edate
+  do while !eof()
+   sele dopl
+   fltr1='dopl->sch_id=dschet->id .and. tot_days(odate)<='+astr(etdays)
+   set filter to &fltr1
+   go top
+   i=0
+   summo1:=0
+   do while !eof()
+    i=i+1
+    summo1=summo1+dopl->summa
+    skip
+   enddo
+   summo:=summo+summo1
+
+   summn=summn+dschet->fsumma
+   if dschet->fsumma-summo1>0
+    do case
+     case dschet->sch_tip=1	//‘¬¥â­ë¥
+      usl_name="‘¬¥â­ë¥" 
+     case dschet->sch_tip=2	//’à ­á¯®àâ­ë¥
+      usl_name="’à ­á¯®àâ­ë¥"
+     case dschet->sch_tip=3	//à®ç¨¥
+      usl_name=getById("ULIST",dschet->usl_id,"USLUGA")
+     case dschet->sch_tip=4	//Œ â¥à¨ «ë
+      usl_name=getById("MLIST",dschet->usl_id,"MATERIAL") 
+     case dschet->sch_tip=5	//‘â®à®­­¨¥
+      usl_name=getById("ULIST",dschet->usl_id,"USLUGA")
+     case dschet->sch_tip=9	//‚àãç­ãî
+      usl_name=getById("ULIST",dschet->usl_id,"USLUGA")
+    endcase
+    aadd(usl_spis,usl_name)
+    if dtos(dschet->sdate)<dtos(sdt)
+     sdt:=dschet->sdate
+    endif
+   endif
+   sele dschet
+   skip
+  enddo
+
+  sm:=summn-summo
+  if sm!=0
+   nn=nn+1
+   per:=period(edate,sdt)
+   aadd(dtarr1,{zakazch->zakazch,per,sdt,sm,a_unique(usl_spis)})
+   periods[2,per]:=periods[2,per]+sm
+   summt:=summt+sm
+  endif
+ endif
+ 
+ sele zakazch
+ skip
+enddo
+
+dtarr:=asort(dtarr1,,,{ |a,b| dtos(a[3])<dtos(b[3])})
+
+oper:=-1
+
+for i=1 to len(dtarr)
+   if oper!=dtarr[i,2]
+    if oper>0
+     aadd(allstrs,divisor)
+     aadd(allstrs,"     | "+left("ˆâ®£® ¯® ¯¥à¨®¤ã ("+astr(periods[1,oper])+")"+replicate(" ",100),len(zakazch->zakazch))+" |            | "+transform(periods[2,oper],"999999999.99")+"|")
+     aadd(allstrs,divisor)
+    endif
+    aadd(allstrs," ")
+    aadd(allstrs,strcent("¥à¨®¤ § ¤®«¦¥­­®áâ¨ ("+astr(periods[1,dtarr[i,2]])+")",80))
+    aadd(allstrs,divisor)
+    aadd(allstrs,"ü¯/¯ | "+left(" ¨¬¥­®¢ ­¨¥ ®à£ ­¨§ æ¨¨ „¥¡¥â®à "+replicate(" ",100),len(zakazch->zakazch))+" | „ â        | „¥¡¥â       | à¨¬¥ç ­¨ï ")
+    aadd(allstrs,divisor)
+   endif
+   oper:=dtarr[i,2]
+   if summn<summo
+    aadd(allstrs,EmphaSized(transform(i,"9999")+" | "+dtarr[i,1]+" | "+dtoc(dtarr[i,3])+" | "+transform(dtarr[i,4],"999999999.99")+"|"))
+    for j=1 to len(dtarr[i,5])
+     if j<len(dtarr[i,5])
+      aadd(allstrs,EmphaSized("     | ("+left(alltrim(dtarr[i,5,j])+")"+replicate(" ",100),len(zakazch->zakazch)-1)+" |            |             |"))
+     else
+      aadd(allstrs,EmphaSized(underline("     | ("+left(alltrim(dtarr[i,5,j])+")"+replicate(" ",100),len(zakazch->zakazch)-1)+" |            |             |")))
+     endif
+    endfor
+   else
+    aadd(allstrs,transform(i,"9999")+" | "+dtarr[i,1]+" | "+dtoc(dtarr[i,3])+" | "+transform(dtarr[i,4],"999999999.99")+"|")
+    for j=1 to len(dtarr[i,5])
+     if j<len(dtarr[i,5])
+      aadd(allstrs,"     | ("+left(alltrim(dtarr[i,5,j])+")"+replicate(" ",100),len(zakazch->zakazch)-1)+" |            |             |")
+     else
+      aadd(allstrs,underline("     | ("+left(alltrim(dtarr[i,5,j])+")"+replicate(" ",100),len(zakazch->zakazch)-1)+" |            |             |"))
+     endif
+    endfor
+   endif
+endfor
+
+aadd(allstrs,divisor)
+aadd(allstrs,"     | "+left("ˆâ®£® ¯® ¯¥à¨®¤ã ("+periods[1,oper]+")"+replicate(" ",100),len(zakazch->zakazch))+" |            | "+transform(periods[2,oper],"999999999.99")+"|")
+aadd(allstrs,divisor)
+aadd(allstrs,"     | "+left("‚á¥£®"+replicate(" ",100),len(zakazch->zakazch))+" |            | "+transform(summt,"999999999.99")+"|")
+aadd(allstrs,divisor)
+aadd(allstrs,chr(12))
+
+TextView(0,0,79,24,"gr+/b",allstrs)
+ 
+sele dopl
+set filter to
+sele dschet
+set filter to
+sele zakazch
+set filter to
+
+scrrest()
+
+retu
+
+
+func period(dt1,dt2)
+local mn1,mn2,n
+mn1:=year(dt1)*12+month(dt1)
+mn2:=year(dt2)*12+month(dt2)
+n:=mn1-mn2+1
+retu iif(n<=3,1,iif(n<=6,2,iif(n<=12,3,iif(n<=36,4,5))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func svod_budget()
+local budgets:={{},{},{}}
+local nn:=0,summn:=0,summo:=0,summt:=0,i,edate,edate1:=date(),etdays,stdays,fltr,fltr1
+local zakn,zaknn,bud:=0,sm:=0,obud
+local dtarr:={},ismat:=.f.,nb:=0
+local divisor:="-----+-"+replicate("-",len(zakazch->zakazch))+"-+------------+-------------+------------"
+priv sayedstrs:=0,allstrs:={}
+
+scrsave()
+
+nb:=alert("‚ë¡¥à¨â¥ â¨¯ á¢®¤  ¯® „¥¡¥â®à ¬ ¯® ¡î¤¦¥â ¬",{"“‘‹“ƒˆ","Œ€’…ˆ€‹›"})
+
+if lastkey()=27
+ scrrest()
+ retu
+endif
+
+ismat:=(nb=2)
+
+sele budget
+set order to 1
+go top
+//cls
+do while !eof()
+ aadd(budgets[1],alltrim(budget->budget))
+ aadd(budgets[2],0)
+ aadd(budgets[3],budget->id)
+// ? budget->id, budget->budget
+ skip
+enddo
+
+//inkey(0)
+
+edate1=VarEdit("‚¢¥¤¨â¥ ª®­¥ç­ãî ¤ âã",edate1)
+edate:=edate1-1
+
+etdays=tot_days(edate1)
+
+sele zakazch
+set filter to 
+set order to 3
+go top
+count to zakn
+go top
+
+sele dopl
+set order to 2
+go top
+
+sele dschet
+set order to 2
+set filter to dschet->sch_tip!=5 .and.;
+              iif(ismat,dschet->sch_tip=4,dschet->sch_tip!=4)
+go top
+
+aadd(allstrs,strcent("‘‚„  „……’€Œ/Š…„ˆ’€Œ Œ“ £“†Š• £. ‚.‘ «¤ ",80))
+aadd(allstrs,strcent("¯® "+iif(ismat,"¬ â¥à¨ « ¬","¯« â­ë¬ ãá«ã£ ¬")+" ¯® á®áâ®ï­¨î ­  "+dtoc(edate)+" £.",80))
+aadd(allstrs," ")
+aadd(allstrs,strcent("®áâ ¢é¨ª: Œ“ £. “†Š• £. ‚¥àå­ïï ‘ «¤ ",80))
+
+zaknn=0
+showprogress(60,zaknn,zakn,.t.)
+do while !eof()
+
+ zaknn=zaknn+1
+ showprogress(60,zaknn,zakn,.f.)
+ summn:=0
+ summo:=0
+ sele dschet
+ fltr='dschet->zak_id='+astr(zakazch->id)+' .and. tot_days(dschet->sdate)<'+astr(etdays)+' .and. fsumma!=0 .and. '+;
+      "dschet->sch_tip!=5 .and. "+iif(ismat,"dschet->sch_tip=4","dschet->sch_tip!=4")
+ set filter to &fltr
+ go top
+ count to n
+ go top
+
+ if n>0
+  
+  sdt:=edate
+  do while !eof()
+  
+   sele dopl
+   fltr1='dopl->sch_id=dschet->id .and. tot_days(odate)<='+astr(etdays)
+   set filter to &fltr1
+   go top
+   i=0
+   summo1:=0
+   do while !eof()
+    i=i+1
+    summo1=summo1+dopl->summa
+    skip
+   enddo
+   summo:=summo+summo1
+   if i=0
+   endif
+   summn=summn+dschet->fsumma
+   if dschet->fsumma-summo1>0
+    if dtos(dschet->sdate)<dtos(sdt)
+     sdt:=dschet->sdate
+    endif
+   endif
+   sele dschet
+   skip
+  enddo
+
+  sm:=summn-summo
+  if sm!=0
+   nn=nn+1
+   bud:=ascan(budgets[3],zakazch->bud_id)
+   if bud<1
+    alert('‘âà ­­®¥ ®¡áâ®ïâ¥«ìáâ¢®! BUD='+astr(bud)+" - "+astr(zakazch->bud_id)+" zak_id="+astr(zakazch->id))
+   endif
+   aadd(dtarr,{zakazch->zakazch,bud,sdt,sm})
+   budgets[2,bud]:=budgets[2,bud]+sm
+   summt:=summt+sm
+  endif
+ endif
+ 
+ sele zakazch
+ skip
+enddo
+
+obud:=-1
+
+for i=1 to len(dtarr)
+   if obud!=dtarr[i,2]
+    if obud>0
+     aadd(allstrs,divisor)
+     aadd(allstrs,"     | "+left("ˆâ®£® ¯® ¡î¤¦¥âã ("+astr(budgets[1,obud])+")"+replicate(" ",100),len(zakazch->zakazch))+" |            | "+transform(budgets[2,obud],"999999999.99")+"|")
+     aadd(allstrs,divisor)
+     aadd(allstrs,"")
+    endif
+    aadd(allstrs," ")
+    aadd(allstrs,strcent("‚¨¤ ¡î¤¦¥â  ("+astr(budgets[1,dtarr[i,2]])+")",80))
+    aadd(allstrs,divisor)
+    aadd(allstrs,"ü¯/¯ | "+left(" ¨¬¥­®¢ ­¨¥ ®à£ ­¨§ æ¨¨ „¥¡¥â®à "+replicate(" ",100),len(zakazch->zakazch))+" | „ â        | „¥¡¥â       | à¨¬¥ç ­¨ï ")
+    aadd(allstrs,divisor)
+   endif
+   obud:=dtarr[i,2]
+   if summn<summo
+    aadd(allstrs,EmphaSized(transform(i,"9999")+" | "+dtarr[i,1]+" | "+dtoc(dtarr[i,3])+" | "+transform(dtarr[i,4],"999999999.99")+"|"))
+   else
+    aadd(allstrs,transform(i,"9999")+" | "+dtarr[i,1]+" | "+dtoc(dtarr[i,3])+" | "+transform(dtarr[i,4],"999999999.99")+"|")
+   endif
+endfor
+
+aadd(allstrs,divisor)
+aadd(allstrs,"     | "+left("ˆâ®£® ¯® ¡î¤¦¥âã ("+budgets[1,obud]+")"+replicate(" ",100),len(zakazch->zakazch))+" |            | "+transform(budgets[2,obud],"999999999.99")+"|")
+aadd(allstrs,divisor)
+aadd(allstrs,"     | "+left("‚á¥£®"+replicate(" ",100),len(zakazch->zakazch))+" |            | "+transform(summt,"999999999.99")+"|")
+aadd(allstrs,divisor)
+aadd(allstrs,chr(12))
+
+TextView(0,0,79,24,"gr+/b",allstrs)
+ 
+sele dopl
+set filter to
+sele dschet
+set filter to
+sele zakazch
+set filter to
+set order to 2
+
+scrrest()
+
+retu
+
+
+
+
+
+
+
+
+
+
+func strn_reestr()
+local zak_ids:={},strs:={},strs1:={},s:="",fltr:=""
+local divisor:="------------------------------------------------------------+------+----------+"+;
+               "------------------------------------------------------------+"+;
+               "------------+------------"
+local sorting:={},sorted:={}
+local rt:=0
+
+scrsave()
+rotator(39,13,'gr+/n',rt,.t.)
+sele dschet
+set filter to sch_tip=5
+set order to 6
+go top
+
+//scrsave()
+//dbedit()
+//scrrest()
+
+ aadd(strs,"……‘’ ‘’ˆ• ‘—…’‚")
+ aadd(strs,divisor)
+ aadd(strs,left("à£ ­¨§ æ¨ï"+replicate(" ",60),60)+;
+           "|ü áçâ.|„ â       |"+;
+           left("‚¨¤ ãá«ã£¨"+replicate(" ",60),60)+;
+           "|à.‘ã¬¬     |” ªâ.‘ã¬¬   ")
+ aadd(strs,divisor)
+
+ Do while !eof() 
+  rotator(39,13,'gr+/n',rt,.f.)
+  rt:=rt+1
+  s:=GetByID("Zakazch",dschet->zak_id,"Zakazch")+"|"+;
+     transform(dschet->sch_no,"999999")+"|"+dtoc(dschet->sdate)+"|"+;
+     GetByID("UList",dschet->usl_id,"Usluga")+"|"+;
+     transform(dschet->summa,"999999999.99")+"|"+;
+     transform(dschet->fsumma,"999999999.99")
+  aadd(strs1,s)
+  aadd(sorting,{rrepl(astr(dschet->usl_id),'0',6)+;
+               rrepl(astr(dschet->zak_id),'0',6)+;
+               dtos(dschet->sdate)+rrepl(astr(dschet->sch_no),'0',6),rt})
+  sele dschet
+  skip
+ enddo
+ scrrest()
+ sorted:=asort(sorting,,, { |x,y| x[1] < y[1]})
+ for i:=1 to len(sorted)
+  if i>1 .and. left(sorted[i-1,1],6)<>left(sorted[i,1],6)
+   aadd(Strs,divisor)
+  endif
+  aadd(strs,strs1[sorted[i,2]])
+ endfor
+
+ aadd(strs,divisor)
+
+ TextView(0,0,79,24,"gr+/b",strs)
+
+sele dschet
+set order to 2
+set filter to
+go top
+
+retu

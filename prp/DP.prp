@@ -1,0 +1,2483 @@
+#include "SixCDX.ch"
+#include "Directry.ch"
+
+public mnam0:={'Января','Февраля','Марта','Апреля','Мая','Июня','Июля','Августа','Сентября','Октября','Ноября','Декабря'}
+public mnam1:={'Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'}
+public sf:=replicate(" ",70),LSPos:=0
+public DT_FLTR:=".t.",dbfsstr:=""
+
+
+retu
+
+//---------------------------------------------------------------------------
+
+func myquit()
+local dbp:=""
+
+ dbp:=left(dbf_path,len(dbf_path)-1)
+ close databases
+ setcolor('n/n')
+ cls
+ if len(alltrim(dbp))>0 .and. len(alltrim(rdn))>0
+  aeval(directory(dbp+"\TEMP\"+rdn+"\*.*"), { |aFile| ;
+        ferase(aFile[F_NAME]) })  
+  run ("rd "+dbp+"\TEMP\"+rdn)
+
+  aeval(directory("C:\TEMP\"+rdn+"\*.*"), { |aFile| ;
+        ferase(aFile[F_NAME]) })  
+  run ("rd C:\TEMP\"+rdn)
+
+ endif 
+ setcolor('w/n')
+ Setblink(.f.)
+ cls
+retu
+
+
+
+func astr(n)
+retu iif(upper(valtype(n))="N",alltrim(str(n)),iif(lower(valtype(n))="c",alltrim(n),""))
+
+func bstr(n)
+retu iif(upper(valtype(n))="N" .and. n>0,alltrim(str(n)),;
+         iif(upper(valtype(n))="C" .and. alltrim(n)!="0",alltrim(n),""))
+
+func charonly(ntd,s)
+local i,ss
+ss:=''
+for i=1 to len(s)
+if at(substr(s,i,1),ntd)>0
+ss:=ss+substr(s,i,1)
+endif
+endfor
+retu ss
+
+func lower_(s)
+local ss:='',i,n
+local us:='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ'
+local ls:='абвгдеёжзийклмнопрстуфхцчшщъыьэюяabcdefghijklmnopqrstuvwxyz'
+ for i=1 to len(s)
+ n=at(substr(s,i,1),us)
+ if n>0
+ ss=ss+substr(ls,n,1)
+ else
+ ss=ss+substr(s,i,1)
+ endif
+ endfor
+retu ss
+
+func upper_(s)
+local ss:='',i,n
+local us:='АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯABCDEFGHIJKLMNOPQRSTUVWXYZ'
+local ls:='абвгдеёжзийклмнопрстуфхцчшщъыьэюяabcdefghijklmnopqrstuvwxyz'
+ for i=1 to len(s)
+ n=at(substr(s,i,1),ls)
+ if n>0
+ ss=ss+substr(us,n,1)
+ else
+ ss=ss+substr(s,i,1)
+ endif
+ endfor
+retu ss
+
+func firstsearch(cf)
+local ss:=left(SearchStr+replicate(" ",45),45),oc:=setcolor('g+/rb,gr+/n')
+scrsave()
+ramka(11,4,13,75,'w+/rb')
+@12,6 say 'Введите строку поиска:' get ss pict "@K"
+set cursor on
+read
+set cursor off
+scrrest()
+setcolor(oc)
+if lastkey()<>27
+SearchStr=alltrim(lower_(SS))
+go top
+retu searcher(cf)
+else
+retu 1
+endif
+retu 0
+
+
+func makestr(cf)
+local ss:='Неконвертируемый тип!'
+do case
+case valtype(fieldget(cf))='C'
+        ss:=fieldget(cf)
+case valtype(fieldget(cf))='N'
+        SS:=Str(FieldGet(Cf))
+case valtype(fieldget(cf))='D'
+        SS:=DTOC(FieldGet(CF))
+case valtype(fieldget(cf))='L'
+        SS:=if(FieldGet(CF),'Да','Нет')
+end
+retu ss	//lower_(alltrim(ss))
+
+
+func makestr1(cf)
+local ss:='Неконвертируемый тип!'
+do case
+case valtype(fieldget(cf))='C'
+        ss:=fieldget(cf)
+case valtype(fieldget(cf))='N'
+        SS:=Str(FieldGet(Cf))
+case valtype(fieldget(cf))='D'
+        SS:=DTOC(FieldGet(CF))
+case valtype(fieldget(cf))='L'
+        SS:=if(FieldGet(CF),'+',' ')
+end
+retu ss
+
+
+
+
+func vmakestr(cf)
+local ss:='Неконвертируемый тип!'
+do case
+case valtype(cf)='C'
+        ss:=cf
+case valtype(cf)='N'
+        SS:=Str(Cf)
+case valtype(cf)='D'
+        SS:=DTOC(CF)
+case valtype(cf)='L'
+        SS:=if(CF,'+',' ')
+end
+retu ss
+
+
+
+func indmstr(cf)
+local ss:='Неконвертируемый тип!'
+do case
+case valtype(cf)='C'
+        ss:=lower(cf)
+case valtype(cf)='N'
+        SS:=Str(Cf)
+case valtype(cf)='D'
+        SS:=DTOs(CF)
+case valtype(cf)='L'
+        SS:=if(CF,'1','0')
+end
+retu ss
+
+
+
+
+func IsFEmpty(cf)
+local ss:=.f.
+do case
+case valtype(fieldget(cf))='C'
+        ss:=(len(alltrim(fieldget(cf)))=0)
+case valtype(fieldget(cf))='N'
+        SS:=(FieldGet(Cf)=0)
+case valtype(fieldget(cf))='D'
+        SS:=(len(alltrim(dtos(FieldGet(CF))))<1)
+end
+retu ss
+
+
+func VarEmpty(Var)
+local res:=.f.
+do case
+ case upper(valtype(Var))='C'
+  res=(len(alltrim(var))=0)
+ case upper(valtype(Var))='N'
+  res=(Var=0)
+ case upper(valtype(Var))='D'
+  res=(len(alltrim(dtos(Var)))<1)
+endcase
+
+retu res
+
+
+
+func searcher(cf)
+local op:=recno(),m,ss:=SearchStr,i:=.f.,s1:=''
+skip
+do while i=.f.
+s1=makestr(cf)
+ if at(ss,s1)>0 .or. recno()>RecCount()
+  i=.t.
+ else
+  i=.f.
+ endif
+m:=recno()
+skip
+enddo
+ if recno()>Reccount()
+  goto reccount()
+ else
+  goto m
+ endif
+if at(ss,s1)=0
+goto op
+retu 0
+else
+retu 1
+endif
+retu
+
+func posrepl(s,c,n)
+local ss:=substr(s,1,n)+c+substr(s,n+len(c)+1,len(s)-n-len(c))
+retu ss
+
+func sayspread(c,y,x)
+@y,x say c
+retu
+
+func dirchange(c)
+run ('cd '+c)
+retu file((c+'\*.*'))
+
+func dirmake(c)
+run ('md '+c)
+retu
+
+func dirrem(c)
+run ('rmdir '+c)
+retu
+
+func myscreenmix(s1,s2,y,x)
+//           0   1   2   3    4   5    6    7   8    9    10   11    12   13    14    15
+local lo_:={'n','b','g','bg','r','rb','rg','w','n+','b+','g+','bg+','r+','rb+','gr+','w+'}
+local hi_:={'n','b','g','bg','r','rb','rg','w','n*','b*','g*','bg*','r*','rg*','gr*','w*'}
+local i,n
+for i=1 to len(s1)
+n=asc(substr(s2,i,1))
+Col=LO_[n % 16+1]+'/'+HI_[int(n / 16)+1]
+@y,x+i-1 say substr(s1,i,1) Color (Col)
+endfor
+retu
+
+
+
+func my1screenmix(ss,y,x)
+//           0   1   2   3    4   5    6    7   8    9    10   11    12   13    14    15
+local lo_:={'n','b','g','bg','r','rb','rg','w','n+','b+','g+','bg+','r+','rb+','gr+','w+'}
+local hi_:={'n','b','g','bg','r','rb','rg','w','n*','b*','g*','bg*','r*','rg*','gr*','w*'}
+local i,n
+for i=1 to int(len(ss)/2)
+n=asc(substr(ss,i*2,1))
+Col=LO_[n % 16+1]+'/'+HI_[int(n / 16)+1]
+@y,x+i-1 say substr(ss,(i-1)*2+1,1) Color (Col)
+endfor
+retu
+
+
+
+
+func nort_
+local i,j,str1,str2,occ:=col(),orw:=row()
+para n,div1,div2,c1,c2,c3,men   //men[x,1]=клавиша men[x,2]=обозначение
+myscreenmix(repl(' ',maxcol()+1),repl(chr(c2),maxcol()+1),maxrow(),0)
+str1=''
+str2=''
+for i=1 to n
+str1=str1+men[i,1]+div1+men[i,2]+div2
+str2=str2+repl(chr(c1),len(men[i,1]))+REPL(chr(c3),LEN(DIV1))+repl(chr(c2),len(men[i,2]))+REPL(chr(c3),LEN(DIV2))
+endfor
+  myScreenmix(left(str1,len(str1)-LEN(DIV2)),left(str2,len(str2)-LEN(DIV2)),maxrow(),0)
+rele all
+@orw,occ say ""
+RETU .T.
+
+
+
+
+func fillscreen(chr_,clr_)
+local ocol:=setcolor(clr_),i,s:=replicate(left(chr_,1),MaxCol()+1)
+for i=0 to MaxRow()
+@i,0 say s
+endfor
+retu
+
+
+
+
+func nort(men,y)
+#define BLUE_ON_MAGENTA 16*3+1
+#define YELLOW_ON_MAGENTA 16*3+14
+#define BLACK_ON_MAGENTA 16*3
+#define RED_ON_MAGENTA 16*3+4
+
+local i,str1,str2,occ:=col(),orw:=row(),n:=len(men)
+myscreenmix(repl(' ',maxcol()+1),repl(chr(BLUE_ON_MAGENTA),maxcol()+1),y,0)
+str1=''
+str2=''
+iif(y>maxRow(),MaxRow(),y)
+for i=1 to n
+ str1=str1+alltrim(upper_(men[i,1]))+"·"+;
+           alltrim(upper_(men[i,2]))+iif(i<n,"│","")
+ str2=str2+repl(chr(YELLOW_ON_MAGENTA),len(alltrim(men[i,1])))+chr(RED_ON_MAGENTA)+;
+           REPL(chr(BLUE_ON_MAGENTA),LEN(alltrim(men[i,2])))+iif(i<n,chr(BLACK_ON_MAGENTA),"")
+endfor
+  myScreenmix(str1,str2,y,0)
+@orw,occ say ""
+RETU .T.
+
+
+
+func convert(c)
+local a:=int(c/16),b:=mod(c,16)
+if a=7
+ a=8
+else
+ a=if(a>7,a-8,0)
+endif
+
+if b=7
+ b=8
+else
+ b=if(b>7,b-8,0)
+endif
+
+retu a*16+b
+
+
+
+func myscrstr(y,x,n)
+retu savescreen(y,x,y,x+n-1)
+
+
+func shadeit(y,x,n)
+local cc,i,ss1:="",ss2:=""
+
+if !(y<0 .or. y>23 .or. x<0 .or. x>79)
+ n=if(x+n-1>79,79-x+1,n)
+ cc=myscrstr(y,x,n)
+ for i=1 to len(cc)
+  if mod(i,2)=0
+   ss1=ss1+chr(convert(asc(substr(cc,i,1))))
+  else
+   ss2=ss2+substr(cc,i,1)
+  endif
+ endfor
+// STRSCREEN(ss,y,x)
+ myscreenmix(ss2,ss1,y,x)
+endif
+retu
+
+func shadow(y1,x1,y2,x2)
+local i
+for i=y1+1 to y2+1
+ shadeit(i,x2+1,2)
+endfor
+ shadeit(y2+1,x1+2,x2-x1-1)
+retu
+
+func ramka(y1,x1,y2,x2,c)
+local oc:=setcolor(c),occ:=col(),orw:=row()
+shadow(y1,x1,y2,x2)
+@y1,x1 clear to y2,x2
+@y1,x1 to y2,x2
+setcolor(oc)
+@orw,occ say ""
+retu
+
+
+func my1show_scr(path,name_str)
+local name_:=alltrim(path)+alltrim(name_str),i,j,ss:={},s1:="",fID,nn
+if file(name_)
+ fID=fopen(name_,0)
+ if fID>0
+  for i=1 to 25
+   s1=replicate(" ",160)
+   nn=fread(fID,@s1,160)
+   if nn<160
+//    alert('Проблемы со считыванием в строке №'+astr(i)+' - ['+astr(len(s1))+']!;'+astr(len(s1)))
+    exit
+   else
+    aadd(ss,s1)
+   endif
+  endfor  
+  if len(ss)>=25
+   for i=1 to 25
+    my1screenmix(ss[i],i-1,0)
+   endfor
+   fclose(fID)
+   retu .t.
+  endif
+  fclose(fID)
+ else 
+//  alert("Не могу открыть файл;"+name_)
+ endif
+else
+endif
+fillscreen("▒","bg/bg*")
+retu .f.
+
+
+Func ScrSave()
+LSPos++
+save scre to scrdata
+save all like scrdata* to (Str(LSPos))
+Retu
+
+Func ScrRest()
+if LSPos<1
+ alert('Проблемы! ScrRest() без ScrSave()!')
+endif
+restore from (Str(LSPos)) ADDITIVE
+rest scre from ScrData
+LSpos--
+Retu
+
+
+
+func bval(n)
+local r:=0
+if n=.t.
+r=1
+endif
+retu r
+
+
+
+
+func VRun(X,Y1,Y2,N,Max,Col)
+Local Cy:=Row(),Cx:=Col(),OldCol:=SetColor(Col),i,yp
+yp=y1+round(n/max*(y2-y1+1),0)
+for i=y1 to y2
+ @i,x say iif(i-y1+1=yp,chr(18),' ')
+endfor
+retu
+
+
+func vScroller(x,y1,y2,n,Max,Clr)
+local Cy:=Row(),Cx:=Col(),OldCol:=SetColor(Clr),i,ypn,ypnn,kk,dy
+#define UP "▀"
+#define CENTRE "■"
+#define DOWN "▄"
+
+ n=iif(n<1,1,iif(n>max,max,n))
+ dy=(y2-y1+1)
+ 
+ kk=dy/(max-1)
+ ypn=(n-1)*kk
+ ypnn=int(ypn)
+ ypnn=iif(ypnn<0,0,iif(ypnn>y2-y1,y2-y1,ypnn))
+ ypnn=iif(ypnn>ypn,int(ypn),ypnn)
+
+ for i=y1 to y2
+  @i,x say iif((i-y1)!=ypnn," ",iif(ypn-ypnn<=0.51,UP,DOWN))
+ endfor
+  
+@cy,cx say ""
+setcolor(OldCol)
+retu
+
+
+
+
+func ProgressBar(l,n,Max)
+local i
+#define LEFT "▌"
+#define FULL "█"
+i:=round((l*2)/Max*n,0)
+retu replicate(FULL,iif(i%2=0,i,i-1)/2)+iif(i%2=1,LEFT,"")
+
+
+func showprogress(l,n,Max,DrawWindow)
+local ocol:=setcolor("n/w*")
+
+l:=iif(l>60,60,iif(l<10,10,l))
+n:=iif(n<1,1,iif(n>Max,Max,n))
+
+if DrawWindow
+ ramka(11,39-int(l/2)-2,13,39+int(l/2)+1,"r+/w*")
+ @12,39-int(l/2)-1 say "["+replicate("·",l)+"]"
+endif
+
+ @11,28 say "["+str(n)+" из "+str(Max)+"]"
+ @12,39-int(l/2) say ProgressBar(l,n,Max)
+
+setcolor(ocol)
+@24,0 say ""
+
+retu
+
+
+
+func findmschnum()
+local ofltr:=dschet->(dbfilter()),osel:=select(),schnum:=0,opos
+ sele dschet
+ opos:=recno()
+ set filter to year(dschet->sdate)=year(date())
+ set order to 3
+ go top
+ go bottom
+ schnum:= dschet->sch_no
+ set filter to &ofltr
+ goto opos
+ set order to 2
+ sele &osel 
+retu iif(schnum>0,schnum,0)
+
+
+func findmax(fldname)
+local n:=-9999999,lp,nn:=0,ofltr:=dbfilter()
+if valtype(&fldname)='N'
+ lp=recno()
+ set filter to
+ go top
+ do while .not. eof()
+ nn:=nn+1
+ if &fldname>n
+  n=&fldname
+ endif
+ skip
+ enddo
+ set filter to &ofltr
+ goto lp
+if nn>0
+retu n
+else
+retu 0
+endif
+endif
+retu -1
+
+
+
+
+
+
+
+
+func FltrCnt
+local cp:=recno(),nn:=0
+go top
+count to nn
+goto cp
+retu nn
+
+
+
+
+
+
+
+func SummIt(fldname)
+local n:=-9999999,lp,nn:=0
+if valtype(&fldname)='N'
+ lp=recno()
+ go top
+ do while .not. eof()
+ nn:=nn+&fldname
+ skip
+ enddo
+ goto lp
+retu nn
+endif
+retu 0
+
+
+
+
+function FRecNo()
+local CP:=RecNo()
+local n:=1,i
+do while !BOF()
+ n=n+1
+ skip -1
+enddo
+
+goto CP
+retu N
+
+
+
+
+
+
+
+
+//==================================================================
+function FTAMenu(y_,x_,yy_,xx_,FLDName,MHeader,CScheme,AllowEDIT,EditFunc,ClrFLTR)
+local OCol,cp,FNum:=-1,n:=-1,sss
+local OFLTR:=dbfilter(),dbstr:=dbstruct(),l
+private strs:={},yyr:=FRecNo()-1,EFunc:=EditFunc,x:=x_,y:=y_,xx:=xx_,yy:=yy_,nn:=1
+private SearchZero:=.t.
+
+aeval(RDF_to_ALIAS,{ |RDF| iif(lower(rdf[1])=lower(alias(select())),EFunc:=rdf[2],EFunc:=EFunc)})
+aeval(BASES,{ |BASE| iif(lower(BASE[1])=lower(alias(select())) .and. !BASE[5],AllowEDIT:=.f.,AllowEDIT:=AllowEDIT)})
+
+for i=1 to len(dbstr)
+ if lower(alltrim(dbstr[i,1]))==lower(alltrim(FLDName))
+  l=dbstr[i,3]
+ endif
+endfor
+
+if MHeader!=NIL
+ if l<len(MHeader)+3
+  l=len(MHeader)+3
+ endif
+endif
+
+FTATOCALL=alias(select())	//FLDName
+FTAExit=.f.
+
+MHeader=alltrim(MHeader)
+if xx<len(MHeader)+3
+ xx=Len(MHeader)+3
+endif
+
+if FLDName=NIL .or. Fieldpos(FLDName)=0
+alert("Указано несуществующее поле!;Функция FTAMenu невыполнима!")
+retu .f.
+else
+FNum=FieldPos(FLDName)
+endif
+
+scrsave()
+if CScheme!=NIL
+OCol:=Setcolor(CScheme)
+else
+OCol:=SetColor()
+endif
+
+if (valtype(CLRFLTR)!="L") .or.(valtype(CLRFLTR)="L" .and. ClrFLTR=.t.)
+ set filter to
+endif
+
+set order to 2
+ cp:=RecNo()
+ count to n
+ goto CP
+
+ if n=0
+  if AllowEDIT
+   rDBE_sprav(EFunc)
+   FTAExit=.f.
+   cp:=RecNo()
+   count to n
+   goto CP
+  else
+   alert('Справочник '+alias(select())+' пуст!; Заполните справочник!')
+  endif
+ endif
+
+ if n>0
+
+  nort({{' СТРЕЛКИ','Выбрать'},{'Enter','Подтвердить'},;
+         {'ПРОБЕЛ','Редактор'},{'F7','Поиск'},{'Esc','Отмена'}},24)
+
+  if n<yy
+   yy=n
+  endif
+
+  if xx>76
+   xx=76
+  endif
+  if xx>l
+   xx=l
+  endif
+  x=39-xx/2
+ 
+  if yy>14
+   yy=14
+  endif
+
+  ramka(y,x,y+yy+1,x+xx,If(CScheme!=NIL,CScheme,SetColor()))
+
+  if MHeader!=NIL
+   @y,x+(xx-len(MHeader))/2 say "·"+Mheader+"·"
+  endif
+
+AL_N=ascan(FTA_alias,select())
+if AL_N>0
+ prevord=ordsetfocus("ID")
+ seek ID_ZL9(FTA_al_id[AL_N])
+ ordsetfocus(prevord)
+ yyr:=FRecNo()-1
+endif
+
+do While !FTAExit
+ FTAExit=.t.
+
+ strs={}
+ cp:=RecNo()
+ go top
+ do while .not. eof()
+  sss=alltrim(makestr(FNum))
+  sss=iif(len(sss)<1,"-",sss)
+  aadd(strs,sss)
+  skip
+ enddo
+ goto CP
+
+KErase("!")
+
+ if AllowEDIT
+  vScroller(x+xx,y+1,y+yy,yyr,len(strs),"r+/n*")
+  nn:=achoice(y+1,x+1,y+yy,x+xx-1,strs,,"FTACheck()",yyr,yyr)
+ else
+  vScroller(x+xx,y+1,y+yy,yyr,len(strs),"r+/n*")
+  nn:=achoice(y+1,x+1,y+yy,x+xx-1,strs,,"FTACheck1()",yyr,yyr)
+ endif
+enddo
+
+if nn>0
+go top
+skip nn-1
+endif
+endif
+
+setColor(OCol)
+scrrest()
+
+set filter to &OFLTR
+
+if AL_N>0
+ FTA_al_id[AL_N]=ID
+else
+ aadd(FTA_alias,select())
+ aadd(FTA_al_id,ID)
+endif
+
+retu nn>0
+
+
+
+
+
+
+
+
+Func FTACheck(nMode,NCEl,nRP)
+local LK:=LastKey(),OSel:=Select(),nna,nn
+
+vScroller(x+xx,y+1,y+yy,nCEl,len(strs),"r+/n*")
+
+do case
+ case LK=32 .or. LK=22		//SPACE or INS
+   rDBE_sprav(EFunc)
+   FTAExit=.f.
+   retu 0
+
+ case LK=-6			//F7
+  if SearchZero
+   SearchZero:=.f.
+   nn=ext_a_s(strs,1)
+  else
+   nn=ext_a_s(strs,nCEl+1)
+  endif
+  if nn>0
+   yyr=nn
+   FTAExit=.f.
+   retu 0
+  endif
+  FTAExit=.f.
+  retu 0
+
+ case LK=13
+  retu 1
+  
+ case LK=27
+  retu 0
+
+end
+
+retu 2
+
+
+
+
+
+Func FTACheck1(nMode,NCEl,nRP)
+local LK:=LastKey(),OSel:=Select(),nna,nn
+
+vScroller(x+xx,y+1,y+yy,nCEl,len(strs),"r+/n*")
+
+do case
+
+ case LK=-6			//F7
+  nn=ext_a_s(strs,nCEl+1)
+  if nn>0
+   yyr=nn
+   FTAExit=.f.
+   retu 0
+  endif
+  FTAExit=.f.
+  retu 0
+
+ case LK=13
+  retu 1
+  
+ case LK=27
+  retu 0
+
+end
+
+retu 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//==================================================================
+function ArrayMenu(strs,MHeader,CScheme)
+local OCol
+private sArray:={},x:=0,y:=0,xx:=0,yy:=0,nn:=1,yyr:=0
+private SearchZero:=.t.
+
+ sArray:=strs
+
+ xx:=iif(len(SArray[1])>76,76,len(SArray[1]))
+ yy:=iif(len(SArray)>20,20,len(plats))
+
+ x:=39-xx/2
+ y:=12-yy/2
+
+ KErase("!")
+
+FTAExit=.f.
+
+MHeader=alltrim(MHeader)
+if xx<len(MHeader)+3
+ xx=Len(MHeader)+3
+endif
+
+scrsave()
+if CScheme!=NIL
+OCol:=Setcolor(CScheme)
+else
+OCol:=SetColor()
+endif
+
+  nort({{' СТРЕЛКИ','Выбрать'},{'Enter','Подтвердить'},;
+        {'F7','Поиск'},{'Esc','Отмена'}},24)
+
+  ramka(y,x,y+yy+1,x+xx,If(CScheme!=NIL,CScheme,SetColor()))
+
+  if MHeader!=NIL
+   @y,x+(xx-len(MHeader))/2 say "·"+Mheader+"·"
+  endif
+
+do While !FTAExit
+ FTAExit=.t.
+
+KErase("!")
+
+  vScroller(x+xx,y+1,y+yy,yyr,len(SArray),"r+/n*")
+  nn:=achoice(y+1,x+1,y+yy,x+xx-1,SArray,,"AMCheck()",yyr,yyr)
+
+enddo
+
+setColor(OCol)
+scrrest()
+
+retu nn
+
+
+
+
+Func AMCheck(nMode,NCEl,nRP)
+local LK:=LastKey(),OSel:=Select(),nna,nn
+
+vScroller(x+xx,y+1,y+yy,nCEl,len(sArray),"r+/n*")
+
+do case
+
+ case LK=-6			//F7
+  nn=ext_a_s(SArray,nCEl+1)
+  if nn>0
+   yyr=nn
+   FTAExit=.f.
+   retu 0
+  endif
+  FTAExit=.f.
+  retu 0
+
+ case LK=13
+  retu 1
+  
+ case LK=27
+  retu 0
+
+end
+
+retu 2
+
+
+
+
+
+
+
+
+
+
+//========================================================
+func RFieldpos(cFLDName)
+local Al:="",FLD:="",OAL:=Alias(),n:=-1
+if at("->",cFLDName)=0
+ retu FieldPos(cFLDName)
+else
+ Al:=left(cFLDName,at("->",cFLDName)-1)
+// ? cFLDName
+// ? "<"+AL+">"
+ FLD:=right(cFLDName,len(cFLDName)-at("->",cFLDName)-1)
+// ?? "-<"+FLD+">"
+ if select(AL)=0
+  retu -1
+ else
+  sele &AL
+  n=FieldPos(FLD)
+  sele &OAl
+  retu n
+ endif
+endif
+retu -1
+
+
+
+//========================================================
+Func UpFirst(cStr)
+retu upper(left(cStr,1))+right(cStr,len(cStr)-1)
+
+
+
+//========================================================
+func RFieldFound(cFLDName)
+local Al:="",FLD:="",OAL:=Alias(),n:=-1
+if at("->",cFLDName)=0
+ retu !eof()
+else
+ Al:=left(cFLDName,at("->",cFLDName)-1)
+ FLD:=right(cFLDName,len(cFLDName)-at("->",cFLDName)-1)
+ if select(AL)=0
+  retu .f.
+ else
+  sele &AL
+  n=!eof()
+  sele &OAl
+  retu n
+ endif
+endif
+retu .f.
+
+
+
+
+
+//========================================================
+func RField2STR(cFLDName)
+local Al:="",FLD:="",OAL:=Alias(),n:=""
+local DBSt:={}
+
+if at("->",cFLDName)=0
+ if fieldpos(cFldName)>0
+  if !eof()
+   retu makestr1(Fieldpos(cFLDName))
+  else
+   DBSt=DBStruct()
+   retu replicate(" ",DBSt[FieldPos(cFLDName),3])
+  endif
+ else
+  retu ""
+ endif
+else
+//························································
+ Al:=left(cFLDName,at("->",cFLDName)-1)
+ FLD:=right(cFLDName,len(cFLDName)-at("->",cFLDName)-1)
+ if select(AL)=0
+  retu ""
+ else
+  sele &AL
+  if fieldpos(FLD)>0
+   if !eof()
+    nn=makestr1(Fieldpos(FLD))
+//    alert("RecNo="+astr(recno())+" - "+nn+";"+cFLDName)
+    sele &OAl
+    retu nn
+   else
+    DBSt=DBStruct()
+    nn=replicate(" ",DBSt[FieldPos(FLD),3])
+    sele &OAl
+    retu nn
+   endif
+  else
+   sele &OAl
+   retu ""
+  endif
+  sele &OAl
+ endif
+endif
+retu ""
+
+
+
+
+//========================================================
+func GoBack(np)
+local op:=recno(),n:=0
+if np<1
+ retu 0
+endif
+do while n<np .and. !bof()
+ skip -1
+ n=n+1
+enddo
+if BOF()
+ go top
+endif
+retu n
+
+
+
+
+//========================================================
+func KErase(Key)
+keyboard left(Key+"!",1)
+retu inkey(0)
+
+
+
+//========================================================
+func SAEChoice(FNAME,SAE)
+retu if(SAE!=NIL .and. SAE,FNAME+'View',FNAME+'Edit')
+
+
+
+
+function n2str(n)
+local sl:=sss:=ss:=s:='',st:={'0','0','0'}
+local s1:={;
+      {'ноль'  ,'один'      ,'два'       ,'три'       ,'четыре'      ,'пять'      ,'шесть'      ,'семь'      ,'восемь'      ,'девять'},;
+      {'ноль'  ,'одна'      ,'две'       ,'три'       ,'четыре'      ,'пять'      ,'шесть'      ,'семь'      ,'восемь'      ,'девять'},;
+      {'десять','одинадцать','двенадцать','тирнадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'},;
+      {'-'     ,'десять'    ,'двадцать'  ,'тридцать'  ,'сорок'       ,'пятьдесят' ,'шестьдесят' ,'семьдесят' ,'восемдесят'  ,'девяносто'},;
+      {'-'     ,'сто'       ,'двести'    ,'триста'    ,'четыреста'   ,'пятьсот'   ,'шестьсот'   ,'семьсот'   ,'восемьсот'   ,'девятьсот'}}
+local s2:={{'рубль'   ,'рубля'    ,'рублей'},;
+	   {'тысяча'  ,'тысячи'   ,'тысяч'},;
+           {'миллион' ,'миллиона' ,'миллионов'},;
+	   {'миллиард','миллиарда','миллиардов'},;
+           {'триллион','триллиона','триллионов'}}
+
+local rub:=int(abs(n)), kop:=abs(n)
+local skop, srub, sn
+local i,j
+
+kop=kop-rub
+skop:=right('00'+astr(kop),2)
+srub:=astr(rub)
+sn:=int((len(srub)+2)/3)
+
+srub=replicate('000',sn+1)+srub
+
+sn=if(sn>4,4,sn)
+
+for i=1 to sn
+ ss=left(right(srub,i*3),3)
+// alert(ss+' '+astr(val(ss))+' '+astr(i)+";"+srub)
+ sss=''
+ if val(ss)>0
+  for j=1 to 3
+   st[j]=asc(substr(ss,j,1))-48
+  endfor
+
+  sss=if(st[1]=0,'',' '+s1[5,st[1]+1])+;
+      if(st[2]=1,' '+s1[3,st[3]+1],;
+         if(st[2]=0,'',' '+s1[4,st[2]+1])+;
+         if(st[3]>0,' '+s1[if(i=2,2,1),st[3]+1],''))
+  sss=sss+;
+      if(st[2]=1,' '+s2[i,3],;
+         if(st[3]=1,' '+s2[i,1],;
+            if(st[3]>=2 .and. st[3]<=4,' '+s2[i,2],' '+s2[i,3])))
+ elseif i=1
+  sss=sss+' '+s2[1,3]
+ endif 
+ s=sss+s
+endfor
+
+if sn=1 .and. rub=0
+ s=s1[1,1]+s
+endif
+
+s=alltrim(s+" "+skop+" коп.")
+s=upper_(left(s,1))+right(s,len(s)-1)
+
+retu alltrim(s)
+
+
+
+
+func dtoec(dt)
+local yr,mn,day
+//alert(valtype(dt))
+yr=astr(year(dt))
+mn=if(month(dt)>0 .and. month(dt)<13,mnam0[month(dt)],'--')
+day=astr(day(dt))
+retu '"'+day+'" '+mn+' '+yr+' г.'
+
+
+
+function MonoSpace(s)
+local s1:=alltrim(s),i:=1
+local nsym:={" ",".",',',";","!","?",":",")","("}
+do while i<len(s1)
+ if substr(s1,i,1)=' ' .and. ascan(nsym,substr(s1,i+1,1))>0
+  s1=left(s1,i-1)+right(s1,len(s1)-i)
+  i=i-1
+ endif
+ i=i+1
+enddo
+retu alltrim(s1)
+
+
+
+function FindNth(s,ss,n)
+local i,k:=0,lss:=len(ss)
+for i=1 to len(s)-lss+1
+ if substr(s,i,lss)=ss
+  k=k+1
+  if k=n
+   retu i
+  endif
+ endif
+endfor
+retu 0
+
+
+
+function StrCent(s,n)
+local l,l1,k,s1:=alltrim(s)
+if len(s1)<n
+ k=n-len(s1)
+ l=int(k/2)
+ s1=replicate(' ',k-l)+s1+replicate(' ',l)
+endif
+retu s1
+
+
+
+
+
+function str2strs(s,n)
+local res:={},i:=0
+local s1:=MonoSpace(s),ss:=''
+//cls
+do while len(s1)>0
+ if len(s1)<n
+  ss=s1
+  s1=''
+ else
+  ss=left(s1,n)
+  i=rat(' ',ss)
+  if len(alltrim(ss))>=n
+   if i>n/2
+    ss=alltrim(left(ss,i))
+    i=len(ss) 
+   else       
+    ss=left(ss,n-1)+'-'
+    i=n-1  
+   endif
+  endif
+  s1=alltrim(right(s1,len(s1)-i))
+ endif 
+ ss=nleft(ss,n)
+ aadd(res,ss)
+enddo
+retu res
+
+
+
+
+
+
+
+function StrFix(s,n)
+local s1:=MonoSpace(s),i,j,jj,k,l,m,sn:=1000,spn:={},b,bb,ToPut,TPCfc,TPCfc1
+
+if len(s1)>=n
+ s1=left(s1,n)
+else
+
+sn=0
+for i=1 to len(s1)
+ if substr(s1,i,1)=' '
+  sn=sn+1
+  aadd(spn,i)
+ endif
+endfor
+
+ToPut=n-len(s1)
+TPCfc=ToPut/sn
+
+//? s1,"(",astr(len(s1)),") - (",astr(n),")"
+//? astr(sn)," - ",astr(ToPut)," = ",astr(TPCfc)
+//? replicate('-',40)
+
+ if sn<1
+  s1=s1+replicate(' ',ToPut) 
+ else
+  b=ToPut
+  bb=0
+  for i=1 to sn
+   k=sn-i+1
+   TpCfc1=(b-bb)/k
+   if TpCfc1>1
+    bb=bb+round(TpCfc1,0)
+    s1=left(s1,spn[k])+replicate(' ',round(TpCfc1,0))+right(s1,len(s1)-spn[k])
+//    ? s1
+   endif
+  endfor
+  if bb<b
+   s1=left(s1,spn[1])+replicate(' ',b-bb)+right(s1,len(s1)-spn[1])
+  endif
+
+ endif
+endif
+
+//inkey(0)
+
+retu s1
+
+
+
+function GetByID(cTable,nID,cFLD)
+local OSel:=Select(),oFLTR,n,fVal,opos
+sele &cTable
+opos:=recno()
+
+set order to 1
+go top
+seek ID_ZL9(nID)
+set order to 2
+
+if found()
+ fVal=&cFLD
+else
+ fVal='--'
+endif
+
+goto opos
+
+sele &OSel
+retu fVal
+ 
+
+
+function NLeft(s,n)
+retu left(s+replicate(' ',n),n)
+
+
+function NRight(s,n)
+retu right(replicate(' ',n)+bstr(s),n)
+
+
+
+func VarEdit(Msg,Var,CBE)
+local n,n1,i,k,x,OCol:=SetColor("gr+/rb,n/rb*,,,w+/rb"),Ok:=.f.
+local pval:=var
+ScrSave()
+
+if valtype(Var)="L"
+ n=alert("Выберите новое значение.;Текущее - "+iif(Var,"ИСТИНА","ЛОЖЬ"),{"ИСТИНА","ЛОЖЬ","ОТМЕНИТЬ"})
+ if lastkey()!=27 .and. (n=1 .or. n=2)
+  Var=(n=1)
+ endif
+// alert(astr(n)+" - "+iif(Var,"T","F"))
+elseif valtype(Var)="C"
+ n=len(Var)
+ n1=n
+ if n<len(alltrim(msg))+4
+  n=len(alltrim(msg))+4
+ endif
+ if n>0
+  n=iif(n>77,77,n)
+  x=39-int(n/2)
+  ramka(11,x,13,x+n+1)
+  @11,x+1 say "< "+alltrim(msg)+" >"
+  do while !Ok
+   Ok=.t.
+   @12,x+1+int((n-n1)/2) get Var pict "@k"
+   set cursor on
+   read
+   set cursor off
+   Ok=iif(CBE!=NIL .and. !CBE .and. VarEmpty(Var),.f.,.t.)
+   if !Ok
+    if alert('Ключевое поле не может быть пустым!',{"ИСПРАВИТЬ","ОТМЕНИТЬ"},"n/gr*")=2
+     var=pval
+     Ok=.t.
+    endif
+   endif   
+   kerase("!")
+  enddo
+ endif
+elseif valtype(Var)="D"
+ n=10
+ n1=n
+ if n<len(alltrim(msg))+4
+  n=len(alltrim(msg))+4
+ endif
+ if n>0
+  n=iif(n>77,77,n)
+  x=39-int(n/2)
+  ramka(11,x,13,x+n+1)
+  @11,x+1 say "< "+alltrim(msg)+" >"
+  do while !Ok
+   Ok=.t.
+   @12,x+1+int((n-n1)/2) get Var pict "@k"
+   set cursor on
+   read
+   set cursor off
+   Ok=iif(CBE!=NIL .and. !CBE .and. VarEmpty(Var),.f.,.t.)
+   if !Ok
+    if alert('Ключевое поле не может быть пустым!',{"ИСПРАВИТЬ","ОТМЕНИТЬ"},"n/gr*")=2
+     var=pval
+     Ok=.t.
+    endif
+   endif   
+   kerase("!")
+  enddo
+ endif
+elseif valtype(Var)="N"
+ n=len(str(Var))
+ n1=n
+ if n<len(alltrim(msg))+4
+  n=len(alltrim(msg))+4
+ endif
+ if n>0
+  n=iif(n>77,77,n)
+  x=39-int(n/2)
+  ramka(11,x,13,x+n+1)
+  @11,x+1 say "< "+alltrim(msg)+" >"
+  Do while !Ok
+   Ok=.t.
+   @12,x+1+int((n-n1)/2) get Var pict "@k"
+   set cursor on
+   read
+   set cursor off
+   Ok=iif(CBE!=NIL .and. !CBE .and. VarEmpty(Var),.f.,.t.)
+   if !Ok
+    if alert('Ключевое поле не может быть пустым!',{"ИСПРАВИТЬ","ОТМЕНИТЬ"},"n/gr*")=2
+     var=pval
+     Ok=.t.
+    endif
+   endif   
+   kerase("!")
+  enddo
+ endif
+elseif valtype(Var)="A"
+ n=-1
+ k=len(Var)
+ for i=1 to k
+  if len(var[i])>n
+   n=len(var[i])
+  endif
+ endfor
+
+ if n<len(alltrim(msg))+4
+  n=len(alltrim(msg))+4
+ endif
+
+  n=iif(n>77,77,n)
+  x=39-int(n/2)
+  ramka(11-int(k/2),x,11+(k-int(k/2)+1),x+n+1)
+  @11-int(k/2),x+1 say "< "+alltrim(msg)+" >"
+
+  for i=1 to k
+   @11-int(k/2)+i,x+1 get Var[i] pict "@k"
+  endfor
+  set cursor on
+  read
+  set cursor off
+
+endif
+ScrRest()
+setcolor(ocol)
+
+retu var
+
+
+
+func a2str(a)
+local s:='',i:=0
+for i=1 to len(a)
+ s=s+' '+alltrim(a[i])
+endfor
+//alert(s)
+retu alltrim(s)
+
+
+
+func a2a(a,n)
+retu str2strs(a2str(a),n)
+
+
+
+
+
+
+
+
+func tr_Selector()
+local n:=-1,ofltr:=dschet->(dbfilter()),orn:=dschet->(recno())
+
+sele itrans
+set filter to itrans->dog_id=pudog->id .and. !deleted()
+go top
+mflockf(100,5)
+do while !eof()
+ repl sch_tmp with .t., sch_tmp1 with .f.
+ skip
+enddo
+unlock
+
+sele dschet
+set filter to dschet->dog_id=pudog->id
+go top
+
+do while !eof()
+ sele itrans
+ set filter to itrans->sch_id=dschet->id
+
+ go top
+  mflockf(100,5)
+  do while !eof()
+  repl sch_tmp with .f.
+  skip
+  enddo
+  unlock
+ sele dschet
+ skip
+enddo
+
+sele dschet
+set filter to &ofltr
+go top
+goto orn
+
+sele itrans
+set filter to itrans->dog_id=pudog->id .and. itrans->sch_tmp
+go top
+count to n
+go top
+mflockf(100,5)
+do while !eof()
+ repl sch_id with 0
+skip
+enddo
+unlock
+go top
+
+retu n
+
+
+
+
+
+
+
+func usl_Selector()
+local n:=-1,ofltr:=dschet->(dbfilter()),orn:=dschet->(recno())
+
+sele mats
+set filter to mats->dog_id=pudog->id .and. !deleted()
+go top
+mflockf(100,5)
+do while !eof()
+ repl sch_tmp with .t., sch_tmp1 with .f.
+ skip
+enddo
+unlock
+
+sele dschet
+set filter to dschet->dog_id=pudog->id
+go top
+
+do while !eof()
+ sele mats
+ set filter to mats->sch_id=dschet->id
+
+ go top
+  mflockf(100,5)
+  do while !eof()
+  repl sch_tmp with .f.
+  skip
+  enddo
+  unlock
+ sele dschet
+ skip
+enddo
+
+sele dschet
+set filter to &ofltr
+go top
+goto orn
+
+sele mats
+set filter to mats->dog_id=pudog->id .and. mats->sch_tmp
+go top
+count to n
+go top
+mflockf(100,5)
+do while !eof()
+ repl sch_id with 0
+skip
+enddo
+unlock
+go top
+
+retu n
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func mats_Selector()
+local n:=-1,ofltr:=dschet->(dbfilter()),orn:=dschet->(recno())
+
+sele mats
+set filter to mats->dog_id=pudog->id .and. !deleted()
+go top
+mflockf(100,5)
+do while !eof()
+ repl sch_tmp with .t., sch_tmp1 with .f.
+ skip
+enddo
+unlock
+
+sele dschet
+set filter to dschet->dog_id=pudog->id
+go top
+
+do while !eof()
+ sele mats
+ set filter to mats->sch_id=dschet->id
+
+ go top
+  mflockf(100,5)
+  do while !eof()
+  repl sch_tmp with .f.
+  skip
+  enddo
+  unlock
+ sele dschet
+ skip
+enddo
+
+sele dschet
+set filter to &ofltr
+go top
+goto orn
+
+sele mats
+set filter to mats->dog_id=pudog->id .and. mats->sch_tmp
+go top
+count to n
+go top
+mflockf(100,5)
+do while !eof()
+ repl sch_id with 0
+skip
+enddo
+unlock
+go top
+
+retu n
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func dm_Selector()
+local n:=-1
+
+sele mats
+set filter to mats->dog_id=pudog->id
+go top
+do while !eof()
+ repl sch_tmp with .t.
+ skip
+enddo
+
+sele dschet
+set filter to dschet->dog_id=pudog->id
+go top
+
+do while !eof()
+ sele mats
+ set filter to mats->sch_id=dschet->id
+ go top
+  do while !eof()
+  repl sch_tmp with .f.
+  skip
+  enddo
+ sele dschet
+ skip
+enddo
+
+sele mats
+set filter to mats->dog_id=pudog->id .and. mats->sch_tmp
+go top
+count to n
+go top
+
+retu n
+
+
+
+
+
+
+
+function search(fld,sf)
+local rn:=recno()
+go top
+if valtype(&fld)="c"
+ if at(upper_(sf),upper_(&fld))>0
+  retu .t.  
+ endif
+elseif valtype(&fld)="n"
+ if at(astr(upper_(sf)),astr(upper_(&fld)))>0
+  retu .t.  
+ endif
+endif
+retu .f.
+
+
+
+
+function a_search(sf,a,nCEl)
+local i
+for i:=nCEl to len(a)
+ if at(alltrim(upper_(sf)),alltrim(upper_(a[i])))>0
+  retu i
+ endif
+endfor
+retu -1
+
+
+
+
+
+function ext_a_s(a,NCEl)
+local oc:=setcolor("w+/n*,gr+/n,,,g+/n*"),n:=-5
+local sf1:=""
+
+sf=left(alltrim(sf)+replicate(" ",70),70)
+sf1:=sf
+
+scrsave()
+
+KErase("!")
+
+ramka(11,3,13,77,"b+/n*")
+@11,4 say " Введите строку поиска: "
+@12,5 get sf pict "@K"
+set cursor on
+read
+set cursor off
+
+if alltrim(sf1)!=alltrim(sf)
+ n=a_search(sf,a,1)
+else
+ n=a_search(sf,a,nCEl)
+endif
+
+if n=-1
+ alert('<'+alltrim(sf)+'>; в списке не найдено!')
+endif
+
+KErase("!")
+
+scrrest()
+setcolor(oc)
+retu n
+
+
+
+func tot_days(dt)
+local mn,dy,yr
+yr=year(dt)
+mn=month(dt)
+dy=day(dt)
+//retu iif(yr<94,2000+yr,1900+yr)*384+mn*32+dy
+retu yr*384+mn*32+dy
+
+
+func pm_mdy(dt)
+local d,m,y
+d:=day(dt)
+m:=month(dt)
+y:=year(dt)
+if m=1
+ m=12
+ y=y-1
+elseif m>1
+ m=m-1
+endif
+retu ctod(astr(m)+"/"+astr(d)+"/"+astr(y))
+
+func pm_dmy(dt)
+local d,m,y
+d:=day(dt)
+m:=month(dt)
+y:=year(dt)
+if m=1
+ m=12
+ y=y-1
+elseif m>1
+ m=m-1
+endif
+retu ctod(astr(d)+"/"+astr(m)+"/"+astr(y))
+
+func nm_mdy(dt)
+local d,m,y
+d:=day(dt)
+m:=month(dt)
+y:=year(dt)
+if m=12
+ m=1
+ y=y+1
+elseif m<12
+ m=m+1
+endif
+retu ctod(astr(m)+"/"+astr(d)+"/"+astr(y))
+
+func nm_dmy(dt)
+local d,m,y
+d:=day(dt)
+m:=month(dt)
+y:=year(dt)
+if m=12
+ m=1
+ y=y+1
+elseif m<12
+ m=m+1
+endif
+retu ctod(astr(d)+"/"+astr(m)+"/"+astr(y))
+
+
+
+
+
+
+
+//======================================================================
+//     Отыщем и удалим все вхождения WHAT из WHERE
+//======================================================================
+func ReplStrPart(what, where, new)
+ local ss:=where, wl:=len(what), i
+
+ do while .t.
+  i=at(what, ss)
+  if i=0
+   exit
+  else
+   ss=left(ss,i-1)+new+right(ss,len(ss)-(i-1)-wl) 
+  endif  
+ enddo
+
+retu ss
+
+
+
+
+//======================================================================
+//     Отыщем и удалим все команды HP LJ из WHERE
+//======================================================================
+func ExtrLJCommands(where)
+ local i,ss:=where
+ local LJCommands:={{'','--- разрыв --- разрыв --- разрыв --- разрыв ---'},;
+                    {'(s3B',''},   {'(s0B',''},  {'(s7H',''},  {'(s10H',''},;
+                    {'&a0L',''},   {'&a1L',''},  {'&a2L',''},  {'&a3L',''},;
+                    {'&a4L',''},   {'&a5L',''},  {'&a6L',''},  {'&a7L',''},;
+                    {'&a8L',''},   {'&a9L',''},  {'&a10L',''}, {'&a11L',''},;
+                    {'&a12L',''},  {'&a13L',''}, {'&a14L',''}, {'&a15L',''},;
+                    {'(s1H',''},   {'(s2H',''},  {'(s3H',''},  {'(s4H',''},;
+                    {'(s5H',''},   {'(s6H',''},  {'(s7H',''},  {'(s8H',''},;
+                    {'(s9H',''},   {'(s10H',''}, {'(s11H',''}, {'(s12H',''},;
+                    {'(s13H',''},  {'(s14H',''}, {'(s15H',''}, {'(s16H',''},;
+                    {'(s17H',''},  {'(s18H',''}, {'(s19H',''}, {'(s20H',''},;
+                    {'(s21H',''},  {'&l0O',''},  {'&l1O',''},  {'&dD',''},;
+                    {'&d@',''},    {'*p-15Y',''},{'*p+15Y',''},{'*p+20Y',''},;
+                    {'*p-20Y',''}, {'&l1D',''},  {'&l2D',''},  {'&l3D',''},;
+                    {'&l4D',''},   {'&l5D',''},  {'&l6D',''},  {'&l7D',''},;
+                    {'&l8D',''},   {'&l9D',''},  {'&l10D',''}, {'&l11D',''},;
+                    {'&l12D',''},  {'&l13D',''}, {'&l14D',''}, {'&l15D',''},;
+                    {'&l16D',''},  {'&l17D',''}, {'&l18D',''}, {'&l19D',''}}
+
+ for i=1 to len(LJCommands)
+  ss:=ReplStrPart(LJCommands[i,1],ss,LJCommands[i,2])
+ endfor
+
+retu ss
+
+
+
+
+
+
+
+//======================================================================
+//     Отобразим строчку msg в красивой рамочке, подождём WTIME секунд
+//======================================================================
+function message(msg,wtime,clr1,clr2)
+local ocol:=setcolor(clr1),a:={},l:=0,i,y,aa
+
+if valtype(msg)="C"
+ a=str2strs(msg,70) 
+ y=iif(len(a)>20,20,len(a))
+ for i:=1 to y
+  l=iif(len(alltrim(a[i]))>l,len(alltrim(a[i])),l)
+ endfor
+ y=iif(y<1,1,y)
+ l=iif(l<15,15,l) 
+
+ scrsave()
+
+ ramka(12-y/2-1,39-l/2-1,12+y/2,39+l/2+1,clr2)
+
+ for i=1 to y
+  @12-y/2-1+i,39-len(alltrim(a[i]))/2 say alltrim(a[i])
+ endfor
+
+ setcolor(clr2)
+ for i=1 to wtime
+  @12-y/2-1,36 say '['+right("    "+astr(wtime-i+1),4)+"]"
+  aa=inkey(1)
+  if aa=27 .or. aa=13 .or. aa=32
+   exit
+  endif
+ endfor
+
+ scrrest()
+
+endif
+
+setcolor(ocol)
+
+retu
+
+
+
+
+
+
+
+
+
+
+
+//======================================================================
+// Выполним функцию flock(), а если не получится сообщим пользователю
+//======================================================================
+function mflock(retries,wtime)
+local res:=.f.,wt
+
+if wtime!=NIL
+ wt=iif(wtime<5,5,wtime)
+else
+ wt=5
+endif
+
+do while .t.
+ 
+ if !flock()
+  KErase("!")
+  message("Повторная попытка заблокировать запись через "+astr(wt)+" сек.",wt,"gr+/r","w+/r")
+  if lastkey()=27
+   retu .f.
+  endif
+ else
+  retu .t.
+ endif
+
+ if retries!=nil
+  retries=retries-1
+  if retries<1
+   exit
+  endif
+ endif
+enddo
+
+retu .f.
+
+
+
+
+//======================================================================
+// Выполним mflock, а если не получится, попробуем ещё раз, или хальтанемся
+//======================================================================
+func mflockF(retries,wtime)
+do while .t. 
+ if !mflock(retries,wtime)
+  if alert("Не удаётся выполнить блокировку таблицы!",{" ПОВТОРИТЬ "," ВЫХОД "})=2
+   close all
+   myquit()
+  endif 
+ else
+  exit 
+ endif
+enddo
+retu
+
+
+
+
+
+
+
+
+//======================================================================
+// Выполним функцию rlock(), а если не получится сообщим пользователю
+//======================================================================
+function mrlock(retries,wtime)
+local res:=.f.,wt
+
+if wtime!=NIL
+ wt=iif(wtime<5,5,wtime)
+else
+ wt=5
+endif
+
+do while .t.
+ 
+ if !rlock()
+  KErase("!")
+  message("Повторная попытка заблокировать запись через "+astr(wt)+" сек.",wt,"gr+/r","w+/r")
+  if lastkey()=27
+   retu .f.
+  endif
+ else
+  retu .t.
+ endif
+
+ if retries!=nil
+  retries=retries-1
+  if retries<1
+   exit
+  endif
+ endif
+enddo
+
+retu .f.
+
+
+
+
+
+
+//======================================================================
+// Выполним mrlock, а если не получится, попробуем ещё раз, или хальтанемся
+//======================================================================
+func mrlockF(retries,wtime)
+do while .t. 
+ if !mrlock(retries,wtime)
+  if alert("Не удаётся выполнить блокировку записи!",{" ПОВТОРИТЬ "," ВЫХОД "})=2
+   close all
+   myquit()
+  endif 
+ else
+  exit 
+ endif
+enddo
+retu
+
+
+func dt_ymd(dt)
+local d,m,y
+d=astr(day(dt))
+m=astr(month(dt))
+y=astr(year(dt))
+if len(y)<=2
+ y=right("00"+y,2)
+endif
+retu right("20"+y,4)+right("0"+m,2)+right("0"+d,2)
+
+
+
+//======================================================================
+// Выполним команду USE xxx SHAREd/EXCLUSIVE, 
+// а если не получится сообщим пользователю
+//======================================================================
+function mNetUSe(cDatabase,lShared,retries,wtime,calias)
+local res:=.f.,wt
+
+if wtime!=NIL
+ wt=iif(wtime<5,5,wtime)
+else
+ wt=5
+endif
+
+do while .t.
+ 
+ if lShared
+  use (cDatabase) new alias (cAlias) shared
+ else
+  use (cDatabase) new alias (cAlias) exclusive
+ endif 
+
+ if neterr()
+  KErase("!")
+  message("Повторная попытка открыть таблицу будет произведена через "+astr(wt)+" сек.",wt,"gr+/r","w+/r")
+  if lastkey()=27
+   retu .f.
+  endif
+ else
+  retu .t.
+ endif
+
+ if retries!=nil
+  retries=retries-1
+  if retries<1
+   exit
+  endif
+ endif
+enddo
+
+retu .f.
+
+
+
+
+//======================================================================
+// Выполним mNetUse, а есл ине получится, попробуем ещё раз, или хальтанемся
+//======================================================================
+func mNetUseF(cDatabase,lShared,nretries,nwtime,cAlias)
+do while .t. 
+ if !mNetUse(cDatabase,lShared,nretries,nwtime,cAlias)
+  if alert("Не удаётся открыть таблицу zakazch.dbf",{" ПОВТОРИТЬ "," ВЫХОД "})=2
+   close all
+   myquit()
+  endif 
+ else
+  exit 
+ endif
+enddo
+retu
+
+
+
+
+//======================================================================
+// Выполним команду replace, с учётом SHARED и блокировок.
+//======================================================================
+function mShRepl(cAlias,aFldN_Vls)
+local i,l:=0,oSel:=Select(),cFldNm:='',Val_
+
+for i=1 to len(aFldN_Vls)
+ l=l+iif(len(aFldN_Vls[i])<2,1,iif(aFldN_Vls[i,1]=NIL,1,iif(aFldN_Vls[i,2]=NIL,1,0)))
+endfor
+
+if l>0
+ retu .f.
+endif
+
+sele &cAlias
+
+do while .t.
+ if !mrlock(100,10) .and. alert("Не удаётся заблокировать запись для обновления!",{"Пытаться ещё","Выйти из программы"})
+  sele &OSel
+  retu .f.
+ else
+  exit
+ endif
+enddo
+//------------
+for i=1 to len(aFldN_Vls)
+ cFldNm=aFldN_Vls[i,1]
+ repl &cFldNm with aFldN_Vls[i,2]
+endfor
+//------------
+unlock
+sele &OSel
+
+retu .t.
+
+
+
+
+//======================================================================
+// Выполним mrlock, а если не получится, попробуем ещё раз, или хальтанемся
+//======================================================================
+func mShReplF(cAlias,aFldN_Vls)
+do while .t. 
+ if !mrlock(cAlias,aFldN_Vls)
+  if alert("Не удаётся выполнить запись данных в строку!",{" ПОВТОРИТЬ "," ВЫХОД "})=2
+   close all
+   myquit()
+  endif 
+ else
+  exit 
+ endif
+enddo
+retu
+
+
+
+
+
+
+func NILLValue(tp)
+local res
+if left(lower(tp),1)="c"
+ res=""
+elseif left(lower(tp),1)="n"
+ res=0
+elseif left(lower(tp),1)="d"
+ res=ctod("")
+elseif left(lower(tp),1)="l"
+ res=.f.
+endif
+retu res
+
+
+
+
+
+
+
+func mNetAppBl(retries,wtime)
+local ofltr:=dbfilter(),_id:=-1
+
+mflockF(100,10)
+_id=findmax("id")+1
+set filter to
+append blank
+repl id with _id
+set order to
+unlock  
+set filter to &ofltr
+set order to 1
+go top
+seek ID_ZL9(_id)
+set order to 2
+
+retu _id
+
+
+
+
+func IsInBases()
+retu lower(right(alltrim(curdir()),5))="bases"
+
+
+func OddEven(s,odd)
+local ss:="",i
+for i=1 to len(s)
+ ss=ss+iif(i%2=iif(odd,1,0),substr(s,i,1),'')
+endfor
+retu ss
+
+func DBReadRow()
+local res:={},dbst:=dbstruct(),i
+for i=1 to len(dbst)
+ aadd(res,{dbst[i,1],fieldget(i)})
+endfor
+retu res
+
+
+func rnddirname()
+retu makefordos(_rnddirname())
+
+func makefordos(s)
+local ss:="",i
+local dosok:="0123456789abcdefghijklmnopqrstuvwxyz_!@#$%^&*.~"
+for i=1 to len(s)
+ ss:=ss+iif(at(substr(s,i,1),dosok)>0,substr(s,i,1),"_")
+endfor
+retu ss
+
+func _rnddirname()
+retu ReplStrPart(".", astr(seconds()),"_")+"."+chr(65+day(date()))+;
+      chr(65+month(date()))+chr(32+year(date())%100)
+
+
+func ZUpToLen(n,l)
+local s:=replicate("0",l)
+retu right(s+astr(n),l)
+
+
+
+
+
+func ttos(time)
+local s,s1,n,t1
+t1=time+":00:00"
+s=lefT(t1,at(":",t1)-1)
+t1=right(t1,len(t1)-len(s)-1)
+s1=lefT(t1,at(":",t1)-1)
+t1=right(t1,len(t1)-len(s1)-1)
+s=s+s1+lefT(t1,at(":",t1)-1)
+//alert(time+" - "+s)
+retu s
+
+
+
+
+func la(s)
+retu lower(alltrim(s))
+
+
+func lena(s)
+retu len(alltrim(s))
+
+
+func ID_ZL9(n)
+retu "ID"+zuptolen(n,9)
+
+
+
+func mytransform(n,mask)
+local s
+if lower(valtype(n))="n"
+ if round(n,2)!=0.00
+  s=transform(n,mask)
+ else
+  s=replicate(" ",len(transform(n,mask)))
+ endif
+elseif lower(valtype(n))="u"
+ s:=replicate(" ",len(mask))
+else
+ s=transform(n,mask)
+endif
+retu s
+
+
+
+func SeekByID(alias,ID)
+ sele (alias)
+ set order to 1
+ go top
+ seek id_zl9(ID)
+ set order to 2
+retu found()
+
+
+
+func lstr(s,n)
+retu left(alltrim(s)+replicate(" ",n),n)
+
+
+
+func strrepl(src,s,pos)
+if pos>len(src)
+ retu src+replicate(" ",pos-len(src)-1)+s
+endif
+if pos<1
+ retu src
+endif
+retu left(src,pos-1)+s+right(src,len(src)-pos-len(s)+1)
+
+
+func a_unique(src)
+local res:={}
+local i,j,n
+for j:=1 to len(src)
+ n:=0
+ for i=1 to len(res)
+  if alltrim(res[i])=alltrim(src[j])
+   n=n+1
+  endif
+ endfor
+ if n=0
+  aadd(res,src[j])
+ endif
+endfor
+
+retu res
+
+func lurepl(s,e,n)
+retu underline(left(alltrim(s)+repl(e,n),n))
+
+func rrepl(s,e,n)
+retu right(repl(e,n)+alltrim(s),n)
+
+func rotator(x,y,col,n,redraw)
+local ocol:=setcolor(col),s
+if redraw
+ @y-1,x-4 to y+1,x+4
+endif
+s:=astr(n)
+@y,x-3 say left(repl(' ',int((7-len(s))/2))+s+'      ',7)
+retu
+
+func DBF_Search(fld,newsearch)
+local a,b,fnd:=.f.,opos:=recno()
+if newsearch
+ a:=&fld
+else
+ a:=dbfsstr
+endif
+b:=VarEdit("Введите значение для поиска:",a,.t.)
+dbfsstr:=b
+
+//scrsave()
+skip
+do while !eof()
+// @22,0 say "!"+astr(recno())+"!"+astr(at(transform(b,""),transform(&fld,"")))
+// @23,0 say "!"+alltrim(transform(b,""))+"!"
+// @24,0 say "!"+transform(&fld,"")+"!"
+ if at(alltrim(upper_(transform(b,""))),upper_(transform(&fld,"")))>0
+  fnd=.t.
+  exit
+ endif
+// inkey(.1)
+ skip
+enddo
+//scrrest()
+
+if !fnd
+ alert("Выражение не найдено!")
+ goto opos
+endif
+retu
+
+
+
+func CDrive()
+run ('C:')
+run ('cd \')
+retu
+
+
+
+
+
+
+
+
+
+
+func cdivide_(s,nn)   //Разбивает длинную строку на короткие длинной в "NN" с форматированием JUSTIFY
+local s1:="",n:=0,d:="",ss:=""
+local words:={},i:=0,j:=1
+local words1:={}
+//local result:={}
+
+ if len(s)<=nn
+  aadd(result,s)
+  retu
+ endif
+
+ d:=monospace(s)+" "
+
+  do while len(d)>1 
+   j:=at(" ",d)
+   if j>0
+    ss:=alltrim(substr(alltrim(d),1,j-1))
+    d:=alltrim(right(d,len(d)-j))+" "
+    do while len(ss)>nn
+      aadd(words,left(ss,nn))
+      ss:=right(ss,len(ss)-nn)
+    enddo
+    aadd(words,ss)
+   endif
+  enddo
+
+// TextView(0,0,79,24,"gr+/b",words)
+ 
+  s1:=""
+  FOR I:=1 TO LEN(WORDS)
+   if len(alltrim(s1+" "+words[i]))>nn
+    aadd(result,adjust(alltrim(s1),nn,words1))
+    s1:=words[i]
+    words1:={}
+    aadd(words1,words[i])
+   else
+    s1:=alltrim(s1+" "+words[i])
+    aadd(words1,words[i])
+   endif
+  endfor
+
+  if len(alltrim(s1))>0
+   aadd(result,iif(len(result)>0,alltrim(s1),adjust(alltrim(s1),nn,words1)))
+  endif
+
+// TextView(0,0,79,24,"gr+/b",RESULT)
+
+retu
+
+
+
+
+
+func adjust(s,nn,words1)  //Форматирует строку до длинны "NN" методом JUSTIFY
+local s1:="",spc:=len(words1)-1,i,k
+local sn:={},ts:=nn-len(s)
+
+ if ts=0
+  retu s
+ endif
+
+ for i:=1 to spc+1
+  aadd(sn,1)
+ endfor
+
+// alert(astr(ts)+" "+astr(spc)+";"+s)
+
+ if spc=1
+  sn[1]:=ts
+ elseif spc=2
+  sn[1]:=int(ts/2)
+  sn[2]:=ts-sn[1]
+ elseif spc>2
+  k:=2
+  do while ts>0 
+    for i:=k to spc step 2
+     if ts>0
+      sn[i]:=sn[i]+1
+      ts:=ts-1
+     endif
+    endfor
+    k:=3-k
+  enddo
+ endif
+ 
+ s1:=""
+ for i:=1 to len(words1)
+  s1:=s1+words1[i]+iif(sn[i]>0,replicate(" ",sn[i]),"")
+ endfor
+retu s1

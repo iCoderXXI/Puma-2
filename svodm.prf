@@ -1,0 +1,468 @@
+
+retu
+
+
+func crt_svodm(small)
+local ocol:=setcolor("w+/n")
+local svdate:=date()
+priv sml:=.f.
+
+if small!=NIL .and. small
+ sml:=.t.
+endif
+
+scrsave()
+cls
+if B_TMP_CRT("svod")
+ scrrest()
+ scrsave()
+ sele svod
+
+ svodm_otch()
+
+ sele svod
+ use
+endif
+scrrest()
+setcolor(ocol)
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func svodm_otch()
+local fltrs1:={},fltrs2:={},fltrs3:={},aaa:={},kkk
+priv opl:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},nfltr:=0
+priv oplnds20:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv oplnds18:={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}
+priv data:={}
+priv sums:={}
+priv tsums:={0,0,0,0,0,0,0,0,0}
+priv sayedstrs:=0,allstrs:={}
+priv ;
+divisor:='ÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ+ÄÄÄÄÄÄÄÄÄÄÄÄ',;
+header1:='      |          |                                        |                              |&dD     ‚å®¤ïé¥¥ á «ì¤®     |               ç¨á«¥­¨¥              |          Ž¯« â          |     ˆáå®¤ïé¥¥ á «ì¤®    &d@'
+header2:='ü áçâ.³„ â  áç¥â ³®âà¥¡¨â¥«ì                             ³Œ â¥à¨ «                      ³„¥¡¥â       ³Šà¥¤¨â      ³‘ã¬¬        ³„‘         ³‚á¥£®       ³‚á¥£®       ³‚ â.ç. „‘  ³„¥¡¥â       ³Šà¥¤¨â      '
+
+
+fltrs1:={}
+fltrs2:={}
+fltrs3:={}
+for n=1 to 25
+ aadd(fltrs1,0)
+ aadd(fltrs2,{})
+ aadd(fltrs3,'')
+endfor
+sele mlist
+set filter to alone
+go top
+do while !eof()
+ if groupto=0
+  if ascan(fltrs1,mlist->id)=0
+   nfltr=nfltr+1
+   fltrs1[nfltr]:=mlist->id
+   aadd(fltrs2[nfltr],mlist->id)
+  endif
+ else
+  n=ascan(fltrs1,mlist->groupto)
+  if n<=0
+   nfltr=nfltr+1
+   fltrs1[nfltr]:=mlist->groupto
+   aadd(fltrs2[nfltr],mlist->id)
+   aadd(fltrs2[nfltr],mlist->groupto)
+  else
+   aadd(fltrs2[n],mlist->id)
+  endif
+ endif  
+ skip
+enddo
+
+sele mlist
+for i=1 to nfltr
+ set filter to &("mlist->id="+astr(fltrs1[i]))
+ go top
+ fltrs3[i]:=alltrim(mlist->material)
+endfor
+set filter to
+go top
+
+fltrs1:={}
+aaa:={}
+for n=1 to nfltr
+ for i=1 to len(fltrs2[n])
+  aadd(fltrs1,fltrs2[n,i])
+ endfor
+ aadd(aaa,fltrs2[n])
+endfor
+nfltr:=nfltr+1
+fltrs3[nfltr]:="Œ â¥à¨ «ë"
+aadd(aaa,fltrs1)
+
+fltrs:={}
+aadd(fltrs,aaa)
+aadd(fltrs,fltrs3)
+
+sums={}
+for i=1 to nfltr
+ aadd(sums,tsums)
+ aadd(data,{})
+endfor
+
+
+sele dschet
+
+if !sml
+ edate=date()
+ edate=VarEdit("‚¢¥¤¨â¥ ¤ âã",edate)
+else
+ edate:=sjsdate
+endif
+
+if lastkey()=27
+ retu
+endif
+
+sele dopl
+set order to 2
+
+sele dschet
+set order to 2
+
+svod_maxm(edate)
+
+if !sml
+ aadd(allstrs,strcent(" ª®¯¨â¥«ì­ ï ¢¥¤®¬®áâì ¯® ¬ â¥à¨ « ¬",204))
+ aadd(allstrs,strcent("à¥ «¨§®¢ ­­ëå îà¨¤¨ç¥áª¨¬ «¨æ ¬ ¯® á®áâ®ï­¨î ­  "+dtoc(edate),204))
+ aadd(allstrs," ")
+else
+// aadd(smstrs," ")
+ aadd(smstrs,StrCent("(622200) Œ â¥à¨ «ë",137))
+ aadd(smstrs,smdiv)
+ aadd(smstrs,smhd1)
+ aadd(smstrs,smhdr)
+ aadd(smstrs,smdiv)
+endif
+
+for i:=1 to nfltr
+ if !sml
+  aadd(allstrs,strcent(fltrs[2,i],204))
+  aadd(allstrs,divisor)
+  aadd(allstrs,header1)
+  aadd(allstrs,header2)
+  aadd(allstrs,divisor)
+  for j:=1 to len(data[i])
+   aadd(allstrs,data[i,j])
+  endfor
+  aadd(allstrs,divisor)
+  aadd(allstrs,svod_str(0,"","ˆâ®£®","",sums[i,1],sums[i,2],sums[i,3],sums[i,4],sums[i,5],sums[i,6],sums[i,7],sums[i,8],sums[i,9]))
+  aadd(allstrs,divisor)
+  aadd(allstrs," ")
+ else
+  aadd(smstrs,left(fltrs[2,i]+replicate(" ",20),20)+"|"+;
+               transform(sums[i,1],"999999999.99")+"|"+;
+               transform(abs(sums[i,2]),"999999999.99")+"|"+;
+               transform(sums[i,3],"999999999.99")+"|"+;
+               transform(sums[i,4],"999999999.99")+"|"+;
+               transform(sums[i,5],"999999999.99")+"|"+;
+               transform(sums[i,6],"999999999.99")+"|"+;
+               transform(sums[i,7],"999999999.99")+"|"+;
+               transform(sums[i,8],"999999999.99")+"|"+;
+               transform(abs(sums[i,9]),"999999999.99"))
+ endif
+endfor
+
+for j:=1 to 9
+ for i:=1 to nfltr
+  tsums[j]=tsums[j]+sums[i,j]
+ endfor
+ smtsums[j]:=smtsums[j]+tsums[j]
+endfor
+
+if !sml
+ aadd(allstrs,divisor)
+ aadd(allstrs,svod_str(0,"","‚á¥£®","",tsums[1],tsums[2],tsums[3],tsums[4],tsums[5],tsums[6],tsums[7],tsums[8],tsums[9]))
+ aadd(allstrs,divisor)
+ aadd(allstrs," ")
+ sopl:=0
+ sopl18:=0
+ sopl20:=0
+ for i:=1 to 20
+  if opl[i]!=0
+
+   aadd(allstrs," ˆâ®£® ®¯« â  ¯® ¯à®¢®¤ª¥ N"+mytransform(i,"99")+" : "+transform(opl[i],"999999999.99")+" ¢ â.ç. „‘ 20%: "+transform(oplnds20[i],"999999999.99")+", „‘ 18%: "+transform(oplnds18[i],"999999999.99"))
+   sopl:=sopl+opl[i]
+   sopl18:=sopl18+oplnds18[i]
+   sopl20:=sopl20+oplnds20[i]
+  endif
+ endfor
+ aadd(allstrs,"-----------------------------------------------------------------------------------------------------")
+   aadd(allstrs,"                  Ž¯« â  ¢á¥£®: "+transform(sopl,"999999999.99")+" ¢ â.ç. „‘ 20%: "+transform(sopl20,"999999999.99")+", „‘ 18%: "+transform(sopl18,"999999999.99"))
+ 
+ aadd(allstrs," ")
+ aadd(allstrs," ")
+ aadd(allstrs,strcent("ãå£ «â¥à: __________________",204))
+ 
+ TextView(0,0,79,24,"gr+/b",allstrs)
+ 
+else
+ aadd(smstrs,smdiv)
+ aadd(smstrs,"ˆâ®£®               |"+;
+              transform(tsums[1],"999999999.99")+"|"+;
+              transform(abs(tsums[2]),"999999999.99")+"|"+;
+              transform(tsums[3],"999999999.99")+"|"+;
+              transform(tsums[4],"999999999.99")+"|"+;
+              transform(tsums[5],"999999999.99")+"|"+;
+              transform(tsums[6],"999999999.99")+"|"+;
+              transform(tsums[7],"999999999.99")+"|"+;
+              transform(tsums[8],"999999999.99")+"|"+;
+              transform(abs(tsums[9]),"999999999.99"))
+ aadd(smstrs,smdiv)
+ kkk:=0
+ for i=1 to 20
+  if opl[i]!=0
+    kkk:=kkk+1
+    aadd(smstrs,"Ž¯« â  ¯® ¯à®¢. ü"+mytransform(i,"99")+" "+;
+                "|            |            |            |            |            |"+;
+                +transform(opl[i],"999999999.99")+"|            |            |            ")
+  endif
+ endfor
+ if kkk>0
+  aadd(smstrs,smdiv)
+ endif
+
+ aadd(smstrs,StrCent("(622000) Š®¬¬ã­ «ì­ë¥ ãá«ã£¨",137))
+ aadd(smstrs,smdiv)
+ aadd(smstrs,smhd1)
+ aadd(smstrs,smhdr)
+ aadd(smstrs,smdiv)
+ aadd(smstrs,smemp)
+ aadd(smstrs,"Š®¬¬ã­ «ì­ë¥ ãá«ã£¨ "+;
+                "|            |            |            |            |            |            "+;
+                "|            |            |            ")
+ aadd(smstrs,smdiv)
+ aadd(smstrs,smemp)
+ aadd(smstrs,"&dDŽ¯« â  ¯® ¯à®¢. ü 1 "+;
+                "|            |            |            |            |            |            "+;
+                "|            |            |            &d@")
+ aadd(smstrs,smemp)
+ aadd(smstrs,"&dDŽ¯« â  ¯® ¯à®¢. ü 2 "+;
+                "|            |            |            |            |            |            "+;
+                "|            |            |            &d@")
+ aadd(smstrs,smemp)
+ aadd(smstrs,"&dDŽ¯« â  ¯® ¯à®¢. ü 3 "+;
+                "|            |            |            |            |            |            "+;
+                "|            |            |            &d@")
+ aadd(smstrs,smemp)
+ aadd(smstrs,"&dDŽ¯« â  ¯® ¯à®¢. ü 5 "+;
+                "|            |            |            |            |            |            "+;
+                "|            |            |            &d@")
+ aadd(smstrs,smemp)
+ aadd(smstrs,"Ž¯« â  ¯® ¯à®¢. ü 9 "+;
+                "|            |            |            |            |            |            "+;
+                "|            |            |            ")
+ aadd(smstrs,smdiv)
+ aadd(smstrs," ")
+ aadd(smstrs,smdiv)
+ aadd(smstrs,smemp)
+ aadd(smstrs,"‚á¥£® ¯® (62):      "+;
+                "|            |            |            |            |            |            "+;
+                "|            |            |            ")
+ aadd(smstrs,smdiv)
+
+endif
+
+sele dopl
+set filter to
+sele dschet
+set filter to
+sele zakazch
+set filter to
+sele mlist
+set filter to
+
+//IndRestore()
+
+retu
+
+
+
+
+func mat_str(s_id)
+local ofltr:=mats->(dbfilter()),orn:=mats->(recno()),ss
+ sele mats
+ set filter to &("mats->sch_id="+astr(s_id))
+ go top
+ ss:=''
+ Do while !eof()
+  ss:=ss+alltrim(GetByID("MLIST",mats->mat_id,"Material"))+" "
+  skip
+ enddo
+ sele mats
+ set filter to &ofltr
+ go top
+ goto orn
+ 
+retu alltrim(ss)
+
+
+
+
+func svod_m(n)
+local summ:=0,opl:=0,usl_:='',nn,nn1:=0
+
+priv provodki:=""
+
+sele svod
+zap
+
+data[n]:={}
+sums[n]:={0,0,0,0,0,0,0,0,0}
+
+sele dschet
+go top
+count to nn
+
+showprogress(60,0,nn,.t.)
+
+go top
+do while !eof()
+ nn1:=nn1+1
+
+ showprogress(60,nn1,nn,.f.)
+
+  sele zakazch
+  set order to 1
+  go top
+  seek id_zl9(dschet->zak_id)
+  set order to 2
+  sele mlist
+  set order to 1
+  go top
+  if dschet->dog_id<1
+   seek id_zl9(dschet->usl_id)
+   set order to 2
+   sele dschet
+   usl:=mlist->material
+  else
+   usl:=mat_str(dschet->id)
+  endif
+
+if tot_days(dschet->sdate)>=tot_days(pm_dmy(edate))		// ç¨«¥­¨¥
+ opl:=sumopl(dschet->id,ctod('01/01/95'),edate,.f.)
+ summ:=dschet->fsumma
+ summ1:=summ-opl
+ if summ!=0
+  sumopl(dschet->id,pm_dmy(edate),edate,.t.)
+  sele svod
+  append blank
+  repl svod->sch_no with dschet->sch_no,;
+       svod->sch_dt with dschet->sdate,;
+       svod->zakazch with zakazch->zakazch,;
+       svod->usluga with usl,;
+       svod->vhs_deb with 0,;
+       svod->vhs_kr with 0,;
+       svod->nsumma with iif(year(dschet->sdate)<2004,summ/120*100,summ/118*100),;
+       svod->nsnds with iif(year(dschet->sdate)<2004,summ/120*20,summ/118*18),;
+       svod->nsvsego with summ,;
+       svod->oplvsego with opl,;
+       svod->ovtcnds with iif(year(dschet->sdate)<2004,opl/120*20,opl/118*18),;
+       svod->iss_deb with iif(summ1>0,summ1,0),;
+       svod->iss_kred with iif(summ1<0,summ1,0)
+  sele dschet
+ endif
+else								//‚å. á «ì¤®
+ opl:=sumopl(dschet->id,pm_dmy(edate),edate,.f.)
+ summ:=dschet->fsumma-sumopl(dschet->id,ctod('01/01/95'),pm_dmy(edate),.f.)
+ summ1:=summ-opl
+ if summ!=0
+  sumopl(dschet->id,pm_dmy(edate),edate,.t.)
+  sele svod
+  append blank
+  repl svod->sch_no with dschet->sch_no,;
+       svod->sch_dt with dschet->sdate,;
+       svod->zakazch with zakazch->zakazch,;
+       svod->usluga with usl,;
+       svod->vhs_deb with iif(summ>0,summ,0),;
+       svod->vhs_kr with iif(summ<0,summ,0),;
+       svod->nsumma with 0,;
+       svod->nsnds with 0,;
+       svod->nsvsego with 0,;
+       svod->oplvsego with opl,;
+       svod->ovtcnds with iif(year(dschet->sdate)<2004,opl/120*20,opl/118*18),;
+       svod->iss_deb with iif(summ1>0,summ1,0),;
+       svod->iss_kred with iif(summ1<0,summ1,0)
+  sele dschet
+ endif
+endif
+
+
+sele dschet
+skip
+enddo
+
+sele svod
+go top
+do while !eof()
+ aadd(data[n],svod_str(svod->sch_no,svod->sch_dt,svod->zakazch,;
+       svod->usluga,svod->vhs_deb,svod->vhs_kr,svod->nsumma,;
+       svod->nsnds,svod->nsvsego,svod->oplvsego,svod->ovtcnds,;
+       svod->iss_deb,svod->iss_kred,n))
+skip
+enddo
+
+sele dschet
+
+retu
+
+
+
+
+func svod_maxm(edate)
+local nn
+
+etdays=tot_days(edate)
+
+for i=1 to len(fltrs[1])-1
+ sele dschet
+ set filter to fsumma!=0 .and. ascan(fltrs[1,i],usl_id)!=0 .and. tot_days(sdate)<etdays .and. dschet->CloseDate>=pm_dmy(edate) .and. sch_tip=4
+ go top
+ count to nn
+// reindex
+ go top
+
+ if nn>0
+  svod_m(i)
+ endif
+
+endfor
+
+ sele dschet
+ set filter to fsumma!=0 .and. ascan(fltrs[1,len(fltrs[1])],usl_id)=0 .and. tot_days(sdate)<etdays  .and. sch_tip=4
+// reindex
+ go top
+ count to nn
+ go top
+
+ if nn>0
+  svod_m(len(fltrs[1]))
+ endif
+
+retu
+
+
+

@@ -1,0 +1,516 @@
+
+#include "inkey.ch"
+#include "SixCDX.ch"
+
+public CurrRE:=0,newsearch:=.t.
+public aREParam:={}
+public rDBE_refresh:=.f.
+public REAEFunc:="dREAEFunc()"
+
+/*
+ aREParam={{tbCol1, tbCol2, ..., tbColN},...}          
+*/
+
+retu
+
+
+//===============================================
+// aaColumns={{header, isRel, PTbl, cRetFld, PKey, CTbl, CKey, lKF, lEditable},...}
+//===============================================
+func RDBEdit(nTop, nLeft, nBottom, nRight, aaColumns, cUserFunction, ColSep, HeadSep, lAllowEdit)
+local tbClmns:={},i,mBRWS,er,lkey,ofltr,_id,osel:=Select(), orn:=recno(),plkey
+
+CurrRe=CurrRe+1
+for i=1 to len(aaColumns)
+ aadd(tbClmns,DefCol(aaColumns[i,1],aaColumns[i,2],aaColumns[i,3],aaColumns[i,4],aaColumns[i,5],aaColumns[i,6],aaColumns[i,7], ColSep, HeadSep))
+endfor
+
+if len(aREParam)<CurrRE
+ do while len(aREParam)<CurrRE
+  aadd(aREParam,{})
+ enddo
+endif
+
+aREParam[CurrRE]:={}
+mBRWS=tbrowsedb(nTop, nLeft, nBottom, nRight)
+
+for i=1 to len(tbClmns)
+ mBRWS:addcolumn(tbClmns[i])
+endfor
+
+aadd(aREParam[CurrRE],mBRWS)
+aadd(aREParam[CurrRE],tbClmns)
+aadd(aREParam[CurrRE],aaColumns)
+
+#define C_BRWS	aREParam[CurrRE,1]
+#define A_CLMNS aREParam[CurrRE,3]
+
+er=.f.
+KErase("!")
+
+do while !er
+
+ do while !C_BRWS:stabilize()
+ enddo
+
+//----------------------------------------------------------------------
+// Передаем пользовательской функции сообщение о том, что курсор перешел на другую строку.
+//----------------------------------------------------------------------
+  if ascan({K_UP,K_DOWN,K_PGUP,K_PGDN,K_CTRL_PGUP,K_CTRL_PGDN},lkey)>0
+   if len(alltrim(cUserFunction))>0
+    rDBE_refresh:=.f.
+    KErase(chr(254))
+    do &(cUserFunction) with C_BRWS:colpos, C_BRWS:rowpos
+    if !finish
+     if rDBE_refresh
+      C_BRWS:refreshall()
+     endif 
+    else
+     if rDBE_refresh
+      C_BRWS:refreshall()
+     endif 
+     exit
+    endif
+    er=finish
+   endif
+   if lastkey()!=K_SPACE
+    KErase("!")
+   endif
+  endif
+
+//----------------------------------------------------------------------
+
+ lkey=lastkey()
+
+ if lkey=7 .and. rDBE_refresh
+  C_BRWS:refreshall()
+  do while !C_BRWS:stabilize()
+  enddo
+ endif 
+
+ if lkey=0 .or. lkey=33
+  lkey=inkey(0)
+ endif
+
+ do case 
+
+  case lkey=K_UP
+   C_BRWS:up()
+   KErase("!")
+
+  case lkey=K_DOWN
+   C_BRWS:down()
+   KErase("!")
+
+  case lkey=K_PGUP
+   C_BRWS:pageup()
+   KErase("!")
+
+  case lkey=K_PGDN
+   C_BRWS:pagedown()
+   KErase("!")
+
+  case lkey=K_CTRL_PGUP
+   C_BRWS:gotop()
+   KErase("!")
+
+  case lkey=K_CTRL_PGDN
+   C_BRWS:gobottom()
+   KErase("!")
+
+  case lkey=K_LEFT
+   newsearch:=.t.
+   C_BRWS:left()
+   KErase("!")
+
+  case lkey=K_RIGHT
+   newsearch:=.t.
+   C_BRWS:right()
+   KErase("!")
+
+  case lkey=K_HOME
+   newsearch:=.t.
+   C_BRWS:home()
+   KErase("!")
+
+  case lkey=K_END
+   newsearch:=.t.
+   C_BRWS:end()
+   KErase("!")
+
+  case lkey=K_CTRL_LEFT
+   newsearch:=.t.
+   C_BRWS:panleft()
+   KErase("!")
+
+  case lkey=K_CTRL_RIGHT
+   newsearch:=.t.
+   C_BRWS:panright()
+   KErase("!")
+
+  case lkey=K_CTRL_HOME
+   newsearch:=.t.
+   C_BRWS:panhome()
+   KErase("!")
+
+  case lkey=K_CTRL_END
+   newsearch:=.t.
+   C_BRWS:panend()
+   KErase("!")
+
+  case lkey=-6 //F7
+   if aaColumns[C_BRWS:colpos,2]
+    alert("Не моуг ускать в этом столбце...")
+   else
+    DBF_Search(aaColumns[C_BRWS:colpos,4],newsearch)
+    newsearch:=.f.
+    C_BRWS:refreshall()
+   endif
+   KErase("!")
+
+  case len(alltrim(cUserFunction))=0 .and. lkey=K_ESC
+   er=.t.
+   KErase("!")
+
+  case len(alltrim(cUserFunction))=0 .and. lkey=K_INS .and. ;
+       alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   ofltr=dbfilter()
+   set filter to   
+   _id=mNetAppBl(100,5)
+//   _id=ID
+//   mrlockF(100,5)
+//   unlock
+//   if found()
+    cEdit(A_CLMNS)
+    C_BRWS:refreshall()
+//   else
+//    alert(astr(_id)+"-"+astr(id)+') Непонятно, но строка куда-то подевалась...;Обратитесь к разработчику.')
+//   endif
+   set filter to &ofltr
+   go top
+   locate for ID=_id
+
+   KErase(chr(255))
+   //Передаем пользовательской функции сообщение (chr(255)) о том, 
+   //что произошли изменения
+   //Необходимо для того, чтобы обновить что-то, например сумма чисел в столбце...
+
+  case lAllowEdit .and. lkey=K_SPACE
+   if fieldget(1)>0 .and. !deleted() .and. &(REAEFunc) .and. cEdit(A_CLMNS)
+    C_BRWS:refreshall()
+   endif
+   KErase(chr(255))
+
+  otherwise
+   if len(alltrim(cUserFunction))>0
+    rDBE_refresh:=.f.
+    do &(cUserFunction) with C_BRWS:colpos, C_BRWS:rowpos
+    if !finish
+     if rDBE_refresh
+      C_BRWS:refreshall()
+     endif 
+    else
+     if rDBE_refresh
+      C_BRWS:refreshall()
+     endif 
+     exit
+    endif
+    er=finish
+   endif
+   if lastkey()!=K_SPACE
+    KErase("!")
+   endif
+  
+ endcase
+
+enddo
+
+aREParam[CurrRE]:={}
+CurrRE=CurrRE-1
+
+retu
+
+
+
+
+
+
+//=============================================================================
+func GetRelValue(PTbl,PKey,CTbl,CKey,RetFld)
+Local Result:={},cRFld,oSel,opos
+local FltrVal,Fltr,oFLTR,n,a
+
+oSel:=Select()
+opos:=recno()
+
+CKey="ID"
+sele &PTbl
+FltrVal=&PKey
+sele &CTbl
+
+go top
+prevord=ordsetfocus("ID")
+seek ID_ZL9(FltrVal)
+ordsetfocus(prevord)
+
+if found()
+ Result=&RetFld
+else
+ a=dbstruct()
+ Result="-"+replicate(" ",a[fieldpos(RetFld),3]-1)
+endif
+
+sele &OSel
+goto opos
+
+retu Result
+
+
+
+
+
+//=============================================================================
+func GetByValue(SValue,CTbl,CKey,RetFld)
+Local Result:={},cRFld,oSel:=Select(),opos
+local FltrVal,Fltr,oFLTR,n,a
+sele &CTbl
+opos:=recno()
+oFLTR=dbFilter()
+Fltr=CKey+"="+transform(SValue,"")
+
+set filter to &fltr
+go top
+count to n
+go top
+if n>0
+ Result=&RetFld
+else
+ a=dbstruct()
+ Result="-"+replicate(" ",a[fieldpos(RetFld),3]-1)
+endif
+set filter to &oFLTR
+
+goto opos
+
+sele &OSel
+
+retu Result
+
+
+
+
+
+
+//=============================================================================
+func DefCol(Name,IsRel,ptbl,cRetFld,pkey,ctbl,ckey,ColSep,HeadSep)
+local tbCol
+tbCol=TBColumnNew(name,{|| db_r_val(IsRel,ptbl,cRetFld,pkey,ctbl,ckey)})
+tbCol:cargo=iif(IsRel,"1","0")+","+alltrim(ptbl)+","+;
+            alltrim(cRetFld)+","+alltrim(pkey)+","+;
+            alltrim(ctbl)+","+alltrim(ckey)
+tbCol:HEadSep=HeadSep
+tbCol:ColSep=ColSep
+retu tbCol
+
+
+
+
+
+//=============================================================================
+func db_r_val(IsRel,ptbl,cRetFld,pkey,ctbl,ckey)
+local res,s:="",i
+
+if !IsRel
+ res=&(ptbl+"->"+cRetFld)
+else
+ res=GetRelValue(PTbl,PKey,CTbl,CKey,cRetFld) //3.5.6.7.4
+endif
+ sele &ptbl
+
+ if valtype(res)="L"
+  retu iif(res,"+"," ")
+ endif
+
+retu res
+
+
+
+
+
+
+//=============================================================================
+func cEdit(aaColumns)   
+local i,s1,s2,ocol:=setcolor("w+/r,gr+/n,w/r,w/r,w/r")
+local j,nm,rn:=recno(),cSel:=Select(),n:=1,ss,nn
+local CouldBeEdited:={}
+
+priv strs:={},strs2:={}
+priv aaCols,fld_nVals:=dbReadRow(),indx:={}
+priv x:=0,y:=0,l1:=0,l2:=0,IsEdited:=.f.
+
+aaCols=aclone(aaColumns)
+for i=1 to len(aaCols)
+ nm=iif(aaCols[i,2],aaCols[i,5],aaCols[i,4])
+ nn=-1
+ for j=1 to len(fld_nVals)
+  if lower(fld_nVals[j,1])==lower(nm)
+   aadd(indx,{i,j})
+   nn=nn+1
+  endif
+ endfor
+ if nn<0
+  alert('Указано несуществующее поле - '+aaCols[i,1])
+  close all
+  myquit()
+ endif
+ s1=alltrim(aaCols[i,1])
+ l1=iif(len(s1)>l1,len(s1),l1)
+ s2=transform(db_r_val(aaCols[i,2],aaCols[i,3],aaCols[i,4],aaCols[i,5],aaCols[i,6],aaCols[i,7]),"")
+ l2=iif(len(s2)>l2,len(s2),l2)
+ aadd(strs2,{s1,s2})
+endfor
+
+ l1=iif(l1>18,18,l1)
+ l2=iif(l2>58,58,l2)
+
+for i=1 to len(strs2)
+ ss=left(alltrim(strs2[i,2]),l2)
+ aadd(strs,right(replicate(" ",l1)+strs2[i,1],l1)+;
+           iif(aaCols[i,2],">",":")+iif(aaCols[i,8],"·"," ")+" "+;
+           ss+replicate(" ",l2-len(ss)-1))
+endfor
+
+ x=l1+2+l2
+ y=len(strs)
+ y=iif(y>20,20,y)
+ scrsave()
+ nort({{"ESC","ВЫХОД"},{"ПРОБЕЛ","РЕДАКТ."},{"СТРЕЛКИ","ПЕРЕМЕЩ."}},24) 
+ ramka(12-y/2-1,40-x/2-1,12+y/2,40+x/2+1,"r+/r")
+ vScroller(40+x/2+1,12-y/2,12+y/2-1,1,len(strs),"gr+/r*")
+
+ for i=1 to len(strs)
+  aadd(CouldBeEdited,aaCols[i,9])
+ endfor
+ 
+  IsEdited:=.f.
+  do while lastkey()!=27
+  n:=achoice(12-y/2,40-x/2,12+y/2-1,40+x/2,strs,CouldBeEdited,"cEditFnc()",n)
+ enddo
+ sele &cSel
+ goto RN
+ if IsEdited .and. alert("Сохранить изменения?",{"Н Е Т"," Д А "},"w+/n*,gr+/g,,,gr+/b")=2
+  if alert("Вы точно уверены, что хотите сохранить изменения?;"+;
+           ";ВНИМАНИЕ!!!;Данное действие невозможно будет отменить!",{"ОТМЕНА","СОХРАНИТЬ"},"b/r*")=2
+   mShRepl(aaCols[1,3],fld_nVals)
+   scrrest()  
+   setcolor(ocol)
+   sele &cSel
+//   set order to 2
+   goto RN
+   retu .t.
+  endif      
+ endif
+ scrrest()  
+ setcolor(ocol)
+
+ sele &cSel
+// set order to 2
+ goto RN
+
+retu .f.
+
+
+
+func cEditFnc(nM,nCE,nRP)
+local lk:=LastKey(),a,b,OSel:=select(),rn:=RecNo(),ss,i,n:=-1
+
+//vScroller(40+x/2+1,12-y/2,12+y/2-1,nCE,iif(len(strs)-nCE>0,len(strs)-nCE,nCE),"gr+/r*")
+vScroller(40+x/2+1,12-y/2,12+y/2-1,nCE,len(strs),"gr+/r*")
+
+do case
+ case lk=27
+  n=-1
+  for i=1 to len(strs2)
+   if aaCols[i,8] .and. varempty(fld_nVals[indx[i,2],2])	//alltrim(strs2[i,2]))
+    n=i
+    exit
+   endif
+  endfor
+  if n>0 
+   if alert("Поле ["+aaCols[n,1]+"] не должно быть пустым!",{"НЕ СОХРАНЯТЬ","ИСПРАВИТЬ"})=2
+    KErase(chr(32))
+    cEditFnc(0,n,0)
+    retu 0
+   else
+    KErase(chr(27))
+    IsEdited:=.f.
+    retu 0
+   endif
+  else
+   KErase(chr(27))
+   retu 0
+  endif
+
+ case lk=32 .or. lk=13
+  if !aaCols[nCE,9]
+   message("Это поле вычисляется программой.",10,"w+/g","g+/g")
+  else
+   if aaCols[nCE,2]	//Relation
+    sele (aaCols[nCE,6])
+    if FTAMenu(2,2,20,74,aaCols[nCE,4],alltrim(aaCols[nCE,1]),"b/w*,gr+/b,,,w+/n",.t.,"")
+     a=ID    
+     ss=transform(GetByValue(a,aaCols[nCE,6],aaCols[nCE,7],aaCols[nCE,4]),"")
+     if a!=fld_nVals[indx[nCE,2],2] .and.;
+        alert("Заменить;<"+alltrim(strs2[nCE,2])+;
+              ">;на;<"+alltrim(ss)+">",{" Д А ","Н Е Т"},"n/bg,gr+/n")=1
+      fld_nVals[indx[nCE,2],2]=a
+      strs2[nCE,2]:=ss
+      ss=left(alltrim(strs2[nCE,2]),l2)
+      strs[nCE]:=right(replicate(" ",l1)+strs2[nCE,1],l1)+;
+              iif(aaCols[nCE,2],">",":")+iif(aaCols[nCE,8],"·"," ")+" "+;
+              ss+replicate(" ",l2-len(ss)-1)
+      IsEdited:=.t.
+      KErase("!")
+      sele &OSel
+      goto rn
+      retu 1
+//     else
+     endif     
+    endif 
+    sele &OSel
+    goto rn
+   else
+    a=fld_nVals[indx[nCE,2],2]
+    a=VarEdit(alltrim(aaCols[nCE,1]),a,!aaCols[nCE,8]) 
+    if a!=fld_nVals[indx[nCE,2],2] .and.;
+       alert("Заменить;<"+alltrim(vmakestr(fld_nVals[indx[nCE,2],2]))+;
+             ">;на;<"+alltrim(vmakestr(a))+">",{" Д А ","Н Е Т"},"n/bg,gr+/n")=1
+     fld_nVals[indx[nCE,2],2]=a
+     strs2[nCE,2]:=vmakestr(a)
+     ss=left(alltrim(strs2[nCE,2]),l2)
+     strs[nCE]:=right(replicate(" ",l1)+strs2[nCE,1],l1)+;
+             iif(aaCols[nCE,2],">",":")+iif(aaCols[nCE,8],"·"," ")+" "+;
+             ss+replicate(" ",l2-len(ss)-1)
+     IsEdited:=.t.
+     KErase("!")
+     retu 1
+    else
+//     IsEdited:=.f.
+    endif
+   endif
+  endif
+
+endcase 
+
+retu 2
+
+
+
+
+func dREAEFunc()
+retu .t.
+
+
+func setREAEFunc()
+ REAEFunc:="dREAEFunc()"
+retu

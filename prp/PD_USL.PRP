@@ -1,0 +1,554 @@
+
+retu
+
+
+func rDBE_usl()
+local ocol:=setcolor("w+/gr,w+/b,,,r+2/r")
+local pdrn:=pudog->(recno())
+
+priv pd_id:=pudog->id
+
+scrsave()
+
+ramka(2,2,22,77,"gr+/gr")
+nort({{"F2","СПРАВ-КИ"},{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+set order to 2
+
+sele mats
+set filter to &("dog_id="+astr(pd_id)+" .and. sm_id=0 .and. !deleted() .and. !is_mat")
+go top
+show_usl_summs()
+rDBEdit(3,3,21,76,RDF_Uslugi,"frde_usl","│","▄",.t.)
+set filter to
+
+sele pudog
+goto pdrn
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func frde_usl()
+local lk:=lastkey(),ofltr:=dbfilter(),_id
+local _summa:=0,_psumma:=0
+local _summ:=0,_psumm:=0,orn,orn1,nrows, s_id
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+  if alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+   sele mats
+   set filter to   
+   mNetAppBl(100,5)
+   _id=ID
+   mrlockF(100,5)
+   repl dog_id with pd_id, pNDS with varedit("Ставка НДС",18.00,.t.),vnds with 1
+   unlock
+   set filter to &ofltr
+   set order to 1
+   go top
+   seek id_zl9(_id)
+   set order to 2
+   KErase(chr(32))
+//   frde_usl()
+  endif
+
+ case mats->id>0 .and. lk=7	//DEL
+  if alert("Удалить выделенную строку?;"+;
+           alltrim(GetRelValue("mats","mat_id","ulist","id","usluga")),{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить выделенную строку?;"+;
+            alltrim(GetRelValue("mats","mat_id","ulist","id","usluga"))+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele mats
+    s_id:=mats->sch_id
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+//-------------
+    set filter to &("mats->sch_id="+astr(s_id)+" .and. !deleted()")
+    go top
+    sum mats->summa*0+1, mats->summad, mats->psummad to nrows, _summa, _psumma
+    sele dschet
+    set filter to
+    go top
+    set order to 1
+    seek ID_ZL9(s_id)
+    set order to 2  
+    mrlockF(100,5)
+    repl dschet->summa with _psumma, dschet->fsumma with _summa,;
+         dschet->fsald with dschet->fsumma-dschet->fopl
+    unlock
+    sele mats
+    set filter to &ofltr
+    set order to 2
+    go top
+//-------------
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+ case lk=-1	//F2
+  sprav()
+
+ //Сообщение из родительской функции о том. что произошли изменения...
+ //Произвести перерасчёт "чего-то там", при необходимости...
+ //Что собственно тут и делается (ниже)...
+ case lk=255
+   _summa=mats->cena*mats->kolvo
+   _psumma=mats->cena*mats->pkolvo
+   _nds=mats->pnds
+  if _summa!=mats->summa .or. _psumma!=mats->psumma
+   sele mats
+   mrlockf(100,5)
+   repl mats->summa with _summa, mats->psumma with _psumma,;
+        mats->nds with _summa/(100+iif(mats->vnds=0,_nds,0))*_nds,;
+        mats->nds_p with _psumma/(100+iif(mats->vnds=0,_nds,0))*_nds,;
+        mats->summad with _summa+iif(mats->vnds=0,mats->nds,0),;
+        mats->psummad with _psumma+iif(mats->vnds=0,mats->nds_p,0)
+   unlock
+   show_usl_summs()
+   rDBE_refresh:=.t. 
+  endif  
+
+endcase
+retu
+
+
+
+func show_usl_summs()
+local ocol:=setcolor("gr+/gr"),ofltr,mof
+local _summ:=0,_psumm:=0,orn,orn1,nrows, _sch_id, _summa, _psumma
+
+sele mats
+_sch_id=mats->sch_id
+mof:=dbfilter()
+orn:=recno()
+go top
+sum mats->summa*0+1, mats->summad, mats->psummad to nrows, _summ, _psumm
+go top
+goto orn
+//alert(astr(orn)+" "+astr(recno())+" "+astr(_sch_id))
+
+@22,49 say "["+transform(nrows,"9999")+":"+transform(_summ,"9999999.99")+"|"+transform(_psumm,"9999999.99")+"]"
+
+if nrows>0
+ sele pudog
+ orn1:=recno()
+ go top
+ set order to 1
+ seek ID_ZL9(mats->dog_id)
+ set order to 2
+ if found()
+  mrlockf(100,5)
+  repl pudog->p_cena with _psumm, pudog->f_Cena with _summ
+  unlock
+ endif
+ goto orn1
+ sele mats
+// alert("ЗАМЕНА! "+astr(_sch_id)+iif(_sch_id<1,";Проверь, почему _sch_id=0!",""))
+ if _sch_id>0
+  ofltr:=dbfilter()
+  set filter to &("mats->sch_id="+astr(_sch_id)+" .and. !deleted()")
+  go top
+  sum mats->summa*0+1, mats->summad, mats->psummad to nrows, _summa, _psumma
+  sele dschet
+  set filter to
+  go top
+  set order to 1
+  seek ID_ZL9(_sch_id)
+  set order to 2  
+  mrlockF(100,5)
+  repl dschet->summa with _psumma, dschet->fsumma with _summa,;
+       dschet->fsald with (dschet->fsumma-dschet->fopl)
+  unlock
+  sele mats
+  set filter to &ofltr
+  set order to 2
+  go top
+  goto orn
+ endif
+ sele mats
+ goto orn
+endif
+
+setcolor(ocol)
+retu
+
+
+
+
+
+
+
+
+func usl_schet()
+local ocol:=setcolor("w+/n*,w+/b,,,gr+/n*")
+local pdrn:=pudog->(recno()),s
+
+priv pd_id:=pudog->id, zk_id:=pudog->zak_id
+
+s:="[ "+alltrim(pudog->dog_no)+" : "+alltrim(getbyid("zakazch",zk_id,"zakazch"))+" ]"
+
+scrsave()
+
+ramka(2,2,22,77,"w/n*")
+nort({{"INS","+"},{"DEL","-"},{"F3","ТРAНСПОРТ"},{"F9","НА ПРИНТЕР"},{"ПРОБЕЛ","РЕДАКТ."},{"ENTER","ОПЛАТА"},{"ESC","ВЫХОД"}},24)
+set order to 2
+
+sele dschet
+set filter to &("dog_id="+astr(pd_id)+" .and. sm_id=0 .and. !deleted()")
+go top
+setcolor("gr+/n*")
+@2,39-len(s)/2 say s
+setcolor("w+/n*,w+/b,,,gr+/n*")
+rDBEdit(3,3,21,76,RDF_SCHT,"fusl_scht","│","▄",.t.)
+set filter to
+
+sele pudog
+goto pdrn
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func fusl_scht()
+local lk:=lastkey(),ofltr:=dbfilter(),_id,n
+local n_usl,nrows,_summa,_psumma,_sch_no:=-1,orn
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=13	//ENTER
+  orn:=dschet->(recno())
+  usl_opl()
+  sele dschet
+  set order to 2
+  goto orn
+  rDBE_refresh:=.t.
+
+ case lk=-8	//F9
+  n=alert('Выберите тип документа:',{"ОТМЕНА","СЧЕТ","СЧЕТ-ФАКТУРА"},"gr+/b")
+  if n=2
+   MS_usl()
+  elseif n=3
+   MSF_usl()
+  endif
+
+ case lk=-2	//F3
+  if dschet->id>0 .and.;
+     alert("Внести изменение в содержание счета?;;"+;
+           "ВНИМАНИЕ!!! ВНИМАНИЕ!!! ВНИМАНИЕ!!!;Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+   sele mats
+   usl_selector() 
+   sele mats
+   set filter to mats->dog_id=pudog->id .and. sm_id=0 .and. mats->sch_id=dschet->id
+   go top
+   mflockf(100,5)
+   do while !eof()
+    repl mats->sch_tmp with .t., mats->sch_tmp1 with .t.
+    skip
+   enddo
+   unlock
+
+   set filter to !deleted() .and. mats->sch_tmp .and. mats->dog_id=pudog->id
+   go top
+   usl_mark()   
+   sele mats
+   set filter to !deleted() .and. sm_id=0 .and. mats->sch_tmp1 .and. mats->dog_id=pudog->id
+   go top
+   sum mats->summa*0+1, mats->summa, mats->psumma to nrows, _summa, _psumma
+   if nrows<1
+    message("Счет обнулен! Подлежит удалению!",3,"gr+/r","r+/r")
+    sele dschet
+    mflockf(100,5)
+    dele
+    unlock
+    skip
+    rDBE_refresh:=.t.
+   else
+    sele mats
+    set filter to !deleted() .and. sm_id=0 .and. mats->sch_tmp1 .and. mats->dog_id=pudog->id
+    go top
+    mflockf(100,5)
+    do while !eof()
+     repl mats->sch_id with dschet->id
+     skip
+    enddo
+    unlock
+    sele dschet
+    mrlockF(100,5)
+    repl summa with _psumma, fsumma with _summa, fsald with _summa-dschet->fopl
+    unlock
+   endif
+   rDBE_refresh:=.t. 
+  endif
+
+
+ case lk=22	//INS
+  if usl_selector()>0 .and. alert("Добавить новую строку?",{"Н Е Т"," Д А "})=2
+   rDBE_refresh:=.t. 
+
+   usl_mark()   
+   sele mats
+   set filter to !deleted() .and. sm_id=0 .and. mats->dog_id=pudog->id .and. mats->sch_tmp1
+   go top
+
+   sum mats->summa*0+1, mats->summa, mats->psumma to nrows, _summa, _psumma
+   if nrows>0 .and. alert('Выбрано '+astr(int(nrows))+" строк на сумму "+;
+                          alltrim(transform(_summa,"9999999.99"))+" (предоплата - "+;
+                          alltrim(transform(_psumma,"9999999.99"))+");;"+;
+                          'Создать новый счёт используя данные цифры?',{'Н Е Т',' Д А '})=2
+    sele dschet
+    _sch_no:=findmschnum()+1
+    set filter to
+    _id=mNetAppBl(100,5)
+    sele mats
+    go top
+    mflockf(100,5)
+    do while !eof()
+     repl sch_id with _id
+     skip
+    enddo
+    unlock
+    go top
+    sele dschet
+    mrlockF(100,5)
+    repl dog_id with pd_id, summa with _psumma, fsumma with _summa,;
+         sch_tip with 3, sch_no with _sch_no, cdate with date(),;
+         sdate with date(), zak_id with zk_id, usl_id with mats->mat_id,;
+         fsald with _summa-dschet->fopl
+    unlock
+    set filter to &ofltr
+    set order to 1
+    go top
+    seek ID_ZL9(_id)
+    set order to 2
+    rDBE_refresh:=.t.
+    KErase(chr(32))
+   endif
+  endif
+  sele dschet
+
+ case dschet->id>0 .and. lk=7	//DEL
+  if alert("Удалить счет №"+astr(dschet->sch_no)+;
+           " от "+dtoc(dschet->sdate)+"г. сумма "+;
+           transform(dschet->summa,"9999999.99")+"руб.",{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить счет №"+astr(dschet->sch_no)+;
+           " от "+dtoc(dschet->sdate)+"г. сумма "+;
+           transform(dschet->summa,"9999999.99")+"руб."+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele dopl
+    set filter to dopl->sch_id=dschet->id
+    mflockF(100,5)
+    dele all
+    unlock 
+    sele dschet
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+endcase
+retu
+
+
+
+
+
+
+
+
+func usl_mark()
+local ocol:=setcolor("b/gr*,w+/b,,,gr/gr*")
+local pdrn:=pudog->(recno())
+
+priv pd_id:=pudog->id
+
+scrsave()
+
+ramka(2,2,22,77,"gr/gr*")
+nort({{"ENTER","ВКЛ/ВЫКЛ"},{"ESC","ВЫХОД"}},24)
+set order to 2
+
+sele mats
+set filter to &("dog_id="+astr(pd_id)+" .and. sm_id=0 .and. !deleted() .and. sch_tmp")
+go top
+rDBEdit(3,3,21,76,RDF_uslMark,"fusl_mark","│","▄",.t.)
+set filter to
+
+sele pudog
+goto pdrn
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+func fusl_mark()
+local lk:=lastkey()
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=13	//ESC
+  sele mats
+  mrlockf(100,5)
+  repl mats->sch_tmp1 with !mats->sch_tmp1
+  if !mats->sch_tmp1
+   repl mats->sch_id with 0
+  endif
+  unlock
+  rDBE_refresh:=.t. 
+  
+  retu 1  
+
+endcase
+retu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+func usl_opl()
+local ocol:=setcolor("w+/g,w+/b,,,gr+/g")
+priv dschet_id:=dschet->id
+
+scrsave()
+
+ramka(2,2,22,77,"g+/g")
+nort({{"INS","+"},{"DEL","-"},{"ПРОБЕЛ","РЕДАКТ."},{"ESC","ВЫХОД"}},24)
+
+sele dopl
+set filter to &("sch_id="+astr(dschet_id)+" .and. !deleted()")
+set order to 2
+go top
+
+dopl_show()
+
+KErase(chr(255))
+rDBEdit(3,3,21,76,RDF_DOPL,"fusl_opl","│","▄",.t.)
+set filter to
+
+sele dschet
+set order to 2
+
+setcolor(ocol)
+
+scrrest()
+
+KErase("!")
+Finish=.f.
+
+retu
+
+
+
+
+
+
+func fusl_opl()
+local lk:=lastkey(),ofltr:=dbfilter(),_id,orn
+local n_usl,nrows,_summa,_psumma,_sch_no:=-1
+
+do case
+ case lk=27	//ESC
+  Finish=.t.
+  retu 0  
+
+ case lk=22	//INS
+    sele dopl
+    ofltr=dbfilter()
+    set filter to
+    _id=mNetAppBl(100,5)
+    mrlockf(100,5)
+    repl dopl->sch_id with dschet_id,dopl->cdate with date(),dopl->odate with date()
+    unlock
+    set filter to &ofltr
+    set order to 1
+    go top
+    seek ID_ZL9(_id)
+    set order to 2
+    rDBE_refresh:=.t.
+    KErase(chr(32))
+
+ case dopl->id>0 .and. lk=7	//DEL
+  if alert("Удалить проводку №"+astr(dopl->opl_no)+;
+           " от "+dtoc(dopl->odate)+"г. сумма "+;
+           transform(dopl->summa,"9999999.99")+"руб.",{"Н Е Т"," Д А "})=2
+   if alert("Вы точно уверены, что хотите удалить проводку №"+astr(dopl->opl_no)+;
+           " от "+dtoc(dopl->odate)+"г. сумма "+;
+           transform(dopl->summa,"9999999.99")+"руб."+;
+            ";;ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ! ВНИМАНИЕ!;"+;
+            "Данное действие невозможно будет отменить!",{"Н Е Т"," Д А "})=2
+    sele dopl
+    mflockF(100,5)
+    dele
+    unlock 
+    skip
+    rDBE_refresh:=.t. 
+   endif
+  endif
+
+ //Сообщение из родительской функции о том. что произошли изменения...
+ //Произвести перерасчёт "чего-то там", при необходимости...
+ //Что собственно тут и делается (ниже)...
+ case lk=255
+  dopl_show()  
+
+endcase
+retu
+
+
+
+
+
